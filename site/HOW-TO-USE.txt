@@ -29,8 +29,31 @@ this note is no longer needed — that code path was cleaned up this round,
 see below.)
 
 
-WHAT CHANGED THIS ROUND (home page)
-------------------------------------
+WHAT CHANGED THIS ROUND (r21, 3 Oct 2026)
+------------------------------------------
+  - New: "Study by subject" pages (/study/ and 19 subject pages such as
+    /study/medicine-in-turkiye/). Each lists every partner university in
+    Türkiye that teaches the subject, with language, length and published
+    fee, plus common questions. Linked from every page's menu and footer
+    and listed in sitemap.xml. Rebuilt with tools/build_study_pages.py
+    in the GitHub repo.
+  - Menu: Scholarships, Housing and Guides added next to Universities and
+    Find your programme, on desktop and in the phone menu. "Find your
+    program" now reads "Find your programme" like the rest of the site.
+  - Phones: the university logo in the top-right of each hero photo is no
+    longer cut off; the two demo clips run edge to edge, and on data-saver
+    or slow mobile data they stay as a still picture (about 6 MB saved).
+  - Footer: removed the duplicate "Articles" link (Study guides is the
+    same page); added "Study by subject".
+  - University pages: 45 misspelled programme names corrected (e.g.
+    "Computer Enginering", "Physiotheraphy") and "1.5 year" now reads
+    "1.5 years", matching the database.
+
+Everything from r20 is still here, unchanged.
+
+
+PREVIOUS ROUND (r20)
+--------------------
   - Hero search bar fixed — it was rendering far too large because of a
     CSS class-name collision (a scroll-animation class was accidentally
     colliding with the hero's own layout rule); now a normal-sized pill.

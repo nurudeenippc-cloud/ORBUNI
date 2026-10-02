@@ -24,3 +24,11 @@ upload, as in `site/HOW-TO-USE.txt`.
 ## History
 
 - r20 (1 Oct 2026): the bundle uploaded to Netlify before this repo existed.
+- r21 (3 Oct 2026): study-by-subject pages, menu and phone fixes, spelling
+  fixes. See `site/HOW-TO-USE.txt`.
+
+## Subject pages
+
+`python3 tools/build_study_pages.py` rebuilds `site/study/` from
+`tools/data/bachelors.json` (a snapshot of the programme data; the SQL to refresh
+it is at the top of the script) and updates `site/sitemap.xml`.
