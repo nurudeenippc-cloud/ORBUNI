@@ -1,0 +1,57 @@
+ORBUNI — COMPLETE SITE FOLDER
+=============================
+
+This is the whole site, one zip. Unzip it, then drag the folder straight
+into Netlify (or into the Netlify "Deploys" drop zone on your existing
+site).
+
+WHAT IS IN HERE
+  index.html    the site, including this round's home page changes (below)
+  photos/       every university, home, careers and housing photo
+  video/        the two home-page product-demo clips (housing + programmes)
+  _headers, _redirects, manifest.json, robots.txt, sitemap.xml, sw.js
+  badge-96.png, icon-192.png, share.png
+
+
+ONE FILE TO COPY FROM YOUR OWN FOLDER BEFORE YOU DEPLOY
+--------------------------------------------------------
+     videos/hafsat-aman.mp4      (note: "videos", plural — a different
+                                   folder from "video" above)
+
+This is the tester-review video used elsewhere on the site (not part of this
+round's work) and isn't in this zip. Copy it from your current live site's
+folder into this one, keeping the same "videos/hafsat-aman.mp4" path, before
+you deploy. If you forget, nothing breaks visibly — that page already
+degrades gracefully when this file is missing.
+
+(The Fenerbahçe University photo folder mentioned in an older version of
+this note is no longer needed — that code path was cleaned up this round,
+see below.)
+
+
+WHAT CHANGED THIS ROUND (home page)
+------------------------------------
+  - Hero search bar fixed — it was rendering far too large because of a
+    CSS class-name collision (a scroll-animation class was accidentally
+    colliding with the hero's own layout rule); now a normal-sized pill.
+  - Added a "See it for yourself" section: two real, silent, autoplaying
+    product-demo clips (Housing search, and finding + applying to a
+    programme), styled to blend into the page rather than sit in a hard
+    box, and fully non-interactive — no pause button, no click-to-pause,
+    they just run.
+  - Removed the bold yellow closing panel near the bottom of the page;
+    replaced with a quieter dark card and new copy.
+  - Fixed a real data bug: university #49 (Ankara Medipol University) had
+    old leftover code pointing it at a photo folder for a university that
+    no longer exists in the catalogue. It now correctly shows the normal
+    "no photo yet" icon instead, like any other university without a
+    photo on file.
+  - The two demo clips now ship as plain .mp4 only (dropped a .webm copy
+    of each that was only ever needed for testing on my end, not for real
+    visitors — every real browser plays the .mp4 natively) so the whole
+    site fits in one zip. Every photo's .webp version was also
+    re-compressed a little to fit — same resolution, no visible
+    difference, just a smaller file.
+
+Nothing else was touched. Every earlier fix and every animation the site
+already had is still there.
