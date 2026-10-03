@@ -42,3 +42,15 @@ grant execute on function public.set_job_stage(uuid, text) to authenticated;
 -- The stack: what has actually been paid for each tool, from the receipts.
 alter table public.ops_tools add column if not exists paid_so_far numeric check (paid_so_far is null or paid_so_far >= 0);
 alter table public.ops_tools add column if not exists paid_currency text not null default 'USD';
+
+-- ---------------------------------------------------------------- wa_content_cache
+-- WhatsApp button messages (quick replies / link buttons): each text + buttons is a
+-- Twilio content object, created once and reused. Server-only (RLS on, no policies).
+create table if not exists public.wa_content_cache (
+  hash text primary key,
+  content_sid text not null,
+  kind text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.wa_content_cache enable row level security;
+alter table public.wa_messages add column if not exists buttons jsonb;

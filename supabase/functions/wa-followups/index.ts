@@ -56,12 +56,12 @@ Deno.serve(async (req) => {
   type Job = { trigger: string; key: string; tpl: string; phone: string; name: string; profile_id?: string | null; lead_id?: string | null };
   const jobs: Job[] = [];
 
-  if (T.orbuni_quiz_followup) {
+  if (T.orbuni_quiz_followup || T.orbuni_quiz_followup_btn) {
     const { data } = await db.from("leads").select("id,name,phone,student_id").not("quiz", "is", null)
       .gte("created_at", ago(48 * H)).lte("created_at", ago(20 * 60e3)).limit(200);
     for (const l of data || []) jobs.push({ trigger: "quiz", key: `quiz:${l.id}`, tpl: "orbuni_quiz_followup", phone: intl(l.phone), name: first(l.name), lead_id: l.id, profile_id: l.student_id });
   }
-  if (T.orbuni_payment_help) {
+  if (T.orbuni_payment_help || T.orbuni_payment_help_btn) {
     const { data } = await db.from("student_orders").select("id,profile_id,status,paid_at,profiles(first_name,phone,whatsapp)")
       .is("paid_at", null).not("status", "in", "(paid,cancelled,canceled,refunded)")
       .gte("created_at", ago(72 * H)).lte("created_at", ago(2 * H)).limit(200);
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       jobs.push({ trigger: "payment", key: `pay:${o.id}`, tpl: "orbuni_payment_help", phone: intl(p.whatsapp) || intl(p.phone), name: first(p.first_name), profile_id: o.profile_id });
     }
   }
-  if (T.orbuni_documents_needed) {
+  if (T.orbuni_documents_needed || T.orbuni_documents_needed_btn) {
     const { data } = await db.from("student_readiness").select("profile_id,first_name,phone,whatsapp,has_photo,has_passport,personal_done,choice_count,joined_at")
       .lte("joined_at", ago(48 * H)).gte("joined_at", ago(30 * 24 * H)).limit(300);   // weekly, for their first month only
     const week = Math.floor(Date.now() / (7 * 24 * H));
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       jobs.push({ trigger: "documents", key: `docs:${r.profile_id}:${week}`, tpl: "orbuni_documents_needed", phone: intl(r.whatsapp) || intl(r.phone), name: first(r.first_name), profile_id: r.profile_id });
     }
   }
-  if (T.orbuni_offer_ready) {
+  if (T.orbuni_offer_ready || T.orbuni_offer_ready_btn) {
     const { data } = await db.from("application_events").select("application_id,applications(profile_id,profiles(first_name,phone,whatsapp))")
       .eq("to_status", "offer_received").gte("at", ago(48 * H)).limit(200);
     for (const e of data || []) {
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       jobs.push({ trigger: "offer", key: `offer:${e.application_id}`, tpl: "orbuni_offer_ready", phone: intl(p.whatsapp) || intl(p.phone), name: first(p.first_name), profile_id: a.profile_id });
     }
   }
-  if (T.orbuni_checkin) {
+  if (T.orbuni_checkin || T.orbuni_checkin_btn) {
     const { data } = await db.from("wa_contacts").select("id,phone,wa_name,profile_id,lead_id,last_inbound_at")
       .eq("opted_out", false).gte("last_inbound_at", ago(15 * 24 * H)).lte("last_inbound_at", ago(14 * 24 * H)).limit(200);
     for (const c of data || []) jobs.push({ trigger: "checkin", key: `checkin:${c.id}:${String(c.last_inbound_at).slice(0, 10)}`, tpl: "orbuni_checkin", phone: c.phone, name: first(c.wa_name), profile_id: c.profile_id, lead_id: c.lead_id });
@@ -111,8 +111,9 @@ Deno.serve(async (req) => {
     // claim the key first so two overlapping runs can't both send
     const claim = await db.from("wa_followups").insert({ contact_id: c.id, trigger: j.trigger, dedupe_key: j.key, status: "sending" });
     if (claim.error) { skip("already sent"); continue; }
-    const t = T[j.tpl];
-    const res = await sendAndLog(db, c, { author: "template", contentSid: t.content_sid, vars: { "1": j.name }, templateKey: j.tpl, preview: String(t.body).split("{{1}}").join(j.name) });
+    // the version with tap buttons once Meta has approved it, the plain one until then
+    const tk = T[j.tpl + "_btn"] ? j.tpl + "_btn" : j.tpl, t = T[tk];
+    const res = await sendAndLog(db, c, { author: "template", contentSid: t.content_sid, vars: { "1": j.name }, templateKey: tk, preview: String(t.body).split("{{1}}").join(j.name) });
     await db.from("wa_followups").update({ status: res.ok ? "sent" : "failed: " + (res.error || "").slice(0, 200) }).eq("dedupe_key", j.key);
     if (res.ok) sent.push(j.key); else skip("Twilio refused");
   }

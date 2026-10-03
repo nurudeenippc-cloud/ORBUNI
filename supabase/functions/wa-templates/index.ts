@@ -17,7 +17,8 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 
 // Keep these short and factual: Meta rejects pushy or vague marketing wording,
 // and "utility" templates (about something the student already started) are cheaper.
-export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string> }[] = [
+type Btn = { title: string; id?: string; url?: string };
+export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
   { key: "orbuni_quiz_followup", category: "MARKETING",
@@ -35,7 +36,31 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
   { key: "orbuni_staff_alert", category: "UTILITY",
     body: "Orbuni team alert: {{1}}. Details: {{2}}. Open the Orbuni portal to see it and take action.",
     vars: { "1": "Call booked with Aisha Bello", "2": "Mon 6 Oct, 14:00 Turkiye time with Nurudeen" } },
+  // Button versions: wa-followups uses "<key>_btn" once Meta approves it, and the plain one until then.
+  { key: "orbuni_quiz_followup_btn", category: "MARKETING",
+    body: "Hi {{1}}, thanks for taking the Orbuni study assessment. Would you like help choosing a university and applying for a scholarship?",
+    quick: [{ title: "Yes, help me", id: "YES" }, { title: "Not now", id: "LATER" }, { title: "Stop messages", id: "STOP" }] },
+  { key: "orbuni_checkin_btn", category: "MARKETING",
+    body: "Hi {{1}}, it is Orbuni checking in. Are you still planning to study in Türkiye?",
+    quick: [{ title: "Yes, still planning", id: "YES" }, { title: "Maybe later", id: "LATER" }, { title: "Stop messages", id: "STOP" }] },
+  { key: "orbuni_payment_help_btn", category: "UTILITY",
+    body: "Hi {{1}}, it looks like your Orbuni checkout was not completed and nothing was charged. Would you like help finishing it?",
+    quick: [{ title: "Help me pay", id: "PAY_HELP" }, { title: "I will do it later", id: "LATER" }] },
+  { key: "orbuni_documents_needed_btn", category: "UTILITY",
+    body: "Hi {{1}}, your Orbuni application is waiting for one or more documents. Please upload them in your portal under Documents so we can send your file to the university.",
+    link: { title: "Upload documents", url: "https://myorbuni.com/" } },
+  { key: "orbuni_offer_ready_btn", category: "UTILITY",
+    body: "Hi {{1}}, good news: there is an update on your university application. Open your portal to see it, and reply here if you have any questions.",
+    link: { title: "See the update", url: "https://myorbuni.com/" } },
+  { key: "orbuni_welcome_btn", category: "UTILITY",
+    body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Start with the free 2-minute assessment, or reply here with any question about universities, fees or scholarships.",
+    link: { title: "Free assessment", url: "https://myorbuni.com/#start" } },
 ];
+function typesFor(t: typeof TEMPLATES[number]) {
+  if (t.quick) return { "twilio/quick-reply": { body: t.body, actions: t.quick.map((q) => ({ title: q.title, id: q.id || q.title })) } };
+  if (t.link) return { "twilio/call-to-action": { body: t.body, actions: [{ type: "URL", title: t.link.title, url: t.link.url }] } };
+  return { "twilio/text": { body: t.body } };
+}
 
 async function tw(url: string, init: RequestInit = {}) {
   const r = await fetch(url, { ...init, headers: { ...AUTH, ...(init.headers || {}) } });
@@ -57,7 +82,7 @@ Deno.serve(async (req) => {
     if (!row?.content_sid) {
       const c = await tw("https://content.twilio.com/v1/Content", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendly_name: t.key, language: "en", variables: t.vars || { "1": "Aisha" }, types: { "twilio/text": { body: t.body } } }),
+        body: JSON.stringify({ friendly_name: t.key, language: "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
       });
       if (!c.ok) { report.push({ key: t.key, step: "create", error: c.j.message || c.status }); continue; }
       row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body };

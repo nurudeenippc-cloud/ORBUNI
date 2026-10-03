@@ -13802,6 +13802,9 @@ function waCss(){
   + ".wa2-b .who.ai{color:var(--cyan,#5CC8F5)}.wa2-b .who.tpl{color:var(--gold)}"
   + ".wa2-b .meta{display:flex;justify-content:flex-end;gap:5px;font-size:10.8px;color:var(--faint);margin-top:2px}"
   + ".wa2-b .meta .rd{color:#53BDEB}.wa2-b .err{display:block;color:var(--red);font-size:11.5px;margin-top:3px}"
+  + ".wa2-btns{display:flex;flex-direction:column;margin:6px -11px -6px;border-top:1px solid rgba(127,127,127,.22)}"
+  + ".wa2-btn{display:block;text-align:center;padding:8px 10px;font-size:13.5px;font-weight:600;color:#53BDEB;white-space:normal}"
+  + ".wa2-btn+.wa2-btn{border-top:1px solid rgba(127,127,127,.22)}"
   + ".wa2-b img{display:block;max-width:100%;max-height:300px;border-radius:12px;margin:2px 0 4px;cursor:zoom-in;background:var(--p2);min-width:120px;min-height:80px;object-fit:cover}"
   + ".wa2-b audio{display:block;max-width:260px;margin:2px 0 4px}"
   + ".wa2-file{display:flex;align-items:center;gap:9px;padding:9px 11px;margin:2px 0 4px;border-radius:12px;background:rgba(0,0,0,.14);color:var(--txt);text-decoration:none;font-size:13px;font-weight:700}"
@@ -14095,6 +14098,9 @@ function waPaintMsgs(toBottom){
     if((m.media || []).length && /^\[(image|audio|video|application|file)[^\]]*\]$/.test(body)) body = "";
     out += '<div class="wa2-b ' + (isSys ? "sys" : m.direction) + '">' + (isSys ? "" : label) + waMediaHtml(m) + esc(body)
       + (isSys ? "" : '<span class="meta">' + esc(new Date(m.created_at).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })) + (tick ? " " + tick : "") + "</span>")
+      // the tap buttons the student saw under this message
+      + (Array.isArray(m.buttons) && m.buttons.length ? '<span class="wa2-btns">' + m.buttons.map(function(b){
+          return '<span class="wa2-btn">' + (b.type === "url" ? "↗ " : "↩ ") + esc(b.title || "") + "</span>"; }).join("") + "</span>" : "")
       + (m.error ? '<span class="err">' + esc(m.error) + "</span>" : "") + "</div>";
   });
   el.innerHTML = out || '<div class="wa2-empty"><b>No messages yet</b></div>';

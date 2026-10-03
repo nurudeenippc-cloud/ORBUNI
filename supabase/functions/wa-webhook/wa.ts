@@ -85,13 +85,13 @@ export async function twilioTyping(messageSid: string) {
 export async function sendAndLog(
   db: ReturnType<typeof sb>,
   contact: { id: string; phone: string },
-  o: SendOpts & { author: "ai" | "staff" | "system" | "template"; staffId?: string | null; templateKey?: string | null; preview?: string; media?: unknown[] | null },
+  o: SendOpts & { author: "ai" | "staff" | "system" | "template"; staffId?: string | null; templateKey?: string | null; preview?: string; media?: unknown[] | null; buttons?: unknown[] | null },
 ) {
   const res = await twilioSend(contact.phone, o);
   const text = o.body ?? o.preview ?? (o.templateKey ? `[template: ${o.templateKey}]` : "");
   const { data } = await db.from("wa_messages").insert({
     contact_id: contact.id, direction: "out", author: o.author, staff_id: o.staffId || null,
-    body: text, template_key: o.templateKey || null, media: o.media || null,
+    body: text, template_key: o.templateKey || null, media: o.media || null, buttons: o.buttons || null,
     twilio_sid: res.sid || null, status: res.ok ? (res.status || "queued") : "failed", error: res.ok ? null : res.error,
   }).select("id").single();
   await db.from("wa_contacts").update({
@@ -99,6 +99,61 @@ export async function sendAndLog(
     last_preview: (o.author === "ai" ? "AI: " : o.author === "staff" ? "You: " : "") + (text || (o.media?.length ? "[file]" : "")).slice(0, 120),
   }).eq("id", contact.id);
   return { ...res, id: data?.id };
+}
+
+// ---------------------------------------------------------------- buttons
+// Inside the 24-hour window a message can carry up to 3 answer buttons, or one link
+// button (WhatsApp won't mix the two). Each text + buttons is a Twilio "content"
+// object; it is created once and reused (public.wa_content_cache). No Meta approval
+// is needed for these in-session messages.
+export const LINKS: Record<string, { title: string; url: string }> = {
+  assessment: { title: "Free assessment", url: "https://myorbuni.com/#start" },
+  portal: { title: "Open my portal", url: "https://myorbuni.com/" },
+  programmes: { title: "Find a programme", url: "https://myorbuni.com/#progs" },
+  scholarships: { title: "Scholarships", url: "https://myorbuni.com/scholarships/" },
+  full_places: { title: "100% places", url: "https://myorbuni.com/#schol" },
+  housing: { title: "Student housing", url: "https://myorbuni.com/housing/" },
+};
+async function sha(t: string) {
+  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)));
+  return Array.from(d).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+export async function buttonContent(db: ReturnType<typeof sb>, body: string, quick: string[], link: string | null): Promise<string | null> {
+  const text = body.trim().slice(0, 1000);
+  let types: Record<string, unknown>, kind: string;
+  if (link && LINKS[link]) {
+    kind = "cta";
+    types = { "twilio/call-to-action": { body: text, actions: [{ type: "URL", title: LINKS[link].title, url: LINKS[link].url }] },
+      "twilio/text": { body: text + "\n" + LINKS[link].url } };
+  } else if (quick.length) {
+    kind = "quick";
+    types = { "twilio/quick-reply": { body: text, actions: quick.map((q) => ({ title: q, id: q.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 60) || "reply" })) },
+      "twilio/text": { body: text } };
+  } else return null;
+  const hash = await sha(JSON.stringify(types));
+  const { data: hit } = await db.from("wa_content_cache").select("content_sid").eq("hash", hash).maybeSingle();
+  if (hit?.content_sid) return hit.content_sid;
+  try {
+    const r = await fetch("https://content.twilio.com/v1/Content", {
+      method: "POST",
+      headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/json" },
+      body: JSON.stringify({ friendly_name: "orb_" + kind + "_" + hash.slice(0, 12), language: "en", types }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.sid) { console.warn("button content", r.status, JSON.stringify(j).slice(0, 200)); return null; }
+    await db.from("wa_content_cache").upsert({ hash, content_sid: j.sid, kind });
+    return j.sid;
+  } catch (e) { console.warn("button content", String(e)); return null; }
+}
+// Tidy what the model suggested: at most 3 distinct buttons, each 1–20 characters.
+export function cleanButtons(b: unknown): string[] {
+  const out: string[] = [];
+  for (const x of Array.isArray(b) ? b : []) {
+    const t = String(x || "").replace(/[*_~`]/g, "").replace(/\s+/g, " ").trim().slice(0, 20).trim();
+    if (t && !out.some((o) => o.toLowerCase() === t.toLowerCase())) out.push(t);
+    if (out.length === 3) break;
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------- staff alert
@@ -190,6 +245,11 @@ HOW TO REPLY
 - If you don't know, say so and hand over — don't guess.
 - If the conversation starts with a note that the team handled an earlier issue, treat that issue as closed: answer the new question normally and only hand over again if the student raises a sensitive matter again.
 
+BUTTONS (they make replying one tap)
+- When your message ends with a question that has 2–3 clear answers, put those answers in "buttons" (each 20 characters or fewer, e.g. ["Bachelor's", "Master's", "PhD"], ["Yes, send it", "Not now"], ["Türkiye", "N. Cyprus", "Not sure"]). The student taps one and its text comes back to you as their reply.
+- When the one main thing you want them to do is open a page, set "link" instead (assessment, portal, programmes, scholarships, full_places, housing) and do NOT paste that same URL in the text — the button opens it. Use either buttons or a link, never both; for an open question, a hand-over or a plain answer use neither (empty list, "none").
+- Use buttons only when they genuinely help; most short answers need none.
+
 HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest message(s), not older ones. A short reply such as "ok", "thanks", "hello" or "noted" never needs a hand-over. Hand over when the newest message:
 - they ask for a refund, cancellation or money back; they complain or are angry; they mention a scam, fraud, police or lawyer;
 - their visa was refused, or there is an emergency (arrival problems, safety, health);
@@ -198,7 +258,7 @@ HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest mess
 - you have already failed to answer the same question twice, or the question needs a decision only staff can make (special discounts, exceptions, fee negotiations).
 When handing over, still send a short kind reply: say a member of the team will reply here personally soon (Istanbul working hours), and don't argue or decide anything yourself.`;
 
-export type AgentOut = { reply: string; handoff: boolean; reason: string; model: string; usage?: Record<string, number> };
+export type AgentOut = { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string; model: string; usage?: Record<string, number> };
 
 export async function runAgent(history: { role: "user" | "assistant"; content: string }[], file: unknown, contactName: string): Promise<AgentOut | null> {
   if (!ANTHROPIC_KEY) return null;
@@ -221,8 +281,10 @@ export async function runAgent(history: { role: "user" | "assistant"; content: s
         reply: { type: "string", description: "The message to send, WhatsApp style." },
         handoff: { type: "boolean", description: "true if a human (Nurudeen/Godfrey) must take over this chat." },
         reason: { type: "string", description: "If handoff: one short line for the team saying why. Empty otherwise." },
+        buttons: { type: "array", items: { type: "string" }, description: "0–3 tap-to-answer buttons (max 20 characters each). Empty when not needed." },
+        link: { type: "string", enum: ["none", "assessment", "portal", "programmes", "scholarships", "full_places", "housing"], description: "One link button to open a page, or none." },
       },
-      required: ["reply", "handoff", "reason"],
+      required: ["reply", "handoff", "reason", "buttons", "link"],
     },
   }];
   const order = GOOD_MODEL ? [GOOD_MODEL, ...MODELS.filter((m) => m !== GOOD_MODEL)] : MODELS;
@@ -248,12 +310,13 @@ export async function runAgent(history: { role: "user" | "assistant"; content: s
       const j = await r.json();
       if (j.stop_reason === "refusal") { console.warn("anthropic refusal", model); continue; }
       const use = (j.content || []).find((c: any) => c.type === "tool_use" && c.name === "respond");
-      let out: { reply: string; handoff: boolean; reason: string } | null = null;
-      if (use?.input?.reply) out = { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || "") };
+      let out: { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string } | null = null;
+      if (use?.input?.reply) out = { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || ""),
+        buttons: cleanButtons(use.input.buttons), link: LINKS[String(use.input.link || "")] ? String(use.input.link) : "none" };
       else {
         // answered in plain text instead of the tool: still a usable reply
         const txt = (j.content || []).filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim();
-        if (txt) out = { reply: txt, handoff: false, reason: "" };
+        if (txt) out = { reply: txt, handoff: false, reason: "", buttons: [], link: "none" };
       }
       if (!out) return null;
       GOOD_MODEL = model;

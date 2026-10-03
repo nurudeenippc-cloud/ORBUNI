@@ -7,12 +7,12 @@
 // the chat is flagged in the portal inbox and they get an email.
 // STOP / START work as the student expects.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping } from "./wa.ts";
+import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping, buttonContent, LINKS } from "./wa.ts";
 
 const TWIML_EMPTY = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
 const twiml = () => new Response(TWIML_EMPTY, { headers: { "Content-Type": "text/xml" } });
 
-const STOP_WORDS = /^\s*(stop|unsubscribe|stopall|arrêt|arret)\s*[.!]*\s*$/i;
+const STOP_WORDS = /^\s*(stop|unsubscribe|stopall|arrêt|arret|stop messages|stop receiving)\s*[.!]*\s*$/i;
 const START_WORDS = /^\s*(start|unstop|resume)\s*[.!]*\s*$/i;
 
 // Twilio's delivery states, in order; never move a message backwards.
@@ -91,7 +91,7 @@ Deno.serve(async (req: Request) => {
   }).eq("id", contact.id);
 
   // STOP / START
-  if (STOP_WORDS.test(body)) {
+  if (STOP_WORDS.test(body) || /^stop/i.test(String(params.ButtonPayload || ""))) {
     await db.from("wa_contacts").update({ opted_out: true, opted_out_at: now }).eq("id", contact.id);
     await sendAndLog(db, contact, { author: "system", body: "You won't get any more messages from Orbuni here. Reply START any time to turn them back on." });
     return twiml();
@@ -175,7 +175,16 @@ async function answer(contactId: string, messageId: string | null) {
     return;
   }
 
-  await sendAndLog(db, c, { author: "ai", body: out.reply });
+  // the reply carries tap buttons when the AI asked a question with clear answers or points to one page
+  const quick = out.handoff ? [] : out.buttons, link = out.handoff || out.link === "none" ? null : out.link;
+  const csid = (quick.length || link) ? await buttonContent(db, out.reply, quick, link) : null;
+  if (csid) {
+    await sendAndLog(db, c, { author: "ai", contentSid: csid, body: out.reply,
+      buttons: link ? [{ type: "url", title: LINKS[link].title, url: LINKS[link].url }] : quick.map((t) => ({ type: "reply", title: t })) });
+  } else {
+    // no buttons (or Twilio refused them): plain text, with the link written out
+    await sendAndLog(db, c, { author: "ai", body: out.reply + (link && out.reply.indexOf(LINKS[link].url) < 0 ? "\n" + LINKS[link].url : "") });
+  }
 
   const forced = HANDOFF_WORDS.test(lastText);
   if (out.handoff || forced) {
