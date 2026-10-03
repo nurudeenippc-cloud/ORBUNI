@@ -222,10 +222,12 @@ def build():
         cities = sorted({r[1] for r in hits if r[1]})
         path = f"/study/{slug}-in-turkey/"
         url = BASE + path
-        ttl = f"Study {title} in Turkey (Türkiye) for international students: fees at {len(by_uni)} universities | Orbuni"
-        desc = (f"Study {title} in Turkey: {len(by_uni)} universities"
+        # Google shows about 60 characters of a title and 155 of a description; keep the
+        # subject and the numbers at the front so they survive the cut.
+        ttl = f"Study {title} in Turkey: fees at {len(by_uni)} universities | Orbuni"
+        desc = (f"{title} in Turkey (Türkiye) at {len(by_uni)} universities"
                 + (f", from {usd(cheapest)} a year after discount" if cheapest else "")
-                + f", {english} in English. Published fees and scholarships for students from Africa, the Middle East and Asia. Apply free.")
+                + f", {english} in English. Published fees and scholarships. Apply free.")
         trs = []
         def sort_key(r):
             v = r[8] if r[8] is not None else r[7]
@@ -303,7 +305,7 @@ def build():
         {"@context": "https://schema.org", "@type": "ItemList", "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "url": BASE + m[4], "name": f"{m[1]} in Turkey"} for i, m in enumerate(made)]}]
     hub = head("Study in Turkey by subject: courses and fees for international students | Orbuni",
-               "Study medicine, nursing, engineering, business and more in Turkey (Türkiye): every partner university that teaches your subject, with published fees, for students from Africa, the Middle East and Asia.",
+               "Study medicine, nursing, engineering, business and more in Turkey (Türkiye): every partner university that teaches your subject, with its published fee.",
                url, ld) + f"""<div class="hero"><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › Study by subject</p>
 <p class="eyebrow">Bachelor's degrees · Turkey (Türkiye)</p><h1>Study in Turkey by subject</h1>
 <p class="lead">Pick your subject to see every partner university in Turkey that teaches it to international students, the teaching language and the published fee.</p></div></div>

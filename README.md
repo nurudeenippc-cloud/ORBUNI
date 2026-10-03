@@ -42,3 +42,9 @@ upload, as in `site/HOW-TO-USE.txt`.
 `python3 tools/build_study_pages.py` rebuilds `site/study/` from
 `tools/data/bachelors.json` (a snapshot of the programme data; the SQL to refresh
 it is at the top of the script) and updates `site/sitemap.xml`.
+
+## Housing page titles
+
+`python3 tools/housing_titles.py` gives each page under `site/housing/` its own title
+and description (several residences share an area and gender, so they used to be
+identical). Run it again whenever the housing pages are regenerated.
