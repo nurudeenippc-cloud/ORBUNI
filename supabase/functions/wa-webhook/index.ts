@@ -7,7 +7,7 @@
 // the chat is flagged in the portal inbox and they get an email.
 // STOP / START work as the student expects.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia } from "./wa.ts";
+import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping } from "./wa.ts";
 
 const TWIML_EMPTY = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
 const twiml = () => new Response(TWIML_EMPTY, { headers: { "Content-Type": "text/xml" } });
@@ -119,6 +119,9 @@ Deno.serve(async (req: Request) => {
 
   // AI reply runs after Twilio gets its answer (Twilio waits only 15s).
   if (contact.ai_on) {
+    // the student sees "typing…" straight away, while the AI writes
+    // @ts-ignore EdgeRuntime is provided by Supabase
+    if (sid) EdgeRuntime.waitUntil(twilioTyping(sid));
     // @ts-ignore EdgeRuntime is provided by Supabase
     EdgeRuntime.waitUntil(answer(contact.id, saved?.id || null));
   }

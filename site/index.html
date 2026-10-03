@@ -649,7 +649,38 @@ nav{position:sticky;top:16px;z-index:70;padding:0 16px}
 /* Careers sits inside the team page; while a role is open every other
    section of that page is hidden so the role reads as its own page rather
    than as a panel below the founder's story and the team portraits. */
-#pg-team.job-open > section:not(:last-of-type){display:none}
+#pg-careers.job-open > section:not(:last-of-type){display:none}
+/* ---- Careers page ---- */
+.cr-hero{padding-bottom:30px}
+.cr-hero h1{font-family:var(--disp);font-size:clamp(34px,5.6vw,64px);line-height:1.04;letter-spacing:-.04em;margin:14px 0 16px;text-wrap:balance}
+.cr-hero .lead{max-width:62ch}
+.cr-hero .hcta{margin-top:24px}
+.cr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:40px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cr-stats>div{padding:18px 18px 18px 0}
+.cr-stats>div+div{padding-left:18px;border-left:1px solid var(--line)}
+.cr-stats b{display:block;font-family:var(--disp);font-size:22px;letter-spacing:-.02em;color:var(--txt)}
+.cr-stats span{font-size:13px;color:var(--dim)}
+.cr-why{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cr-why>div{padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--p1)}
+.cr-why i{font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold)}
+.cr-why h3{margin:10px 0 6px;font-size:18px}
+.cr-why p{margin:0;color:var(--dim);font-size:14px;line-height:1.6}
+.cr-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:crs}
+.cr-steps li{counter-increment:crs;padding:18px 18px 18px;border-top:2px solid var(--gold);background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 7%,transparent),transparent 70%);border-radius:0 0 14px 14px}
+.cr-steps li::before{content:counter(crs,decimal-leading-zero);display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:8px}
+.cr-steps b{display:block;font-size:15.5px;margin-bottom:4px}
+.cr-steps span{font-size:13.5px;color:var(--dim);line-height:1.55}
+.cr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.cr-chips{display:flex;gap:7px;flex-wrap:wrap}
+.cr-chips button{height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--dim);font:600 13px var(--sans,inherit);cursor:pointer}
+.cr-chips button b{opacity:.6;font-weight:700;margin-left:2px}
+.cr-chips button.on{background:var(--txt);color:var(--bg);border-color:transparent}
+.cr-teaser{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:28px 30px;border:1px solid var(--line);border-radius:22px;
+  background:radial-gradient(90% 140% at 0% 0%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 60%),var(--p1)}
+.cr-teaser h2{margin:10px 0 4px;font-size:clamp(22px,3vw,30px)}
+.cr-teaser p{margin:0;color:var(--dim)}
+@media(max-width:900px){.cr-why{grid-template-columns:1fr}.cr-steps{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.cr-stats{grid-template-columns:1fr}.cr-stats>div+div{padding-left:0;border-left:0;border-top:1px solid var(--line)}.cr-steps{grid-template-columns:1fr}.cr-teaser{padding:22px}}
 .applywrap{display:grid;grid-template-columns:1fr 1.1fr;gap:34px;margin-top:34px;align-items:start}
 @media(max-width:900px){.applywrap{grid-template-columns:1fr;gap:24px}}
 .formcard{border:1px solid var(--line);border-radius:var(--rl);padding:26px;
@@ -1422,21 +1453,6 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
   opacity:.30;pointer-events:none;filter:blur(.3px)}
 @media(max-width:960px){.hshot{order:2}.hshot-frame{aspect-ratio:16/9}}
 @media (prefers-reduced-motion:reduce){.hshot .hs{transition:none}.hshot .hs img{transition:none;transform:none}}
-/* the photograph melts into the page: no frame, no shadow — its edges dissolve into
-   the background and the campus name sits on the page itself, below the picture */
-.hshot-frame{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;
-  animation:hsfloat 10s ease-in-out infinite}
-.hshot .hs{-webkit-mask-image:radial-gradient(ellipse 62% 64% at 56% 44%,#000 58%,transparent 100%),linear-gradient(to right,transparent,#000 30%,#000 78%,transparent),linear-gradient(to bottom,transparent,#000 18%,#000 66%,transparent);
-  -webkit-mask-composite:source-in,source-in;
-  mask-image:radial-gradient(ellipse 62% 64% at 56% 44%,#000 58%,transparent 100%),linear-gradient(to right,transparent,#000 30%,#000 78%,transparent),linear-gradient(to bottom,transparent,#000 18%,#000 66%,transparent);
-  mask-composite:intersect,intersect}
-.hshot-scrim{display:none}
-.hs-plate{background:none;left:9%;right:9%;bottom:-2%;padding:0}
-.hs-name{text-shadow:0 2px 18px rgba(0,0,0,.65)}
-html[data-theme="light"] .hs-name{color:var(--txt);text-shadow:none}
-html[data-theme="light"] .hs-city{color:var(--dim);text-shadow:none}
-@keyframes hsfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@media (prefers-reduced-motion:reduce){.hshot-frame{animation:none}}
 
 /* closing call to action, over a photograph */
 .final.has-shot{position:relative;overflow:hidden;isolation:isolate}
@@ -3284,7 +3300,8 @@ html.th7-swap *,html.th7-swap *::before,html.th7-swap *::after{transition:backgr
 .th7-btn svg{width:19px;height:19px}
 .th7-btn.pub{margin-right:4px;background:transparent}
 #portal header.app .th7-btn{margin-right:2px}
-#portal .th7-seg{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 22px 20px}
+#portal .th7-seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:0 22px 20px}
+@media(max-width:520px){#portal .th7-seg{gap:8px;padding:0 14px 16px}#portal .th7-seg b{font-size:12.5px}}
 #portal .th7-seg button{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:18px;border:2px solid var(--line2);background:var(--p1);cursor:pointer;color:var(--txt);text-align:left}
 #portal .th7-seg button.on{border-color:var(--f7-blue);box-shadow:0 0 0 3px rgba(79,140,255,.18)}
 #portal .th7-seg b{display:flex;align-items:center;gap:7px;font:800 14px var(--round);padding:0 4px 2px}
@@ -3298,6 +3315,8 @@ html.th7-swap *,html.th7-swap *::before,html.th7-swap *::after{transition:backgr
 #portal .th7-prev.lt i{background:#D5DDEA}
 #portal .th7-prev.dk{background:#070C16;border:1px solid rgba(255,255,255,.1)}
 #portal .th7-prev.dk i{background:#1B2740}
+#portal .th7-prev.sy{background:linear-gradient(135deg,#F3F5FA 50%,#070C16 50%);border:1px solid rgba(127,127,127,.25)}
+#portal .th7-prev.sy i{background:#8A97AE}
 
 /* ---------------- LANDING (#start): headline → subtext → VSL → quiz ---------------- */
 .lp-vsl.lp-vsl-hero{margin:clamp(22px,4vw,34px) auto 0;width:100%;max-width:880px;box-shadow:0 30px 70px -30px rgba(13,19,33,.55),0 0 0 1px rgba(13,19,33,.06)}
@@ -3793,9 +3812,9 @@ html[data-theme="light"] #portal .fd{--fd-in:#2a78d6;--fd-out:#eb6834;--c0:#2a78
 }
 @media (prefers-reduced-motion:reduce){#portal .fd-live{animation:none}}
 /* ---------- Round 11: feed ---------- */
-#portal .f7-who b.f7o-nm{display:flex;align-items:center;gap:5px;min-width:0}
-#portal .f7-who b.f7o-nm>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;color:inherit}
-#portal .f7-who b.f7o-nm .f7-badge{width:16px;height:16px;margin-top:1px}
+#portal .f7-who b.f7o-nm{display:block;min-width:0;line-height:1.3}
+#portal .f7-who b.f7o-nm .f7o-last{white-space:nowrap;font:inherit;color:inherit}
+#portal .f7-who b.f7o-nm .f7-badge{display:inline-block;width:16px;height:16px;margin-left:4px;vertical-align:-3px}
 #portal .f7o-all{color:var(--mint)!important}
 #portal .f7o-one,#portal .f7o-row{margin:12px -4px 4px}
 #portal .f7o-ph{position:relative;display:block;width:100%;border:0;padding:0;margin:0;cursor:zoom-in;overflow:hidden;border-radius:16px;background:var(--p2);isolation:isolate}
@@ -6320,6 +6339,18 @@ dialog[open]{margin:auto}
   letter-spacing:-.03em;color:var(--txt)}
 .lclose-in p{max-width:56ch;margin:0 auto 26px;font-size:15.5px;line-height:1.62;color:var(--dim)}
 .lclose-in .hcta{justify-content:center}
+/* Oct 2026: no box. The closing line sits on the page itself, under three tapering
+   bars that close the section above (the way nas.com ends its page). */
+.lclose-in{background:none;border:0;border-radius:0;overflow:visible;padding:30px 20px 70px}
+.lclose-in::before{content:"";display:block;height:52px;margin:0 auto 58px;max-width:1100px;
+  background:
+    linear-gradient(90deg,transparent,var(--gold) 12%,var(--violet) 88%,transparent) center 0/100% 10px no-repeat,
+    linear-gradient(90deg,transparent,var(--gold) 14%,var(--violet) 86%,transparent) center 20px/86% 7px no-repeat,
+    linear-gradient(90deg,transparent,var(--gold) 16%,var(--violet) 84%,transparent) center 38px/70% 4px no-repeat;
+  opacity:.55;border-radius:6px}
+.lclose-in h2{font-size:clamp(32px,5.4vw,64px);letter-spacing:-.035em;margin:12px 0 18px}
+.lclose-in .hcta{margin-top:6px}
+html[data-theme="light"] .lclose-in::before{opacity:.4}
 
 @media(max-width:1000px){
   .fgrid,.fgrid.four,.ggrid,.cgrid{grid-template-columns:1fr 1fr}
@@ -6345,7 +6376,7 @@ dialog[open]{margin:auto}
   .nh-nums{margin-top:28px}
   .cshot{aspect-ratio:16/10}
   .lclose{padding:56px 0 0}
-  .lclose-in{padding:42px 22px 48px;border-radius:22px}
+  .lclose-in{padding:10px 4px 48px}
   .lclose-in .hcta{flex-direction:column}
   .lclose-in .hcta .btn{width:100%}
 }
@@ -6914,7 +6945,7 @@ html[data-theme="light"] .project-response{background:rgba(14,22,38,0.02)}
 html[data-theme="light"] .project-media-video{background:#FFFFFF}
 html[data-theme="light"] .cshot figcaption i{color:rgba(14,22,38,.72)}
 </style><!--orb-light-end-->
-<script id="orb-theme-boot">try{if(localStorage.getItem("orb-theme")==="light"){document.documentElement.setAttribute("data-theme","light");document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content="#F3F5FA"})}}catch(e){}</script>
+<script id="orb-theme-boot">try{var p=localStorage.getItem("orb-theme");if(p==="light"||(p==="system"&&window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches)){document.documentElement.setAttribute("data-theme","light");document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content="#F3F5FA"})}}catch(e){}</script>
 <style id="r13-calm">
 /* ============================================================
    ROUND 13 · CALM. Spaces should feel like WhatsApp or iMessage,
@@ -7516,23 +7547,61 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   </div></section>
 
   <section style="padding-top:0"><div class="wrap">
+    <div class="cr-teaser rv">
+      <div><span class="eyebrow">We are hiring</span>
+        <h2>Help the next student get there.</h2>
+        <p>Remote or İstanbul. No formal degree required for any role.</p></div>
+      <button class="btn btn-p" onclick="go('careers')">See open roles →</button>
+    </div>
+  </div></section>
+</main>
+
+<!-- ============ CAREERS ============ -->
+<main class="page" id="pg-careers">
+  <section class="cr-hero"><div class="wrap">
+    <span class="eyebrow">Careers at Orbuni</span>
+    <h1>Do the work that gets a student<br><span class="grad">from a dream to a lecture hall.</span></h1>
+    <p class="lead">We are a small team in İstanbul and remote across Africa, building the study-abroad agency we wished existed: published fees, honest answers, and one named person beside every student.</p>
+    <div class="hcta"><button class="btn btn-p" onclick="document.getElementById('job-list').scrollIntoView({behavior:'smooth'})">See open roles ↓</button>
+      <button class="btn btn-o" onclick="go('team')">Our story</button></div>
+    <div class="cr-stats">
+      <div><b>Remote</b><span>or İstanbul, depending on the role</span></div>
+      <div><b>5 days</b><span>to hear back on every application</span></div>
+      <div><b>No degree</b><span>required. Show us what you have done</span></div>
+    </div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <span class="eyebrow">Why people join</span>
+    <h2 style="margin:12px 0 22px">Small team, real responsibility</h2>
+    <div class="cr-why">
+      <div class="rv"><i>01</i><h3>Early enough to matter</h3><p>You shape how this works instead of inheriting somebody else's system.</p></div>
+      <div class="rv"><i>02</i><h3>You see the names</h3><p>Every student placed is a life that changed direction, and you will know which ones you helped.</p></div>
+      <div class="rv"><i>03</i><h3>Honest by design</h3><p>We publish fees others hide. Nobody here is asked to oversell or promise what a university has not confirmed.</p></div>
+    </div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
+    <span class="eyebrow">How hiring works</span>
+    <h2 style="margin:12px 0 22px">Four steps, about two weeks</h2>
+    <ol class="cr-steps">
+      <li class="rv"><b>Apply</b><span>A short form and your CV. Two or three lines on why you is plenty.</span></li>
+      <li class="rv"><b>We reply in 5 working days</b><span>Yes or no, always. Nobody is left waiting.</span></li>
+      <li class="rv"><b>A 30-minute call</b><span>With the founder or the COO, about work you have actually done.</span></li>
+      <li class="rv"><b>A small paid task</b><span>Something close to the real job, then a decision.</span></li>
+    </ol>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
     <div id="job-list">
-      <span class="eyebrow">We are hiring</span>
-      <h2 style="margin:14px 0 12px">Join our team</h2>
+      <div class="cr-head"><div><span class="eyebrow">Open roles</span>
+      <h2 style="margin:12px 0 6px">Find your role</h2></div>
+      <div class="cr-chips" id="cr-chips" role="tablist" aria-label="Filter by team"></div></div>
       <p class="lead">We are building the agency this market has been missing. If you have made this journey yourself, or you are simply very good at what you do, we want to hear from you. Click a role to see what it actually involves — that is also where you apply.</p>
 
       <div class="jobs" id="jobs"></div>
 
       <div style="max-width:640px;margin:30px auto 0">
-        <div class="alert" style="display:flex;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.02)">
-          <span>🌍</span><div><b style="display:block;font-size:13.5px">Remote or İstanbul</b>
-          <span style="font-size:12.5px;color:var(--faint)">Most roles work from anywhere. Some need to be on the ground in Türkiye.</span></div></div>
-        <div class="alert" style="display:flex;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,.02)">
-          <span>📈</span><div><b style="display:block;font-size:13.5px">Early enough to matter</b>
-          <span style="font-size:12.5px;color:var(--faint)">You will shape how this works, not inherit somebody else's system.</span></div></div>
-        <div class="alert" style="display:flex;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)">
-          <span>🎓</span><div><b style="display:block;font-size:13.5px">Real impact, measurable</b>
-          <span style="font-size:12.5px;color:var(--faint)">Every student placed is a life that changed direction. You will see the names.</span></div></div>
         <p style="font-size:12.5px;color:var(--faint);margin-top:16px;text-align:center">No formal degree required for any role. Show us what you have done.</p>
       </div>
     </div>
@@ -8508,7 +8577,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <a href="/housing/">Student housing</a>
       <a href="/articles/">Study guides</a>
       <a href="/study/">Study by subject</a>
-      <a onclick="go('team')">Our team &amp; careers</a>
+      <a onclick="go('team')">Our team</a>
+      <a onclick="go('careers')">Careers</a>
       <a onclick="go('about')">About Orbuni</a>
     </div>
     <div>
@@ -8939,7 +9009,7 @@ function go(p,silent){
     if(r.top<innerHeight && r.bottom>0) e.classList.add('in');
   }));
   if(p==='progs')setTimeout(()=>document.getElementById('q').focus(),120);
-  if(p==='team') closeJob(true);
+  if(p==='team'||p==='careers') closeJob(true);
   try{ window.dispatchEvent(new Event('orbuni:page')); }catch(e){}
 }
 document.getElementById('bg').onclick=()=>{
@@ -9693,6 +9763,24 @@ document.getElementById("jobs").innerHTML=JOBS.map((j,i)=>`
    </span>
  </button>`).join("");
 showRv("#jobs");
+/* Careers: filter the open roles by team. Works on whatever is in #jobs, so roles the
+   team adds in the portal (loaded later) are filtered too. */
+var CR_DEPT = "all";
+function crPaint(){
+  var box = document.getElementById("cr-chips"), list = document.getElementById("jobs"); if(!box || !list) return;
+  var depts = [];
+  list.querySelectorAll(".job").forEach(function(b){ var m = (b.getAttribute("onclick") || "").match(/openJob\((\d+)\)/); var j = m && JOBS[+m[1]]; if(j && depts.indexOf(j.dept) < 0) depts.push(j.dept); });
+  if(CR_DEPT !== "all" && depts.indexOf(CR_DEPT) < 0) CR_DEPT = "all";
+  box.innerHTML = ["all"].concat(depts).map(function(d){
+    var n = d === "all" ? list.querySelectorAll(".job").length : [].filter.call(list.querySelectorAll(".job"), function(b){ var m = (b.getAttribute("onclick") || "").match(/openJob\((\d+)\)/); return m && JOBS[+m[1]] && JOBS[+m[1]].dept === d; }).length;
+    return '<button role="tab" class="' + (d === CR_DEPT ? "on" : "") + '" onclick="crFilter(\'' + jesc(d).replace(/'/g, "") + '\')">' + (d === "all" ? "All roles" : jesc(d)) + " <b>" + n + "</b></button>";
+  }).join("");
+  list.querySelectorAll(".job").forEach(function(b){ var m = (b.getAttribute("onclick") || "").match(/openJob\((\d+)\)/); var j = m && JOBS[+m[1]];
+    b.style.display = (CR_DEPT === "all" || (j && j.dept === CR_DEPT)) ? "" : "none"; });
+}
+window.crFilter = function(d){ CR_DEPT = d; crPaint(); };
+setTimeout(crPaint, 50);
+(function(){ var l = document.getElementById("jobs"); if(l && window.MutationObserver) new MutationObserver(function(){ clearTimeout(window.__crT); window.__crT = setTimeout(crPaint, 30); }).observe(l, { childList:true }); })();
 function jesc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function rlist(items){ return `<div class="plist">${items.map(t=>`<div class="pitem"><div class="pn">${jesc(t)}</div></div>`).join("")}</div>`; }
 function openJob(i,silent){
@@ -9704,7 +9792,7 @@ function openJob(i,silent){
      you clicked "Videographer" and still scrolled past everyone's portraits
      to reach the job. This hides every section of the page except the one
      holding the detail, so a role reads as its own page. closeJob() undoes it. */
-  document.getElementById("pg-team").classList.add("job-open");
+  document.getElementById("pg-careers").classList.add("job-open");
   const box=document.getElementById("job-detail");
   box.style.display="block";
   box.innerHTML=`
@@ -9769,7 +9857,7 @@ function closeJob(silent){
   if(!silent) setHash("team");
   document.getElementById("job-detail").style.display="none";
   document.getElementById("job-detail").innerHTML="";
-  document.getElementById("pg-team").classList.remove("job-open");
+  document.getElementById("pg-careers").classList.remove("job-open");
   document.getElementById("job-list").style.display="block";
   scrollTo({top:0,behavior:"instant"});
 }
@@ -9890,7 +9978,7 @@ window.heroSearchGo=function(ev){
    button works and a link to a university can be shared on WhatsApp.
    ------------------------------------------------------------------ */
 var ROUTING=false;
-var PAGES=['home','start','unis','progs','schol','fairs','arts','team','about','terms','privacy','agreement'];
+var PAGES=['home','start','unis','progs','schol','fairs','arts','team','careers','about','terms','privacy','agreement'];
 function setHash(h){
   if(ROUTING) return;
   if(('#'+h)===location.hash) return;
@@ -9908,7 +9996,7 @@ function route(){
       if(typeof UNIS!=='undefined'&&UNIS.some(function(x){return x.id===id})) openUni(id,true);
       else closeUni(true);
     } else if(mj){
-      go('team',true);
+      go('careers',true);
       var jid=Number(mj[1]);
       if(typeof JOBS!=='undefined'&&JOBS[jid]) openJob(jid,true);
       else closeJob(true);
@@ -13366,6 +13454,7 @@ var A_NAV_ALL = [
    { id:"students", ic:NAVI.users, l:"Students" },
    { id:"create",   ic:NAVI.plus, l:"Create a student" },
    { id:"apps",     ic:NAVI.clipboard, l:"Applications" },
+   { id:"askuni",   ic:NAVI.cap || NAVI.clipboard, l:"AskUni pipeline" },
    { id:"docs",     ic:NAVI.fileText, l:"Documents to check" }]},
  { g:"Business", items:[
    { id:"partners", ic:NAVI.userCheck, l:"Partner requests", owner:true },
@@ -13393,7 +13482,7 @@ var A_NAV_ALL = [
    { id:"team",     ic:NAVI.sliders, l:"Team & alerts" },
    { id:"settings", ic:NAVI.settings, l:"Settings" }]}
 ];
-var A_TITLE = { today:"Today", alerts:"Notifications", chat:"Spaces", wa:"WhatsApp inbox", chall:"Challenges", students:"Students",
+var A_TITLE = { today:"Today", alerts:"Notifications", chat:"Spaces", wa:"WhatsApp inbox", askuni:"AskUni pipeline", chall:"Challenges", students:"Students",
   create:"Create a student",
   apps:"Applications", docs:"Documents to check", partners:"Partner requests", enq:"Enquiries",
   jobs:"Careers", ops:"Operations", marketing:"Marketing engine", reach:"Reach", ads:"Ads", leads:"Leads",
@@ -13565,7 +13654,7 @@ window.aGo = function(v){
   ({ today:aToday, alerts:aAlerts, chat:aChat, chall:aChallenges, students:aStudents, create:aCreateStudent, apps:aApps, docs:aDocs,
      partners:aPartners, enq:aEnq, jobs:aJobs, ops:aOps, marketing:aMarketing, leads:aLeads,
      projects:aProjects, housing:aHousingQueue, content:aContent, schol:aSchol, arts:aArts,
-     reach:aReach, wa:aWhatsApp,
+     reach:aReach, wa:aWhatsApp, askuni:aAskuni,
      team:aTeam, finance:aFinance, earn:aEarnings, settings:aSettings }[v] || aToday)();
 };
 
@@ -14298,6 +14387,91 @@ setTimeout(function(){
     window.aOpenAlert.__wa = true;
   }
 }, 0);
+
+/* ---------- AskUni pipeline: what the AskUni bot brings back every 15 minutes ----------
+   Every application on AskUni, its status there, and the commission AskUni owes on it.
+   Read-only: the bot (on Render) keeps these rows up to date. */
+var AP = { rows:[], comm:{}, f:"all", q:"", seen:null };
+var AP_ORDER = ["OFFER SENT","ACCEPTANCE LETTER SENT","MISSING DOCUMENTS","ON PROCESS","DROPPED","DECLINED/REJECTED"];
+var AP_TONE = { "OFFER SENT":"good", "ACCEPTANCE LETTER SENT":"good", "MISSING DOCUMENTS":"warn", "ON PROCESS":"info", "DROPPED":"mute", "DECLINED/REJECTED":"bad" };
+function apMoney(n){ return "$" + Math.round(Number(n) || 0).toLocaleString("en-US"); }
+async function aAskuni(){
+  apCss();
+  var box = $("a-live"); if(!box) return;
+  box.innerHTML = '<div class="panel"><div style="padding:24px;color:var(--faint)"><span class="spin"></span> Loading AskUni…</div></div>';
+  var r = await Promise.all([
+    sb.from("askuni_applications").select("askuni_app_id,student_name,program,askuni_status,season,price,last_seen,last_changed,first_seen").order("last_changed", { ascending:false }).limit(500),
+    sb.from("askuni_commissions").select("askuni_app_id,amount,remaining,status,commission_pct").limit(500)
+  ]);
+  if(window.AV !== "askuni") return;
+  if(r[0].error){ box.innerHTML = '<div class="panel"><div class="err">' + esc(friendly(r[0].error)) + "</div></div>"; return; }
+  AP.rows = r[0].data || []; AP.comm = {};
+  (r[1].data || []).forEach(function(c){ AP.comm[c.askuni_app_id] = c; });
+  AP.seen = AP.rows.reduce(function(m, x){ return x.last_seen && (!m || x.last_seen > m) ? x.last_seen : m; }, null);
+  apPaint();
+}
+function apPaint(){
+  var box = $("a-live"); if(!box) return;
+  var rows = AP.rows, by = {};
+  rows.forEach(function(x){ by[x.askuni_status] = (by[x.askuni_status] || 0) + 1; });
+  var live = rows.filter(function(x){ return !/DROPPED|DECLINED/.test(x.askuni_status || ""); });
+  var due = live.reduce(function(t, x){ var c = AP.comm[x.askuni_app_id]; return t + (c ? Number(c.remaining || 0) : 0); }, 0);
+  var paid = rows.reduce(function(t, x){ var c = AP.comm[x.askuni_app_id]; return t + (c ? Number(c.amount || 0) - Number(c.remaining || 0) : 0); }, 0);
+  var students = {}; rows.forEach(function(x){ students[(x.student_name || "").toLowerCase()] = 1; });
+  var stats = Object.keys(by).sort(function(a, b){ return AP_ORDER.indexOf(a) - AP_ORDER.indexOf(b); });
+  var q = AP.q.toLowerCase();
+  var list = rows.filter(function(x){ return (AP.f === "all" || x.askuni_status === AP.f) && (!q || ((x.student_name || "") + " " + (x.program || "")).toLowerCase().indexOf(q) > -1); });
+  box.innerHTML = '<div class="au">'
+    + '<div class="au-top"><div><h2>AskUni pipeline</h2><span>The AskUni bot checks every application every 15 minutes'
+    + (AP.seen ? " · last check " + esc(ago(AP.seen)) : "") + '</span></div>'
+    + '<label class="au-q"><input id="au-q" type="search" placeholder="Search student or programme" value="' + esc(AP.q) + '" oninput="apSearch(this.value)"></label></div>'
+    + '<div class="au-kpis">'
+    + '<div><b>' + Object.keys(students).length + '</b><span>students on AskUni</span></div>'
+    + '<div><b>' + rows.length + '</b><span>applications</span></div>'
+    + '<div class="good"><b>' + ((by["OFFER SENT"] || 0) + (by["ACCEPTANCE LETTER SENT"] || 0)) + '</b><span>offers and acceptances</span></div>'
+    + '<div class="warn"><b>' + (by["MISSING DOCUMENTS"] || 0) + '</b><span>waiting for documents</span></div>'
+    + '<div class="gold"><b>' + apMoney(due) + '</b><span>commission still to come' + (paid > 0 ? " · " + apMoney(paid) + " paid" : " · none paid yet") + '</span></div>'
+    + "</div>"
+    + '<div class="au-chips"><button class="' + (AP.f === "all" ? "on" : "") + '" onclick="apFilter(\'all\')">All <b>' + rows.length + "</b></button>"
+    + stats.map(function(k){ return '<button class="' + (AP.f === k ? "on" : "") + '" onclick="apFilter(\'' + jsq(k) + '\')"><i class="au-dot ' + (AP_TONE[k] || "info") + '"></i>' + esc(k.charAt(0) + k.slice(1).toLowerCase()) + " <b>" + by[k] + "</b></button>"; }).join("")
+    + "</div>"
+    + '<div class="au-tw"><table class="au-t" data-nostack><thead><tr><th>Student</th><th>Programme</th><th>Status on AskUni</th><th class="r">Commission</th><th>Changed</th></tr></thead><tbody>'
+    + (list.length ? list.map(function(x){
+        var c = AP.comm[x.askuni_app_id];
+        return "<tr><td><b>" + esc(x.student_name || "—") + "</b>" + (x.season ? "<small>" + esc(x.season) + "</small>" : "") + "</td>"
+          + "<td>" + esc(x.program || "—") + "</td>"
+          + '<td><span class="au-pill ' + (AP_TONE[x.askuni_status] || "info") + '">' + esc((x.askuni_status || "").toLowerCase()) + "</span></td>"
+          + '<td class="r">' + (c ? apMoney(c.amount) + (Number(c.remaining) > 0 ? "<small>" + (Number(c.remaining) >= Number(c.amount) ? "not paid yet" : apMoney(c.remaining) + " left") + "</small>" : "<small>paid</small>") : "—") + "</td>"
+          + "<td>" + esc(x.last_changed ? ago(x.last_changed) : "—") + "</td></tr>";
+      }).join("") : '<tr><td colspan="5" class="au-empty">Nothing matches.</td></tr>')
+    + "</tbody></table></div>"
+    + '<p class="au-note">Commission is what AskUni shows for each application. It counts as income in Finance only when AskUni actually pays it.</p></div>';
+}
+window.apFilter = function(f){ AP.f = f; apPaint(); };
+window.apSearch = function(v){ AP.q = v; clearTimeout(AP.t); AP.t = setTimeout(function(){ apPaint(); var i = $("au-q"); if(i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 200); };
+function apCss(){
+  if($("ap-css")) return;
+  var st = document.createElement("style"); st.id = "ap-css";
+  st.textContent = ".au{display:flex;flex-direction:column;gap:16px}"
+  + ".au-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}.au-top h2{margin:0;font:800 20px var(--round,inherit);color:var(--txt)}.au-top span{display:block;font-size:12.5px;color:var(--faint);margin-top:3px}"
+  + ".au-q input{height:38px;min-width:240px;border-radius:999px!important;padding:0 14px!important;border:1px solid var(--line2)!important;background:var(--p1)!important;color:var(--txt)}"
+  + ".au-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.au-kpis>div{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--p1)}"
+  + ".au-kpis b{display:block;font:800 24px var(--round,inherit);color:var(--txt);font-variant-numeric:tabular-nums}.au-kpis span{font-size:12.5px;color:var(--faint)}"
+  + ".au-kpis .good b{color:var(--mint)}.au-kpis .warn b{color:var(--amber,#E08A33)}.au-kpis .gold b{color:var(--gold)}"
+  + ".au-chips{display:flex;gap:7px;flex-wrap:wrap}.au-chips button{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--dim);font:700 12.5px var(--round,inherit);cursor:pointer;display:inline-flex;align-items:center;gap:6px}"
+  + ".au-chips button.on{background:var(--txt);color:var(--bg);border-color:transparent}.au-chips b{opacity:.65}"
+  + "#portal .au-chips button{border:1px solid var(--line2)!important;background:none!important;color:var(--dim)!important}#portal .au-chips button.on{background:var(--txt)!important;color:var(--bg)!important;border-color:transparent!important}"
+  + ".au-dot{width:8px;height:8px;border-radius:50%;display:inline-block}.au-dot.good{background:var(--mint)}.au-dot.warn{background:#E08A33}.au-dot.bad{background:var(--red,#ff7a6b)}.au-dot.mute{background:var(--faint)}.au-dot.info{background:#5CC8F5}"
+  + ".au-tw{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--p1)}.au-t{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}"
+  + ".au-t th{text-align:left;font:600 11px var(--mono,monospace);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:11px 14px;border-bottom:1px solid var(--line)}"
+  + ".au-t td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--txt);vertical-align:top}.au-t tr:last-child td{border-bottom:0}.au-t td small{display:block;font-size:11.5px;color:var(--faint);margin-top:2px}"
+  + ".au-t .r{text-align:right;font-variant-numeric:tabular-nums}.au-empty{text-align:center;color:var(--faint)}"
+  + ".au-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:capitalize;white-space:nowrap}"
+  + ".au-pill.good{background:rgba(62,213,152,.14);color:var(--mint)}.au-pill.warn{background:rgba(224,138,51,.15);color:#E08A33}.au-pill.bad{background:rgba(255,122,107,.14);color:var(--red,#ff7a6b)}.au-pill.mute{background:var(--p2);color:var(--faint)}.au-pill.info{background:rgba(92,200,245,.14);color:#5CC8F5}"
+  + ".au-note{margin:0;font-size:12.5px;color:var(--faint)}"
+  + "@media(max-width:1000px){.au-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.au-kpis>div:last-child{grid-column:1/-1}.au-q input{min-width:0;width:100%}.au-q{width:100%}}";
+  document.head.appendChild(st);
+}
 
 var NI = { student_signup:"🎓", application_submitted:"📋", document_uploaded:"📄",
   documents_missing:"⚠️", status_change:"🔁", student_assigned:"👤",
@@ -29407,7 +29581,7 @@ function r6RoleRoute(){
   var i = -1;
   JOBS.forEach(function(j, k){ if(j.__id && String(j.__id).slice(0, 8).toLowerCase() === m[1].toLowerCase()) i = k; });
   if(i < 0) return;
-  try{ go("team", true); openJob(i, true); }catch(e){}
+  try{ go("careers", true); openJob(i, true); }catch(e){}
 }
 window.addEventListener("hashchange", r6RoleRoute);
 setTimeout(r6LoadRoles, 900);
@@ -30369,16 +30543,28 @@ pChat = function(){ return sp7Page("p-live", "Your line to Orbuni opens once you
 var TH7_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
 var TH7_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>';
 
+/* Three choices, as in Claude: Light, Dark, or System — System follows the device,
+   which on most phones means light by day and dark at night, and it switches live. */
+var TH7_SYS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+var TH7_MQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
 function th7Get(){ return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"; }
-function th7Set(t){
-  t = t === "light" ? "light" : "dark";
+function th7Pref(){ var p = "dark"; try{ p = localStorage.getItem("orb-theme") || "dark"; }catch(e){} return (p === "light" || p === "system") ? p : "dark"; }
+function th7Apply(t){
   var root = document.documentElement;
   root.classList.add("th7-swap");
   if(t === "light") root.setAttribute("data-theme", "light"); else root.removeAttribute("data-theme");
-  try{ localStorage.setItem("orb-theme", t); }catch(e){}
   document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){ m.setAttribute("content", t === "light" ? "#F3F5FA" : "#070C16"); });
-  th7Paint();
   setTimeout(function(){ root.classList.remove("th7-swap"); }, 350);
+}
+function th7Set(p){
+  p = (p === "light" || p === "system") ? p : "dark";
+  try{ localStorage.setItem("orb-theme", p); }catch(e){}
+  th7Apply(p === "system" ? (TH7_MQ && TH7_MQ.matches ? "light" : "dark") : p);
+  th7Paint();
+}
+if(TH7_MQ){
+  var _th7Live = function(){ if(th7Pref() === "system"){ th7Apply(TH7_MQ.matches ? "light" : "dark"); th7Paint(); } };
+  if(TH7_MQ.addEventListener) TH7_MQ.addEventListener("change", _th7Live); else if(TH7_MQ.addListener) TH7_MQ.addListener(_th7Live);
 }
 window.th7Set = th7Set;
 window.th7Toggle = function(){ th7Set(th7Get() === "light" ? "dark" : "light"); };
@@ -30395,7 +30581,7 @@ function th7Paint(){
     b.setAttribute("aria-label", light ? "Switch to dark mode" : "Switch to light mode");
     b.title = light ? "Dark mode" : "Light mode";
   });
-  document.querySelectorAll(".th7-seg button,.th7-mini button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-t") === th7Get()); b.setAttribute("aria-checked", b.getAttribute("data-t") === th7Get() ? "true" : "false"); });
+  document.querySelectorAll(".th7-seg button,.th7-mini button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-t") === th7Pref()); b.setAttribute("aria-checked", b.getAttribute("data-t") === th7Pref() ? "true" : "false"); });
 }
 
 /* Oct 2026: the switch is no longer in any header. It lives where the best
@@ -30404,7 +30590,8 @@ function th7Paint(){
 function th7MiniHtml(){
   return '<div class="th7-mini" role="radiogroup" aria-label="Appearance">'
     + '<button type="button" data-t="light" role="radio" aria-label="Light" onclick="event.stopPropagation();th7Set(\'light\')">' + TH7_SUN + '<span>Light</span></button>'
-    + '<button type="button" data-t="dark" role="radio" aria-label="Dark" onclick="event.stopPropagation();th7Set(\'dark\')">' + TH7_MOON + '<span>Dark</span></button></div>';
+    + '<button type="button" data-t="dark" role="radio" aria-label="Dark" onclick="event.stopPropagation();th7Set(\'dark\')">' + TH7_MOON + '<span>Dark</span></button>'
+    + '<button type="button" data-t="system" role="radio" aria-label="System" title="Follows your device: light by day, dark at night" onclick="event.stopPropagation();th7Set(\'system\')">' + TH7_SYS + '<span>System</span></button></div>';
 }
 window.th7MiniHtml = th7MiniHtml;
 function th7Mount(){
@@ -30421,10 +30608,11 @@ setTimeout(th7Mount, 400); setTimeout(th7Mount, 2500);
 /* Settings → Appearance, in all three portals */
 function th7Card(){
   return '<div class="panel th7-card" style="margin-bottom:15px"><div class="ph"><div><h3>Appearance</h3>'
-    + '<div class="s">Light or dark, on this device. Also in the menu under your photo.</div></div></div>'
+    + '<div class="s">Light, dark, or System — System follows your device, so it is light by day and dark at night. Also in the menu under your photo.</div></div></div>'
     + '<div class="th7-seg" role="radiogroup" aria-label="Theme">'
     + '<button data-t="light" role="radio" onclick="th7Set(\'light\')"><span class="th7-prev lt"><i></i><i></i><i></i></span><b>' + TH7_SUN + "Light</b></button>"
     + '<button data-t="dark" role="radio" onclick="th7Set(\'dark\')"><span class="th7-prev dk"><i></i><i></i><i></i></span><b>' + TH7_MOON + "Dark</b></button>"
+    + '<button data-t="system" role="radio" onclick="th7Set(\'system\')"><span class="th7-prev sy"><i></i><i></i><i></i></span><b>' + TH7_SYS + "System</b></button>"
     + "</div></div>";
 }
 function th7AddCard(boxId){
@@ -30456,7 +30644,7 @@ if(typeof P_LIVE !== "undefined" && P_LIVE.settings && !P_LIVE.settings.__th7){
    every table in the portals, including ones drawn later.
    ============================================================ */
 function r7StackTables(root){
-  (root || document).querySelectorAll("#portal table:not(.r7-stack)").forEach(function(t){
+  (root || document).querySelectorAll("#portal table:not(.r7-stack):not([data-nostack])").forEach(function(t){
     var ths = t.querySelectorAll("thead th");
     if(!ths.length) return;
     var labels = Array.prototype.map.call(ths, function(th){ return (th.textContent || "").trim(); });
@@ -31925,8 +32113,12 @@ if(!f7Card.__o){
   var _f7CardO = f7Card;
   f7Card = function(p){
     var h = _f7CardO(p);
+    // the tick is glued to the last word of the name, so a long name that wraps on a
+    // phone keeps the tick right after it instead of floating beside the first line
+    var nm = String(p.author_name || "").trim(), cut = nm.lastIndexOf(" ");
+    var head = cut > 0 ? nm.slice(0, cut + 1) : "", tail = cut > 0 ? nm.slice(cut + 1) : nm;
     h = h.replace('<div class="f7-who"><b>' + esc(p.author_name) + F7_BADGE + "</b>",
-      '<div class="f7-who"><b class="f7o-nm"><span>' + esc(p.author_name) + "</span>" + F7_BADGE + "</b>");
+      '<div class="f7-who"><b class="f7o-nm">' + esc(head) + '<span class="f7o-last">' + esc(tail) + F7_BADGE + "</span></b>");
     if(f7oRole() === "team" && !p.pinned && (!p.audience || p.audience === "everyone"))
       h = h.replace("</span></div>", ' · <em class="f7-aud f7o-all">Everyone</em></span></div>');
     return h;

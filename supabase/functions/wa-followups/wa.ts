@@ -68,6 +68,19 @@ export async function twilioSend(toE164: string, o: SendOpts): Promise<{ ok: boo
   }
 }
 
+// Shows "typing…" in the student's WhatsApp (and marks their message as read) while
+// the reply is being written. Lasts until the reply arrives or about 25 seconds.
+export async function twilioTyping(messageSid: string) {
+  try {
+    const r = await fetch("https://messaging.twilio.com/v2/Indicators/Typing.json", {
+      method: "POST",
+      headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ messageId: messageSid, channel: "whatsapp" }),
+    });
+    if (!r.ok) console.warn("typing indicator", r.status, (await r.text()).slice(0, 160));
+  } catch (e) { console.warn("typing indicator", String(e)); }
+}
+
 // Sends and records one outgoing message. Returns the stored row id.
 export async function sendAndLog(
   db: ReturnType<typeof sb>,
