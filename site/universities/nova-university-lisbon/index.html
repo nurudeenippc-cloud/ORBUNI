@@ -102,7 +102,15 @@ th{font:500 10.5px ui-monospace,monospace;letter-spacing:.12em;text-transform:up
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}</style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orbuni","item":"https://myorbuni.com/"},{"@type":"ListItem","position":2,"name":"Universities","item":"https://myorbuni.com/universities/"},{"@type":"ListItem","position":3,"name":"Nova University Lisbon","item":"https://myorbuni.com/universities/nova-university-lisbon/"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollegeOrUniversity","name":"Nova University Lisbon","url":"https://myorbuni.com/universities/nova-university-lisbon/","address":{"@type":"PostalAddress","addressLocality":"Cairo","addressCountry":"Egypt"},"foundingDate":"1973","description":"Cairo campus of the Portuguese public university NOVA de Lisboa."}</script>
-</head><body>
+<style id="mnav">/* phones: no sideways sliding. Row 1 = logo + Apply free, row 2 = every link, all visible */
+@media (max-width:700px){
+  .hd .wrap{flex-wrap:wrap;position:relative;row-gap:6px;padding-top:10px;padding-bottom:8px}
+  .hd .nav{order:3;width:100%;overflow:visible;justify-content:space-between;gap:0}
+  .hd .nav a{font-size:13px;padding:6px 4px}
+  .hd .nav a.go{position:absolute;right:18px;top:9px;padding:7px 14px}
+}
+@media (max-width:390px){.hd .nav a{font-size:12px;padding:6px 1px;letter-spacing:-.01em}}
+</style></head><body>
 <header class="hd"><div class="wrap"><a class="brand" href="/"><span class="orb"></span>Orbuni</a>
 <nav class="nav" aria-label="Main"><a href="/universities/">Universities</a><a href="/study/">Subjects</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Housing</a><a href="/articles/">Guides</a><a class="go" href="/#start">Apply free</a></nav></div></header>
 <div class="hero tall"><picture><source type="image/webp" srcset="/photos/u045-nova-university-lisbon/01-hero.webp"><img class="" src="/photos/u045-nova-university-lisbon/01-hero.jpg" alt="Nova University Lisbon campus" width="900" height="350" fetchpriority="high" decoding="async"></picture><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › <a href="/universities/">Universities</a> › Nova University Lisbon</p><p class="eyebrow">Cairo, Egypt</p><h1>Nova University Lisbon</h1><p class="lead">Cairo campus of the Portuguese public university NOVA de Lisboa.</p><div class="btns"><a class="btn btn-p" href="/#uni-45">See it on Orbuni</a><a class="btn btn-o" href="/#start">Apply free</a></div><div class="stats"><div class="stat"><b>22</b><span>programmes</span></div></div></div></div>

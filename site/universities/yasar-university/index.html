@@ -102,7 +102,15 @@ th{font:500 10.5px ui-monospace,monospace;letter-spacing:.12em;text-transform:up
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}</style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orbuni","item":"https://myorbuni.com/"},{"@type":"ListItem","position":2,"name":"Universities","item":"https://myorbuni.com/universities/"},{"@type":"ListItem","position":3,"name":"Yasar University","item":"https://myorbuni.com/universities/yasar-university/"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollegeOrUniversity","name":"Yasar University","url":"https://myorbuni.com/universities/yasar-university/","address":{"@type":"PostalAddress","addressLocality":"İzmir","addressCountry":"Türkiye"},"foundingDate":"2001","description":"İzmir's leading foundation university, strong in architecture and business."}</script>
-</head><body>
+<style id="mnav">/* phones: no sideways sliding. Row 1 = logo + Apply free, row 2 = every link, all visible */
+@media (max-width:700px){
+  .hd .wrap{flex-wrap:wrap;position:relative;row-gap:6px;padding-top:10px;padding-bottom:8px}
+  .hd .nav{order:3;width:100%;overflow:visible;justify-content:space-between;gap:0}
+  .hd .nav a{font-size:13px;padding:6px 4px}
+  .hd .nav a.go{position:absolute;right:18px;top:9px;padding:7px 14px}
+}
+@media (max-width:390px){.hd .nav a{font-size:12px;padding:6px 1px;letter-spacing:-.01em}}
+</style></head><body>
 <header class="hd"><div class="wrap"><a class="brand" href="/"><span class="orb"></span>Orbuni</a>
 <nav class="nav" aria-label="Main"><a href="/universities/">Universities</a><a href="/study/">Subjects</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Housing</a><a href="/articles/">Guides</a><a class="go" href="/#start">Apply free</a></nav></div></header>
 <div class="hero tall"><picture><source type="image/webp" srcset="/photos/u001-yasar-university/01-hero.webp"><img class="" src="/photos/u001-yasar-university/01-hero.jpg" alt="Yasar University campus" width="900" height="350" fetchpriority="high" decoding="async"></picture><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › <a href="/universities/">Universities</a> › Yasar University</p><p class="eyebrow">İzmir, Türkiye</p><h1>Yasar University</h1><p class="lead">İzmir's leading foundation university, strong in architecture and business.</p><div class="btns"><a class="btn btn-p" href="/#uni-1">See it on Orbuni</a><a class="btn btn-o" href="/#start">Apply free</a></div><div class="stats"><div class="stat"><b>80</b><span>programmes</span></div><div class="stat"><b>$4,000</b><span>cheapest, per year</span></div><div class="stat"><b>≈ $300</b><span>per month, from</span></div></div></div></div>

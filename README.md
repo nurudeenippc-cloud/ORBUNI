@@ -30,6 +30,8 @@ upload, as in `site/HOW-TO-USE.txt`.
   for the Programmes demo clip.
 - r23 (3 Oct 2026): menu back to two links; campus videos on university pages;
   a different example-photo mix on each housing page (`tools/enrich_media.py`).
+- r24 (3 Oct 2026): phone menu without sliding, Ankara Medipol photo, subject pages
+  with photos and "Turkey" addresses, subjects on /universities/, student-room photos.
 
 ## Subject pages
 

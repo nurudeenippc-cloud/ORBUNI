@@ -29,7 +29,26 @@ this note is no longer needed — that code path was cleaned up this round,
 see below.)
 
 
-WHAT CHANGED THIS ROUND (r23, 3 Oct 2026)
+WHAT CHANGED THIS ROUND (r24, 3 Oct 2026)
+------------------------------------------
+  - Phones: the menu on the university / subject / housing / guide pages no
+    longer slides sideways. Logo and "Apply free" on top, all five links in
+    one row underneath.
+  - Ankara Medipol University now has its campus photo (from the
+    university's own website) on its page, in the universities list and in
+    the home page app.
+  - Subject pages: new addresses with "Turkey" (what students search for),
+    e.g. /study/medicine-in-turkey/ (the old -in-turkiye addresses redirect).
+    Each page now has a campus photo at the top and a photo card for every
+    university, plus a question for students from Africa, the Middle East
+    and Asia.
+  - /universities/ (the main SEO page) now has a "What do you want to study
+    in Turkey?" section linking all 19 subject pages.
+  - Housing: example photos now look like student rooms (bunk beds, loft
+    beds, simple rooms) mixed with Orbuni's own three, and the housing list
+    page shows each residence's own photo.
+
+PREVIOUS ROUND (r23, 3 Oct 2026)
 ------------------------------------------
   - Menu back to how it was: Universities and Find your programme only
     (the Scholarships / Housing / Guides links added in r21 are removed).

@@ -61,6 +61,9 @@ def university_videos():
 
 def housing_photos():
     photos = json.load(open(os.path.join(DATA, "housing_stock_photos.json"), encoding="utf-8"))
+    # Orbuni's own three room photos join the mix
+    photos += [{"local": "/photos/home/dorm-desk-loft.jpg"}, {"local": "/photos/home/fcard-housing.jpg"},
+               {"local": "/photos/home/dorm-bunk-seaview.jpg"}]
     pages = sorted(glob.glob(os.path.join(SITE, "housing", "*", "index.html")))
     n = len(photos)
     # a different set of three for every page, the same every run (fixed seed)
@@ -74,7 +77,7 @@ def housing_photos():
 
     def img(p, w, h, first):
         load = 'fetchpriority="high"' if first else 'loading="lazy"'
-        src = f'{p["url"]}&auto=format&fit=crop&w={w}&h={h}&q=70'
+        src = p["local"] if "local" in p else f'{p["url"]}&auto=format&fit=crop&w={w}&h={h}&q=70'
         return (f'<img class="" src="{esc(src)}" alt="Example of a furnished student room" width="{w}" height="{h}" '
                 f'{load} decoding="async">')
 
@@ -93,6 +96,13 @@ def housing_photos():
         if not (a and b):
             print("housing page not changed fully:", f, a, b)
     print(f"housing pages with their own photo mix: {len(pages)} (from {n} photos)")
+    idx = os.path.join(SITE, "housing", "index.html")
+    t = open(idx, encoding="utf-8").read()
+    for i, f in enumerate(pages):
+        slug = os.path.basename(os.path.dirname(f))
+        t = re.sub(r'(<a class="card" href="/housing/' + re.escape(slug) + r'/"><div class="im"><picture>)<img [^>]*>',
+                   lambda m: m.group(1) + img(photos[mixes[i][0]], 800, 500, False), t, count=1)
+    open(idx, "w", encoding="utf-8").write(t)
 
 
 if __name__ == "__main__":

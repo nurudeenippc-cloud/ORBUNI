@@ -72,6 +72,23 @@ def places(cities):
     return cities[0] if len(cities) == 1 else ", ".join(cities[:-1]) + " and " + cities[-1]
 
 
+def photo_dirs():
+    out = {}
+    for d in os.listdir(os.path.join(SITE, "photos")):
+        if re.match(r"u\d{3}-", d):
+            out[d[5:].replace("i-stanbul", "istanbul")] = d
+    return out
+
+
+def photo_for(name, dirs):
+    s = slugify(name)
+    for key, d in dirs.items():
+        if s.startswith(key) or key.startswith(s):
+            if os.path.exists(os.path.join(SITE, "photos", d, "01-card.jpg")):
+                return "/photos/" + d
+    return None
+
+
 def usd(x):
     return "$" + f"{float(x):,.0f}"
 
@@ -87,6 +104,7 @@ def fee_cell(pub, net, disc, yearly):
 
 
 STYLE = open(os.path.join(DATA, "static-style.html"), encoding="utf-8").read()
+MNAV = '<style id="mnav">' + open(os.path.join(DATA, "static-mobile-nav.css"), encoding="utf-8").read() + "</style>"
 EXTRA_CSS = """<style>
 .subj{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;list-style:none;margin:0;padding:0}
 .subj a{display:block;background:var(--p1);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;color:var(--txt);text-decoration:none;height:100%}
@@ -98,6 +116,8 @@ EXTRA_CSS = """<style>
 .faq p{color:var(--dim);margin:10px 0 0}
 td a{color:var(--txt);text-decoration:none;font-weight:600}
 td a:hover{color:var(--gold)}
+.hero.photo{min-height:0}
+.who{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 </style>"""
 
 
@@ -115,7 +135,7 @@ def head(title, desc, url, ld):
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-{lds}</head><body>
+{lds}{MNAV}</head><body>
 <header class="hd"><div class="wrap"><a class="brand" href="/"><span class="orb"></span>Orbuni</a>
 <nav class="nav" aria-label="Main"><a href="/universities/">Universities</a><a href="/study/">Subjects</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Housing</a><a href="/articles/">Guides</a><a class="go" href="/#start">Apply free</a></nav></div></header>
 """
@@ -130,6 +150,8 @@ FOOT = """<footer class="ft"><div class="wrap"><div><a class="brand" href="/"><s
 # Answers taken from what the site already promises (payment structure, scholarships page).
 def faq(title):
     return [
+        (f"Can international students from Nigeria, Ghana, Kenya, Pakistan or India study {title} in Turkey?",
+         f"Yes. The private universities listed here accept international students from any country, including across Africa, the Middle East and Asia. You apply with your passport, your secondary school certificate (WAEC, NECO, KCSE or your country's equivalent) and your transcript, and Orbuni checks every document before it is sent."),
         (f"Can I study {title} in Türkiye in English?",
          f"Yes, at many universities. The table above shows the teaching language of every {title} programme Orbuni lists, so you can see which ones are taught in English and which in Turkish."),
         (f"How much does it cost to study {title} in Türkiye?",
@@ -147,6 +169,7 @@ def build():
     unipages = set(os.listdir(os.path.join(SITE, "universities")))
     today = date.today().isoformat()
     made = []
+    dirs = photo_dirs()
     for slug, title, names, line in SUBJECTS:
         want = {n.lower() for n in names}
         hits = [r for r in rows if (r[3] or "").strip().lower() in want]
@@ -159,12 +182,12 @@ def build():
         cheapest = min(yearly) if yearly else None
         english = len({r[0] for r in hits if r[4] == "English"})
         cities = sorted({r[1] for r in hits if r[1]})
-        path = f"/study/{slug}-in-turkiye/"
+        path = f"/study/{slug}-in-turkey/"
         url = BASE + path
-        ttl = f"Study {title} in Türkiye: {len(by_uni)} universities, fees & scholarships | Orbuni"
-        desc = (f"{title} at {len(by_uni)} universities in Türkiye"
+        ttl = f"Study {title} in Turkey (Türkiye) for international students: fees at {len(by_uni)} universities | Orbuni"
+        desc = (f"Study {title} in Turkey: {len(by_uni)} universities"
                 + (f", from {usd(cheapest)} a year after discount" if cheapest else "")
-                + f". {english} teach it in English. Published fees, discounts and a free application through Orbuni.")
+                + f", {english} in English. Published fees and scholarships for students from Africa, the Middle East and Asia. Apply free.")
         trs = []
         def sort_key(r):
             v = r[8] if r[8] is not None else r[7]
@@ -178,7 +201,7 @@ def build():
             {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
                 {"@type": "ListItem", "position": 1, "name": "Orbuni", "item": BASE + "/"},
                 {"@type": "ListItem", "position": 2, "name": "Study by subject", "item": BASE + "/study/"},
-                {"@type": "ListItem", "position": 3, "name": f"{title} in Türkiye", "item": url}]},
+                {"@type": "ListItem", "position": 3, "name": f"{title} in Turkey", "item": url}]},
             {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
                 {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]},
         ]
@@ -187,22 +210,45 @@ def build():
                  f'<div class="stat"><b>{english}</b><span>teach it in English</span></div>']
         if cheapest:
             stats.append(f'<div class="stat"><b>{usd(cheapest)}</b><span>a year, cheapest after discount</span></div>')
-        page = head(ttl, desc, url, ld) + f"""<div class="hero"><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › <a href="/study/">Study by subject</a> › {esc(title)}</p>
-<p class="eyebrow">Bachelor's degree · Türkiye</p><h1>Study {esc(title)} in Türkiye</h1>
-<p class="lead">{esc(line)} {len(by_uni)} universities in {esc(places(cities))} teach it, and every published fee is below.</p>
+        # the top photo: the campus of the university with the lowest yearly fee that has a photo
+        ranked = sorted(by_uni, key=lambda u: min((float(r[8] if r[8] is not None else r[7]) for r in by_uni[u] if r[10] and (r[8] or r[7])), default=1e9))
+        top = next((u for u in ranked if photo_for(u, dirs)), None)
+        hero_pic = ""
+        if top:
+            d = photo_for(top, dirs)
+            hero_pic = (f'<picture><source type="image/webp" srcset="{d}/01-hero.webp"><img src="{d}/01-hero.jpg" alt="{esc(top)} campus" '
+                        f'width="870" height="338" fetchpriority="high" decoding="async"></picture>')
+        cards = []
+        for u in ranked:
+            d = photo_for(u, dirs)
+            rs = by_uni[u]
+            langs = " & ".join(sorted({r[4] for r in rs}))
+            yr = [float(r[8] if r[8] is not None else r[7]) for r in rs if r[10] and (r[8] or r[7])]
+            price = f'from <b>{usd(min(yr))}</b> a year' if yr else "fee in the table below"
+            im = (f'<picture><source type="image/webp" srcset="{d}/01-card.webp"><img src="{d}/01-card.jpg" alt="{esc(u)} campus" width="900" height="376" loading="lazy" decoding="async"></picture>'
+                  if d else '<div class="ph"></div>')
+            href = f"/universities/{slugify(u)}/" if slugify(u) in unipages else "/universities/"
+            cards.append(f'<li><a class="card" href="{href}"><div class="im">{im}<span class="tag">{esc(langs)}</span></div>'
+                         f'<div class="bd"><h3>{esc(u)}</h3><div class="mt">{esc(rs[0][1])} · {len(rs)} {esc(title)} programme{"s" if len(rs) > 1 else ""}</div>'
+                         f'<div class="pr">{price}</div></div></a></li>')
+        page = head(ttl, desc, url, ld) + f"""<div class="hero tall">{hero_pic}<div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › <a href="/study/">Study by subject</a> › {esc(title)}</p>
+<p class="eyebrow">Bachelor's degree · Turkey (Türkiye)</p><h1>Study {esc(title)} in Turkey</h1>
+<p class="lead">{esc(line)} {len(by_uni)} universities in {esc(places(cities))} teach it to international students, and every published fee is on this page.</p>
 <div class="btns"><a class="btn btn-p" href="/#start">Apply free</a><a class="btn btn-o" href="/#progs">Search every programme</a></div>
 <div class="stats">{''.join(stats)}</div></div></div>
-<section class="s"><div class="wrap"><p class="eyebrow">Universities &amp; fees</p><h2>Where you can study {esc(title)}</h2>
+<section class="s"><div class="wrap"><p class="eyebrow">Universities</p><h2>Where you can study {esc(title)} in Turkey</h2>
+<ul class="cards">{''.join(cards)}</ul></div></section>
+<section class="s" style="padding-top:0"><div class="wrap"><p class="eyebrow">Every programme &amp; fee</p><h2>{esc(title)} fees in Turkey, programme by programme</h2>
 <p class="lead2">Fees are in US dollars, as each university publishes them. "Was" is the list fee and the bold figure is what you pay after the current discount; "/ yr" is per year and "total" is for the whole programme. Your counsellor confirms the current figure in writing before you pay anything.</p>
 <div class="tw"><table><thead><tr><th>University</th><th>City</th><th>Language</th><th>Length</th><th>Study mode</th><th>Fee</th></tr></thead><tbody>
 {''.join(trs)}
 </tbody></table></div></div></section>
-<section class="s alt"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>Studying {esc(title)} in Türkiye</h2>
+<section class="s alt"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>Studying {esc(title)} in Turkey as an international student</h2>
 {''.join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for q, a in qa)}
 <p class="note" style="margin-top:14px">More: <a href="/articles/what-turkiye-actually-costs/">what a year in Türkiye actually costs</a> · <a href="/articles/how-turkish-scholarships-work/">how Turkish scholarships work</a> · <a href="/articles/do-you-need-ielts/">do you need IELTS?</a></p></div></section>
 <section class="s"><div class="wrap"><div class="cta-band"><div><h2>Want {esc(title)}? Start here.</h2><p>Applying is free. A named counsellor shortlists the universities that fit your results and budget.</p></div><a class="btn btn-p" href="/#start">Start a free application</a></div></div></section>
 """ + FOOT
-        out = os.path.join(SITE, "study", f"{slug}-in-turkiye")
+        out = os.path.join(SITE, "study", f"{slug}-in-turkey")
         os.makedirs(out, exist_ok=True)
         open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page)
         made.append((slug, title, len(by_uni), cheapest, path))
@@ -216,12 +262,12 @@ def build():
         {"@type": "ListItem", "position": 1, "name": "Orbuni", "item": BASE + "/"},
         {"@type": "ListItem", "position": 2, "name": "Study by subject", "item": url}]},
         {"@context": "https://schema.org", "@type": "ItemList", "itemListElement": [
-            {"@type": "ListItem", "position": i + 1, "url": BASE + m[4], "name": f"{m[1]} in Türkiye"} for i, m in enumerate(made)]}]
-    hub = head("Study in Türkiye by subject: fees at every partner university | Orbuni",
-               "Medicine, nursing, engineering, business and more: every partner university in Türkiye that teaches your subject, with published fees and discounts.",
+            {"@type": "ListItem", "position": i + 1, "url": BASE + m[4], "name": f"{m[1]} in Turkey"} for i, m in enumerate(made)]}]
+    hub = head("Study in Turkey by subject: courses and fees for international students | Orbuni",
+               "Study medicine, nursing, engineering, business and more in Turkey (Türkiye): every partner university that teaches your subject, with published fees, for students from Africa, the Middle East and Asia.",
                url, ld) + f"""<div class="hero"><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › Study by subject</p>
-<p class="eyebrow">Bachelor's degrees · Türkiye</p><h1>Study in Türkiye by subject</h1>
-<p class="lead">Pick your subject to see every partner university that teaches it, the teaching language and the published fee.</p></div></div>
+<p class="eyebrow">Bachelor's degrees · Turkey (Türkiye)</p><h1>Study in Turkey by subject</h1>
+<p class="lead">Pick your subject to see every partner university in Turkey that teaches it to international students, the teaching language and the published fee.</p></div></div>
 <section class="s"><div class="wrap"><ul class="subj">{cards}</ul>
 <p class="note" style="margin-top:18px">Not listed? <a href="/#progs">Search all programmes</a> or <a href="/universities/">browse every university</a>.</p></div></section>
 """ + FOOT
@@ -236,6 +282,14 @@ def build():
     entries += [f"  <url><loc>{BASE}{m[4]}</loc><lastmod>{today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>" for m in made]
     sm = sm.replace("</urlset>", "\n".join(entries) + "\n</urlset>")
     open(sm_path, "w", encoding="utf-8").write(sm)
+    rd_path = os.path.join(SITE, "_redirects")
+    rd = open(rd_path, encoding="utf-8").read()
+    rd = re.sub(r"/study/[a-z-]+-in-turkiye/\s+/study/[a-z-]+-in-turkey/\s+301\n", "", rd)
+    lines = "".join(f"/study/{m[0]}-in-turkiye/  /study/{m[0]}-in-turkey/  301\n" for m in made)
+    catch_all = "/*    /index.html   200"
+    assert catch_all in rd
+    rd = rd.replace(catch_all, lines + catch_all, 1)   # must come before the catch-all
+    open(rd_path, "w", encoding="utf-8").write(rd)
     for m in made:
         print(f"{m[4]:55} {m[2]:3} universities  from {usd(m[3]) if m[3] else '-'}")
 
