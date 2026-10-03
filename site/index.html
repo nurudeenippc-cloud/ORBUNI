@@ -29350,204 +29350,208 @@ window.r6AddMemberSave = async function(ev){
     + '<div class="r6-person-a"><button class="o6-btn gold" onclick="copyText(\'' + link + '\')">' + r6Ic("link") + " Copy sign-up link</button></div></section>";
 };
 
-/* ---------- Careers (founder view), redesigned to match the public careers page ----------
-   Same look as myorbuni.com careers: a big headline, a stat strip, the four hiring steps
-   (now live: each applicant sits in one of them), then roles / applicants / team. */
-var CJ_STAGES = [["new", "Applied", "Read the CV"], ["replied", "Replied", "Within 5 working days"], ["call", "30-minute call", "With you or the COO"], ["task", "Paid task", "Close to the real job"], ["hired", "Hired", "Added to the team"]];
-var CJ_STAGE_F = null;
-function cjPhoto(r){
-  var u = r && r.photo;
-  if(!u && r && r.title && typeof JOBS !== "undefined"){ var m = JOBS.filter(function(x){ return x.title === r.title; })[0]; u = m && m.photo; }
-  return u ? String(u).replace(/([?&])w=\d+/, "$1w=640").replace(/([?&])q=\d+/, "$1q=70") : "";
-}
-aJobs = async function(){
+/* ---------- Partner requests, redesigned: cards, a checklist before approving, a proper agency page ---------- */
+var PR_TAB = null, PR = null;
+var PR_CHECKS = [["search", "Searched the agency name online"], ["site", "Found a real website or business address"], ["call", "Called the phone number they gave"], ["godfrey", "Asked Godfrey if anything looked odd"]];
+function prChecks(id){ try{ return JSON.parse(localStorage.getItem("orb-prc-" + id) || "{}"); }catch(e){ return {}; } }
+window.prCheck = function(id, k, el){ var c = prChecks(id); if(el.checked) c[k] = 1; else delete c[k]; try{ localStorage.setItem("orb-prc-" + id, JSON.stringify(c)); }catch(e){} prPaint(); };
+function prInit(name){ var w = String(name || "?").trim().split(/\s+/); return esc(initials(w[0], w[1])); }
+function prWa(phone){ var d = String(phone || "").replace(/[^\d]/g, ""); return d.length > 6 ? "https://wa.me/" + d : ""; }
+aPartners = async function(){
   var box = $("a-live"); if(!box) return;
-  cjCss();
+  prCss();
   box.innerHTML = '<div style="padding:30px;color:var(--faint)"><span class="spin"></span> Loading…</div>';
-  var owner = !!(PROF && PROF.is_owner), canEdit = owner || canManageSec("jobs");
   var res = await Promise.all([
-    sb.from("job_applications").select("*").order("created_at", { ascending:false }).limit(200),
-    sb.from("job_openings").select("*").order("created_at", { ascending:false }),
-    sb.from("profiles").select("id,first_name,last_name,job_title,role,is_owner,photo_path,email").in("role", ["staff","admin"]).order("created_at"),
-    sb.from("feed_badges").select("profile_id,verified")
+    sb.from("partners").select("*").order("created_at", { ascending:false }),
+    sb.from("profiles").select("partner_id,role").not("partner_id", "is", null),
+    sb.from("finance_transactions").select("partner_id,amount,status").eq("kind", "commission_payout").not("partner_id", "is", null)
   ]);
-  var apps = res[0].data || [], roles = res[1].data || [], team = res[2].data || [];
-  var off = {}; (res[3].data || []).forEach(function(x){ if(!x.verified) off[x.profile_id] = true; });
-  var builtIn = (typeof JOBS !== "undefined" ? JOBS : []).filter(function(j){ return !j.__db; });
-  var openN = roles.filter(function(r){ return r.status === "open"; }).length + builtIn.length;
-  var privN = roles.filter(function(r){ return r.visibility === "link" && r.status === "open"; }).length;
-  var weekN = apps.filter(function(a){ return Date.now() - new Date(a.created_at) < 7 * 864e5; }).length;
-  var waiting = apps.filter(function(a){ return (a.stage || "new") === "new" && Date.now() - new Date(a.created_at) > 5 * 864e5; }).length;
-  R6J = { apps: apps, roles: roles, team: team, builtIn: builtIn, canEdit: canEdit, owner: owner, off: off };
-  box.innerHTML = '<div class="cj">'
-    + '<section class="cj-hero"><span class="cj-eye">Careers · founder view</span>'
-    + '<h2>Build the team that gets a student <span class="grad">from a dream to a lecture hall.</span></h2>'
-    + "<p>Open a role on the website or as a private link, move every applicant through the four hiring steps, and add the people you hire straight to the team.</p>"
-    + '<div class="cj-acts">' + (canEdit ? '<button class="o6-btn gold" onclick="r6RoleEdit()">' + r6Ic("plus") + " Open a role</button>" : "")
-    + (owner ? '<button class="o6-btn" onclick="r6JobsTab(\'team\');setTimeout(r6AddMember,50)">' + r6Ic("users") + " Add a team member</button>" : "")
-    + '<a class="o6-btn" href="/#careers" target="_blank" rel="noopener">' + r6Ic("link") + " See the public page</a></div>"
-    + '<div class="cj-stats">'
-    + "<div><b>" + openN + "</b><span>open roles" + (privN ? " · " + privN + " by private link" : "") + "</span></div>"
-    + "<div><b>" + apps.length + "</b><span>applicants · " + (weekN ? weekN + " this week" : "none this week") + "</span></div>"
-    + "<div" + (waiting ? ' class="warn"' : "") + "><b>" + waiting + "</b><span>" + (waiting ? "waiting more than 5 days for a reply" : "nobody waiting on a reply") + "</span></div>"
-    + "<div><b>" + team.length + "</b><span>people on the team</span></div></div></section>"
-    + '<section class="cj-sec"><span class="cj-eye">How hiring works</span><h3>Four steps, then hired</h3><ol class="cj-steps" id="cj-steps"></ol></section>'
-    + '<section class="cj-sec"><div class="cj-tabs" role="tablist">' + [["roles", "Open roles", openN], ["apps", "Applicants", apps.length], ["team", "Team", team.length]].map(function(t){
-        return '<button data-t="' + t[0] + '" class="' + (JOBS_TAB === t[0] ? "on" : "") + '" onclick="r6JobsTab(\'' + t[0] + '\')">' + t[1] + " <b>" + t[2] + "</b></button>"; }).join("") + "</div>"
-    + '<div id="r6-jobs-body"></div></section></div>';
-  cjSteps();
-  r6JobsPaint();
+  var rows = res[0].data || [], login = {}, studs = {}, owed = {};
+  (res[1].data || []).forEach(function(x){ if(x.role === "partner") login[x.partner_id] = true; else if(x.role === "student") studs[x.partner_id] = (studs[x.partner_id] || 0) + 1; });
+  (res[2].data || []).forEach(function(t){ if(t.status !== "paid" && t.status !== "void") owed[t.partner_id] = (owed[t.partner_id] || 0) + Number(t.amount || 0); });
+  PR = { rows: rows, login: login, studs: studs, owed: owed };
+  var n = function(s){ return rows.filter(function(p){ return !s || p.status === s; }).length; };
+  if(!PR_TAB) PR_TAB = n("pending") ? "pending" : "approved";
+  var owedAll = Object.keys(owed).reduce(function(a, k){ return a + owed[k]; }, 0);
+  var studAll = Object.keys(studs).reduce(function(a, k){ return a + studs[k]; }, 0);
+  box.innerHTML = '<div class="o6 agy">'
+    + '<section class="o6-hero"><div><span class="o6-eye">Business · partners</span><h2>Partner <em>agencies</em></h2>'
+    + "<p>Agencies that send you students. Check every request before you approve it, then send their login, documents and commission from here.</p></div>"
+    + '<div class="o6-hero-a"><button class="o6-btn" onclick="aGo(\'finance\')">' + r6Ic("bank") + " Commissions in Finance</button></div></section>"
+    + '<div class="o6-kpis">' + r6Kpi("clock", "Waiting for you", n("pending"), n("pending") ? "check, then approve or decline" : "nothing to review", "butter")
+    + r6Kpi("check", "Approved agencies", n("approved"), Object.keys(login).length + " signed in", "mint")
+    + r6Kpi("users", "Students referred", studAll, "by all partners", "sky")
+    + r6Kpi("wallet", "Commission owed", finMoney(owedAll), owedAll ? "not paid yet" : "all settled", "lilac") + "</div>"
+    + '<div class="r6-tabs">' + [["pending", "Waiting"], ["approved", "Approved"], ["rejected", "Declined"], ["all", "All"]].map(function(t){
+        return '<button data-t="' + t[0] + '" class="' + (PR_TAB === t[0] ? "on" : "") + '" onclick="prTab(\'' + t[0] + '\')">' + t[1] + '<i class="r6-n">' + n(t[0] === "all" ? null : t[0]) + "</i></button>"; }).join("") + "</div>"
+    + '<div id="agy-body"></div></div>';
+  prPaint();
 };
-aJobs.__r6 = true;
-function cjSteps(){
-  var el = $("cj-steps"); if(!el || !R6J) return;
-  el.innerHTML = CJ_STAGES.map(function(s){
-    var n = R6J.apps.filter(function(a){ return (a.stage || "new") === s[0]; }).length;
-    return '<li class="' + (CJ_STAGE_F === s[0] ? "on" : "") + '"><button onclick="cjStage(\'' + s[0] + '\')"><b>' + s[1] + "</b><em>" + n + "</em><span>" + s[2] + "</span></button></li>";
-  }).join("");
+window.prTab = function(t){ PR_TAB = t; document.querySelectorAll("#a-live .agy .r6-tabs button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-t") === t); }); prPaint(); };
+function prPaint(){
+  var body = $("agy-body"); if(!body || !PR) return;
+  var list = PR.rows.filter(function(p){ return PR_TAB === "all" || p.status === PR_TAB; });
+  if(!list.length){
+    body.innerHTML = '<div class="o6-empty">' + r6Ic("users") + "<b>" + ({ pending:"No requests waiting", approved:"No approved agencies yet", rejected:"Nobody declined" }[PR_TAB] || "No agency has applied yet")
+      + "</b><span>Agencies apply from “Become a partner” on myorbuni.com, and their request lands here.</span></div>";
+    return;
+  }
+  body.innerHTML = '<div class="agy-grid">' + list.map(function(p){
+    var st = p.status === "approved" ? ["Approved", "ok"] : p.status === "rejected" ? ["Declined", "bad"] : ["Waiting", "warn"];
+    var s = PR.studs[p.id] || 0, ow = PR.owed[p.id] || 0, wa = prWa(p.phone);
+    var h = '<article class="agy-card' + (p.status === "pending" ? " is-new" : "") + '">'
+      + '<div class="agy-top"><span class="agy-av">' + prInit(p.agency_name) + "</span><div><b>" + esc(p.agency_name || "Unnamed agency") + "</b><small>"
+      + esc([p.contact_name, p.country].filter(Boolean).join(" · ") || "No contact name") + '</small></div><span class="o6-st ' + st[1] + '">' + st[0] + "</span></div>"
+      + '<div class="agy-meta"><span>' + r6Ic("users") + " " + plural(s, "student") + "</span>"
+      + (p.commission_rate != null ? "<span>" + r6Ic("wallet") + " " + esc(String(Number(p.commission_rate))) + "% commission</span>" : "")
+      + "<span>" + r6Ic("clock") + " Applied " + esc(ago(p.created_at)) + "</span>"
+      + (ow ? '<span class="gold">' + r6Ic("bank") + " " + finMoney(ow) + " owed</span>" : "") + "</div>"
+      + '<div class="agy-contact">' + (p.email ? '<a href="mailto:' + esc(p.email) + '">' + r6Ic("mail") + "<span>" + esc(p.email) + "</span></a>" : "")
+      + (p.phone ? (wa ? '<a href="' + esc(wa) + '" target="_blank" rel="noopener">' : "<span>") + r6Ic("pin") + "<span>" + esc(p.phone) + "</span>" + (wa ? "</a>" : "</span>") : "") + "</div>";
+    if(p.status === "pending"){
+      var c = prChecks(p.id), done = PR_CHECKS.filter(function(k){ return c[k[0]]; }).length;
+      h += '<div class="agy-check"><div class="agy-check-h"><b>Before you approve</b><span>' + done + " of " + PR_CHECKS.length + "</span></div>"
+        + '<i class="agy-bar"><i style="width:' + Math.round(done / PR_CHECKS.length * 100) + '%"></i></i>'
+        + PR_CHECKS.map(function(k){ return '<label><input type="checkbox"' + (c[k[0]] ? " checked" : "") + ' onchange="prCheck(\'' + jsq(p.id) + "','" + k[0] + '\',this)"><span>' + k[1] + "</span></label>"; }).join("")
+        + "<small>A Gmail address and nothing else online is a reason to ask more questions, not to decline straight away.</small></div>"
+        + '<div class="r6-person-a"><button class="o6-btn gold sm" onclick="aPartner(\'' + jsq(p.id) + '\',\'approved\')">' + r6Ic("check") + " Approve</button>"
+        + '<button class="o6-btn sm danger" onclick="aPartner(\'' + jsq(p.id) + '\',\'rejected\')">Decline</button>'
+        + '<button class="o6-btn sm" onclick="aPartnerOpen(\'' + jsq(p.id) + '\')">' + r6Ic("eye") + " Open</button></div>";
+    } else if(p.status === "approved"){
+      var lg = PR.login[p.id] ? '<span class="agy-login ok">' + r6Ic("check") + " Signed in to the partner portal</span>"
+        : p.login_invited_at ? '<span class="agy-login">' + r6Ic("mail") + " Login sent " + esc(ago(p.login_invited_at)) + ", not used yet</span>"
+        : '<span class="agy-login warn">' + r6Ic("clock") + " No login sent yet</span>";
+      h += lg + '<div class="r6-person-a"><button class="o6-btn white sm" onclick="aPartnerOpen(\'' + jsq(p.id) + '\')">' + r6Ic("eye") + " Open agency</button>"
+        + (PR.login[p.id] ? "" : '<button class="o6-btn sm' + (p.login_invited_at ? "" : " gold") + '" onclick="aPartnerInvite(\'' + jsq(p.id) + '\', event)">' + r6Ic("mail") + (p.login_invited_at ? " Send again" : " Send their login") + "</button>") + "</div>";
+    } else {
+      h += '<div class="r6-person-a"><button class="o6-btn sm" onclick="aPartnerOpen(\'' + jsq(p.id) + '\')">' + r6Ic("eye") + " Open</button>"
+        + '<button class="o6-btn sm" onclick="aPartner(\'' + jsq(p.id) + '\',\'approved\')">' + r6Ic("undo") + " Approve after all</button></div>";
+    }
+    return h + "</article>";
+  }).join("") + "</div>";
 }
-window.cjStage = function(s){ CJ_STAGE_F = CJ_STAGE_F === s ? null : s; cjSteps(); r6JobsTab("apps"); };
-window.r6JobsTab = function(t){ JOBS_TAB = t; document.querySelectorAll("#a-live .cj-tabs button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-t") === t); }); r6JobsPaint(); };
-r6JobsPaint = function(){
-  var body = $("r6-jobs-body"); if(!body || !R6J) return;
-  if(JOBS_TAB === "apps"){
-    var list = R6J.apps.filter(function(a){ return !CJ_STAGE_F || (a.stage || "new") === CJ_STAGE_F; });
-    var lab = CJ_STAGE_F ? CJ_STAGES.filter(function(s){ return s[0] === CJ_STAGE_F; })[0][1] : "";
-    body.innerHTML = (CJ_STAGE_F ? '<div class="cj-filter">Showing <b>' + esc(lab) + '</b> <button onclick="cjStage(\'' + CJ_STAGE_F + '\')">Show everyone ×</button></div>' : "")
-      + (list.length ? '<div class="cj-grid">' + list.map(function(j){
-      var parts = String(j.name || "").split(" "), st = j.stage || "new";
-      var late = st === "new" && Date.now() - new Date(j.created_at) > 5 * 864e5;
-      return '<article class="cj-card cj-app"><div class="cj-who"><span class="o6-av">' + esc(initials(parts[0], parts[1])) + "</span><div><b>" + esc(j.name) + "</b><small>" + esc(j.role_applied || "Open application") + " · " + esc(ago(j.created_at)) + "</small></div>"
-        + (late ? '<span class="cj-pill warn">Reply due</span>' : st === "declined" ? '<span class="cj-pill">Declined</span>' : "") + "</div>"
-        + (j.message ? '<p class="cj-quote">' + esc(String(j.message).slice(0, 240)) + (String(j.message).length > 240 ? "…" : "") + "</p>" : "")
-        + '<div class="cj-stage" role="group" aria-label="Hiring step">' + CJ_STAGES.concat([["declined", "Declined"]]).map(function(s){
-            return '<button class="' + (st === s[0] ? "on" : "") + (s[0] === "declined" ? " no" : "") + '" onclick="cjMove(\'' + jsq(j.id) + "','" + s[0] + '\')">' + s[1] + "</button>"; }).join("") + "</div>"
-        + '<div class="cj-a">' + (j.cv_path ? '<button class="o6-btn sm white" onclick="aOpenCV(\'' + jsq(j.cv_path) + '\')">' + r6Ic("doc") + " Open CV</button>" : "")
-        + '<a class="o6-btn sm" href="mailto:' + esc(j.email) + '">' + r6Ic("mail") + " Email</a>"
-        + (j.phone ? '<a class="o6-btn sm" href="https://wa.me/' + esc(String(j.phone).replace(/[^\d]/g, "")) + '" target="_blank" rel="noopener">WhatsApp</a>' : "")
-        + (R6J.owner && st !== "declined" ? '<button class="o6-btn sm" onclick="r6JobsTab(\'team\');setTimeout(function(){r6AddMember(' + "'" + jsq(j.name) + "','" + jsq(j.email) + "','" + jsq(j.role_applied || "") + "'" + ')},50)">' + r6Ic("plus") + " Hire</button>" : "")
-        + "</div></article>";
-    }).join("") + "</div>" : '<div class="cj-empty">' + r6Ic("brief") + "<b>" + (CJ_STAGE_F ? "Nobody at this step" : "Nobody has applied yet") + "</b><span>Share a role's link and applications land here with the CV attached.</span></div>");
-    return;
-  }
-  if(JOBS_TAB === "team"){
-    body.innerHTML = '<div id="r6-add-member"></div><div class="cj-grid">' + R6J.team.map(function(t){
-      var name = ((t.first_name || "") + " " + (t.last_name || "")).trim() || t.email, ticked = !R6J.off[t.id];
-      return '<article class="cj-card"><div class="cj-who"><span class="o6-av" data-face="' + esc(t.photo_path || "") + '" data-f="' + esc(t.first_name || "") + '" data-l="' + esc(t.last_name || "") + '">' + esc(initials(t.first_name, t.last_name)) + "</span>"
-        + "<div><b>" + esc(name) + (ticked ? " " + F7_BADGE : "") + "</b><small>" + esc(t.job_title || (t.is_owner ? "Founder" : t.role)) + "</small></div>" + (t.is_owner ? '<span class="cj-pill gold">Owner</span>' : "") + "</div>"
-        + (R6J.owner ? '<label class="cj-tick"><span><b>Blue tick on the Feed</b><small>' + (ticked ? "Shown next to their name" : "Removed — not shown") + '</small></span><input type="checkbox" role="switch"' + (ticked ? " checked" : "") + ' onchange="cjTick(\'' + jsq(t.id) + '\',this)"><i></i></label>' : "")
-        + '<div class="cj-a">' + (R6J.owner && !t.photo_path ? '<button class="o6-btn sm" onclick="teamSetPhoto(\'' + jsq(t.id) + '\')">Set photo</button>' : "")
-        + (ME && t.id === ME.id ? "" : '<button class="o6-btn sm" onclick="aMessagePerson(\'' + jsq(t.id) + '\')">' + r6Ic("mail") + " Message</button>") + "</div></article>";
-    }).join("") + "</div>";
-    try{ paintFaces(body); }catch(e){}
-    return;
-  }
-  function card(r, i, db){
-    var st = !db ? ["On the website", "ok"] : r.status === "open" ? (r.visibility === "public" ? ["On the website", "ok"] : ["Private link", "info"]) : r.status === "paused" ? ["Paused", "warn"] : ["Filled", ""];
-    var ph = cjPhoto(r), n = R6J.apps.filter(function(a){ return a.role_applied === r.title; }).length;
-    var link = db ? r6RoleLink(r) : "https://myorbuni.com/#job-" + i;
-    return '<article class="cj-role"><div class="cj-role-ph" style="--ac:var(--' + esc(r.ac || "violet") + ')">' + (ph ? '<img src="' + esc(ph) + '" alt="" loading="lazy" decoding="async">' : r6Ic("brief"))
-      + '<span class="cj-pill ' + st[1] + '">' + st[0] + "</span></div>"
-      + '<div class="cj-role-b"><small>' + esc([r.dept, r.loc, r.type].filter(Boolean).join(" · ")) + "</small><h4>" + esc(r.title) + "</h4>"
-      + '<span class="cj-n">' + (n ? n + (n === 1 ? " applicant" : " applicants") : "No applicants yet") + "</span>"
-      + '<div class="cj-a">' + (!db || r.status === "open" ? '<button class="o6-btn sm white" onclick="copyText(\'' + jsq(link) + '\')">' + r6Ic("link") + " Copy link</button>" : "")
-      + (db && R6J.canEdit ? '<button class="o6-btn sm" onclick="r6RoleEdit(\'' + jsq(r.id) + '\')">' + r6Ic("edit") + " Edit</button>" : "") + "</div></div></article>";
-  }
-  var cards = R6J.roles.map(function(r){ return card(r, 0, true); }).join("") + R6J.builtIn.map(function(j, i){ return card(j, i, false); }).join("");
-  body.innerHTML = '<div id="r6-role-form"></div>' + (cards ? '<div class="cj-roles">' + cards + "</div>" : '<div class="cj-empty">' + r6Ic("brief") + "<b>No open roles</b><span>Open one and it can go on the website or out as a private link.</span></div>");
+window.aPartnerOpen = async function(id){
+  pushHist("admin", AV); updateBackButton("admin");
+  var box = $("a-live"); if(!box) return;
+  prCss();
+  box.innerHTML = '<div style="padding:30px;color:var(--faint)"><span class="spin"></span> Loading…</div>';
+  await loadPeople();
+  var pr = await sb.from("partners").select("*").eq("id", id).maybeSingle();
+  var p = pr.data;
+  if(!p){ toast("That agency no longer exists.", true); aGo("partners"); return; }
+  var res = await Promise.all([
+    sb.from("profiles").select("id,first_name,last_name,created_at,country").eq("partner_id", id).eq("role", "student").order("created_at", { ascending:false }),
+    sb.from("finance_transactions").select("*").eq("partner_id", id).order("occurred_on", { ascending:false }),
+    sb.from("partner_documents").select("*").eq("partner_id", id).order("created_at", { ascending:false }),
+    sb.from("channels").select("id").eq("partner_id", id).eq("kind", "partner").maybeSingle(),
+    sb.from("profiles").select("id").eq("partner_id", id).eq("role", "partner").limit(1)
+  ]);
+  var students = res[0].data || [], txs = res[1].data || [], docs = res[2].data || [], channelId = res[3].data && res[3].data.id, hasLogin = (res[4].data || []).length > 0;
+  PDOC_LIST = docs;
+  var apps = [];
+  if(students.length){ var a = await sb.from("applications").select("id,profile_id").in("profile_id", students.map(function(x){ return x.id; })); apps = a.data || []; }
+  var payouts = txs.filter(function(t){ return t.kind === "commission_payout"; });
+  var earned = payouts.filter(function(t){ return t.status !== "void"; }).reduce(function(n, t){ return n + Number(t.amount || 0); }, 0);
+  var paid = payouts.filter(function(t){ return t.status === "paid"; }).reduce(function(n, t){ return n + Number(t.amount || 0); }, 0);
+  var st = p.status === "approved" ? ["Approved", "ok"] : p.status === "rejected" ? ["Declined", "bad"] : ["Waiting for you", "warn"];
+  var wa = prWa(p.phone);
+  box.innerHTML = '<div class="o6 agy">'
+    + '<button class="agy-back" onclick="aGo(\'partners\')">' + r6Ic("undo") + " All partner agencies</button>"
+    + '<section class="o6-hero agy-hero"><div class="agy-hero-l"><span class="agy-av xl">' + prInit(p.agency_name) + "</span><div>"
+    + '<span class="o6-eye">Partner agency · <span class="o6-st ' + st[1] + '">' + st[0] + "</span></span><h2>" + esc(p.agency_name || "Unnamed agency") + "</h2>"
+    + "<p>" + esc([p.contact_name, p.country, "joined " + ago(p.created_at)].filter(Boolean).join(" · ")) + "</p>"
+    + '<div class="agy-contact light">' + (p.email ? '<a href="mailto:' + esc(p.email) + '">' + r6Ic("mail") + "<span>" + esc(p.email) + "</span></a>" : "")
+    + (p.phone ? (wa ? '<a href="' + esc(wa) + '" target="_blank" rel="noopener">' : "<span>") + r6Ic("pin") + "<span>" + esc(p.phone) + "</span>" + (wa ? "</a>" : "</span>") : "") + "</div></div></div>"
+    + '<div class="o6-hero-a">' + (p.status === "pending"
+        ? '<button class="o6-btn gold" onclick="aPartner(\'' + jsq(p.id) + '\',\'approved\')">' + r6Ic("check") + " Approve</button><button class=\"o6-btn danger\" onclick=\"aPartner('" + jsq(p.id) + "','rejected')\">Decline</button>"
+        : '<button class="o6-btn gold" onclick="aPartnerChat(\'' + jsq(channelId || "") + '\')">' + r6Ic("mail") + " Open their space</button>"
+          + (p.status === "approved" && !hasLogin ? '<button class="o6-btn" onclick="aPartnerInvite(\'' + jsq(p.id) + '\', event)">' + (p.login_invited_at ? "Send login again" : "Send their login") + "</button>" : ""))
+    + "</div></section>"
+    + '<div class="o6-kpis">' + r6Kpi("users", "Students referred", students.length, students.length ? "newest " + ago(students[0].created_at) : "none yet", "sky")
+    + r6Kpi("doc", "Applications", apps.length, "from their students", "lilac")
+    + r6Kpi("wallet", "Commission earned", finMoney(earned), p.commission_rate != null ? Number(p.commission_rate) + "% rate" : "", "butter")
+    + r6Kpi("bank", "Commission paid", finMoney(paid), earned - paid > 0 ? finMoney(earned - paid) + " still owed" : "nothing owed", "mint") + "</div>"
+    + '<div class="agy-two">'
+    + '<section class="o6-card"><div class="o6-ch"><h3>' + r6Ic("users") + " Their students</h3><span>" + plural(students.length, "student") + "</span></div>"
+    + (students.length ? '<div class="agy-list">' + students.map(function(s){
+        var n = apps.filter(function(x){ return x.profile_id === s.id; }).length;
+        return '<div class="agy-row"><span class="o6-av">' + esc(initials(s.first_name, s.last_name)) + '</span><span class="agy-rt"><b>' + esc(((s.first_name || "") + " " + (s.last_name || "")).trim() || "Student") + "</b><small>"
+          + esc([s.country, "joined " + ago(s.created_at)].filter(Boolean).join(" · ")) + '</small></span><span class="o6-pill t-sky">' + plural(n, "application") + "</span></div>";
+      }).join("") + "</div>" : '<div class="o6-empty sm">' + r6Ic("users") + "<b>No students yet</b><span>Students they add in their portal appear here.</span></div>") + "</section>"
+    + '<section class="o6-card"><div class="o6-ch"><h3>' + r6Ic("doc") + " Documents sent to them</h3>"
+    + '<button class="o6-btn sm gold" onclick="pdocPick(\'' + jsq(id) + '\')">' + r6Ic("plus") + " Send a document</button></div>"
+    + '<input type="file" id="pdoc-file-' + esc(id) + '" style="display:none" onchange="pdocUpload(\'' + jsq(id) + '\', this)">'
+    + "<p class=\"agy-note\">They can view and download these, not upload. Good for the contract, the commission sheet and guides.</p>"
+    + (docs.length ? '<div class="agy-list">' + docs.map(function(d){
+        return '<div class="agy-row"><span class="agy-file">' + r6Ic("doc") + '</span><span class="agy-rt"><b>' + esc(d.original_name) + "</b><small>"
+          + esc([d.note, "sent by " + personName(d.uploaded_by), ago(d.created_at)].filter(Boolean).join(" · ")) + "</small></span>"
+          + '<button class="o6-btn sm" onclick="pdocOpen(\'' + jsq(d.storage_path) + '\')">Open</button>'
+          + '<button class="o6-btn sm danger" onclick="pdocDelete(\'' + jsq(d.id) + "','" + jsq(id) + '\')">Remove</button></div>';
+      }).join("") + "</div>" : '<div class="o6-empty sm">' + r6Ic("doc") + "<b>Nothing sent yet</b><span>Send the partner agreement first.</span></div>") + "</section>"
+    + "</div>"
+    + (payouts.length ? '<section class="o6-card"><div class="o6-ch"><h3>' + r6Ic("bank") + " Commission history</h3><span>The same entries they see in their portal</span></div><div class=\"agy-list\">"
+      + payouts.map(function(t){
+          return '<div class="agy-row"><span class="agy-file">' + r6Ic("wallet") + '</span><span class="agy-rt"><b>' + finMoney(t.amount) + "</b><small>" + esc([t.description, niceDate(t.occurred_on)].filter(Boolean).join(" · ")) + "</small></span>"
+            + '<span class="o6-st ' + (t.status === "paid" ? "ok" : t.status === "void" ? "" : "warn") + '">' + esc(t.status === "paid" ? "Paid" : t.status === "void" ? "Cancelled" : "Owed") + "</span></div>";
+        }).join("") + "</div></section>" : "")
+    + "</div>";
 };
-window.cjMove = async function(id, stage){
-  var a = R6J && R6J.apps.filter(function(x){ return x.id === id; })[0]; if(!a) return;
-  var was = a.stage; a.stage = stage; cjSteps(); r6JobsPaint();
-  var r = await sb.rpc("set_job_stage", { p_id: id, p_stage: stage });
-  if(r.error){ a.stage = was; cjSteps(); r6JobsPaint(); toast(friendly(r.error), true); return; }
-  toast(stage === "hired" ? "Marked as hired. Press Hire to give them a login." : "Moved.");
-};
-window.cjTick = async function(id, el){
-  var on = el.checked;
-  var r = await sb.rpc("set_feed_badge", { p_profile: id, p_on: on });
-  if(r.error){ el.checked = !on; toast(friendly(r.error), true); return; }
-  if(on) delete R6J.off[id]; else R6J.off[id] = true;
-  if(typeof F7_OFF !== "undefined"){ if(on) delete F7_OFF[id]; else F7_OFF[id] = true; }
-  toast(on ? "Blue tick given back." : "Blue tick removed."); r6JobsPaint();
-};
-function cjCss(){
-  if($("cj-css")) return;
-  var st = document.createElement("style"); st.id = "cj-css";
-  st.textContent = [
-    "#portal .cj{display:flex;flex-direction:column;gap:34px;padding-bottom:30px}",
-    "#portal .cj>section.cj-sec{padding:0;margin:0}",
-    "#portal .cj-eye{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:10px}",
-    "#portal .cj-eye::before{content:'';width:22px;height:1px;background:var(--gold);opacity:.7}",
-    "#portal .cj-hero{padding:34px 34px 0;border-radius:26px;border:1px solid var(--line);background:radial-gradient(80% 120% at 0% 0%,color-mix(in srgb,var(--gold) 10%,transparent),transparent 60%),radial-gradient(70% 120% at 100% 0%,color-mix(in srgb,var(--violet) 12%,transparent),transparent 60%),var(--p1);overflow:hidden}",
-    "#portal .cj-hero h2{font-family:var(--disp);font-size:clamp(28px,4vw,48px);line-height:1.05;letter-spacing:-.035em;margin:14px 0 14px;max-width:20ch;text-wrap:balance}",
-    "#portal .cj-hero p{color:var(--dim);font-size:15px;line-height:1.6;max-width:62ch;margin:0}",
-    "#portal .cj-acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}",
-    "#portal .cj-stats{display:grid;grid-template-columns:repeat(4,1fr);margin:30px -34px 0;border-top:1px solid var(--line)}",
-    "#portal .cj-stats>div{padding:18px 22px 20px 34px;min-width:0}",
-    "#portal .cj-stats>div+div{border-left:1px solid var(--line);padding-left:22px}",
-    "#portal .cj-stats b{display:block;font-family:var(--disp);font-size:28px;letter-spacing:-.03em;color:var(--txt);line-height:1.1}",
-    "#portal .cj-stats span{font-size:12.5px;color:var(--dim)}",
-    "#portal .cj-stats .warn b{color:var(--gold)}",
-    "#portal .cj-sec h3{font-family:var(--disp);font-size:clamp(22px,2.6vw,30px);letter-spacing:-.025em;margin:10px 0 16px}",
-    "#portal .cj-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:cjs}",
-    "#portal .cj-steps li{counter-increment:cjs;min-width:0}",
-    "#portal .cj-steps button{all:unset;box-sizing:border-box;display:block;width:100%;height:100%;cursor:pointer;padding:16px 16px 18px;border-top:2px solid var(--gold);border-radius:0 0 14px 14px;background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 7%,transparent),transparent 75%);transition:background .2s}",
-    "#portal .cj-steps button::before{content:counter(cjs,decimal-leading-zero);display:block;font:600 11px var(--mono);letter-spacing:.14em;color:var(--gold);margin-bottom:8px}",
-    "#portal .cj-steps li:last-child button{border-top-color:var(--mint)}#portal .cj-steps li:last-child button::before{color:var(--mint)}",
-    "#portal .cj-steps button:hover,#portal .cj-steps li.on button{background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent 90%)}",
-    "#portal .cj-steps li.on button{outline:1px solid color-mix(in srgb,var(--gold) 45%,transparent);outline-offset:-1px}",
-    "#portal .cj-steps b{display:block;font-size:14.5px;color:var(--txt)}",
-    "#portal .cj-steps em{display:block;font:700 26px var(--disp);font-style:normal;color:var(--txt);margin:6px 0 2px;letter-spacing:-.02em}",
-    "#portal .cj-steps span{font-size:12.5px;color:var(--dim);line-height:1.45}",
-    "#portal .cj-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}",
-    "#portal .cj-tabs button{height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--line2,var(--line));background:none;color:var(--dim);font:600 13px inherit;font-family:inherit;cursor:pointer}",
-    "#portal .cj-tabs button b{opacity:.6;margin-left:3px}",
-    "#portal .cj-tabs button.on{background:var(--txt);color:var(--bg);border-color:transparent}",
-    "#portal .cj-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}",
-    "#portal .cj-role{border:1px solid var(--line);border-radius:20px;background:var(--p1);overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:transform .25s,border-color .25s}",
-    "#portal .cj-role:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--gold) 35%,var(--line))}",
-    "#portal .cj-role-ph{position:relative;aspect-ratio:16/9;background:radial-gradient(100% 100% at 30% 20%,color-mix(in srgb,var(--ac) 35%,transparent),transparent 70%),var(--p2);display:grid;place-items:center;color:var(--ac)}",
-    "#portal .cj-role-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}",
-    "#portal .cj-role-ph>svg{width:38px;height:38px}",
-    "#portal .cj-role-ph .cj-pill{position:absolute;left:12px;top:12px;backdrop-filter:blur(8px)}",
-    "#portal .cj-role-b{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}",
-    "#portal .cj-role-b small{font:500 11px var(--mono);letter-spacing:.06em;color:var(--faint);text-transform:uppercase}",
-    "#portal .cj-role-b h4{margin:2px 0 0;font-size:16.5px;line-height:1.3;color:var(--txt)}",
-    "#portal .cj-n{font-size:12.5px;color:var(--dim)}",
-    "#portal .cj-a{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:10px}",
-    "#portal .cj-pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font:600 11.5px inherit;font-family:inherit;background:rgba(10,14,26,.62);color:#fff;border:1px solid rgba(255,255,255,.14);white-space:nowrap}",
-    "#portal .cj-pill.ok{color:#7ff0c0}#portal .cj-pill.info{color:#a9c8ff}#portal .cj-pill.warn{color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent);border-color:transparent}#portal .cj-pill.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);border-color:transparent}",
-    "#portal .cj-who .cj-pill{background:color-mix(in srgb,var(--txt) 7%,transparent);color:var(--dim);border-color:transparent}",
-    "#portal .cj-who .cj-pill.warn,#portal .cj-who .cj-pill.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 13%,transparent)}",
-    "#portal .cj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}",
-    "#portal .cj-card{border:1px solid var(--line);border-radius:20px;background:var(--p1);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}",
-    "#portal .cj-who{display:flex;align-items:center;gap:12px;min-width:0}",
-    "#portal .cj-who>div{flex:1;min-width:0}",
-    "#portal .cj-who b{display:block;font-size:15px;color:var(--txt);overflow-wrap:anywhere}",
-    "#portal .cj-who b .f7-badge{display:inline-block;width:16px;height:16px;vertical-align:-2.5px}",
-    "#portal .cj-who small{display:block;font-size:12.5px;color:var(--dim);margin-top:2px}",
-    "#portal .cj-quote{margin:0;font-size:13.5px;line-height:1.55;color:var(--dim);padding-left:12px;border-left:2px solid color-mix(in srgb,var(--gold) 50%,transparent)}",
-    "#portal .cj-stage{display:flex;flex-wrap:wrap;gap:5px}",
-    "#portal .cj-stage button{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 12px inherit;font-family:inherit;cursor:pointer}",
-    "#portal .cj-stage button.on{background:var(--gold);color:#1a1205;border-color:transparent}",
-    "#portal .cj-stage button.no.on{background:color-mix(in srgb,var(--txt) 14%,transparent);color:var(--txt)}",
-    "#portal .cj-tick{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-radius:14px;background:color-mix(in srgb,var(--txt) 4%,transparent);cursor:pointer;position:relative}",
-    "#portal .cj-tick b{display:block;font-size:13px;color:var(--txt)}#portal .cj-tick small{font-size:12px;color:var(--dim)}",
-    "#portal .cj-tick input{position:absolute;opacity:0;width:1px;height:1px}",
-    "#portal .cj-tick i{flex:0 0 auto;width:40px;height:23px;border-radius:99px;background:color-mix(in srgb,var(--txt) 18%,transparent);position:relative;transition:background .2s}",
-    "#portal .cj-tick i::after{content:'';position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}",
-    "#portal .cj-tick input:checked+i{background:#0095F6}#portal .cj-tick input:checked+i::after{transform:translateX(17px)}",
-    "#portal .cj-tick input:focus-visible+i{outline:2px solid var(--gold);outline-offset:2px}",
-    "#portal .cj-filter{display:flex;align-items:center;gap:10px;margin:-4px 0 12px;font-size:13px;color:var(--dim)}",
-    "#portal .cj-filter button{all:unset;cursor:pointer;color:var(--gold);font-weight:600}",
-    "#portal .cj-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:40px 20px;border:1px dashed var(--line);border-radius:20px;color:var(--dim)}",
-    "#portal .cj-empty svg{width:28px;height:28px;color:var(--gold)}#portal .cj-empty b{color:var(--txt)}",
-    "@media(max-width:1100px){#portal .cj-steps{grid-template-columns:repeat(3,1fr)}}",
-    "@media(max-width:900px){#portal .cj-stats{grid-template-columns:1fr 1fr}#portal .cj-stats>div:nth-child(3){border-left:0;padding-left:34px}#portal .cj-stats>div:nth-child(n+3){border-top:1px solid var(--line)}}",
-    "@media(max-width:600px){#portal .cj{gap:26px}#portal .cj-hero{padding:24px 20px 0;border-radius:22px}#portal .cj-stats{margin:24px -20px 0}#portal .cj-stats>div,#portal .cj-stats>div:nth-child(3){padding:14px 14px 16px 20px}#portal .cj-stats>div+div{padding-left:14px}#portal .cj-stats>div:nth-child(3){padding-left:20px}#portal .cj-stats b{font-size:23px}#portal .cj-steps{grid-template-columns:1fr 1fr}#portal .cj-steps li:last-child{grid-column:1/-1}#portal .cj-grid,#portal .cj-roles{grid-template-columns:1fr}}"
+function prCss(){
+  if($("agy-css")) return;
+  var s = document.createElement("style"); s.id = "agy-css";
+  s.textContent = [
+    "#portal .agy .o6-eye{display:inline-flex;align-items:center;gap:8px}",
+    "#portal .agy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}",
+    "#portal .agy-card{background:var(--p1);border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:13px;min-width:0}",
+    "#portal .agy-card.is-new{border-color:color-mix(in srgb,var(--gold) 38%,var(--line));background:radial-gradient(120% 80% at 100% 0%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 60%),var(--p1)}",
+    "#portal .agy-top{display:flex;align-items:center;gap:12px;min-width:0}",
+    "#portal .agy-top>div{flex:1;min-width:0}",
+    "#portal .agy-top b{display:block;font-size:16px;color:var(--txt);overflow-wrap:anywhere;line-height:1.3}",
+    "#portal .agy-top small{display:block;font-size:12.5px;color:var(--dim);margin-top:2px}",
+    "#portal .agy-av{flex:0 0 44px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:700 15px var(--disp);color:#1B1203;background:linear-gradient(135deg,#FFD98A,#EE9B2F)}",
+    "#portal .agy-av.xl{flex-basis:68px;width:68px;height:68px;border-radius:20px;font-size:23px}",
+    "#portal .agy-meta{display:flex;flex-wrap:wrap;gap:6px}",
+    "#portal .agy-meta span{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:99px;background:color-mix(in srgb,var(--txt) 5%,transparent);font-size:12px;color:var(--dim);font-weight:600}",
+    "#portal .agy-meta span.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}",
+    "#portal .agy-meta svg,#portal .agy-contact svg,#portal .agy-login svg{width:14px;height:14px;flex:0 0 auto}",
+    "#portal .agy-contact{display:flex;flex-direction:column;gap:6px}",
+    "#portal .agy-contact a,#portal .agy-contact>span{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--txt);text-decoration:none;min-width:0}",
+    "#portal .agy-contact a span,#portal .agy-contact>span span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    "#portal .agy-contact a:hover{color:var(--gold)}",
+    "#portal .agy-contact a svg,#portal .agy-contact>span svg{color:var(--faint)}",
+    "#portal .agy-contact.light{flex-direction:row;flex-wrap:wrap;gap:8px 18px;margin-top:12px}",
+    "#portal .agy-contact.light a,#portal .agy-contact.light>span{color:#E4EAF5}",
+    "#portal .agy-contact.light a,#portal .agy-contact.light>span{max-width:100%}#portal .agy-hero-l>div{flex:1;min-width:0}",
+    "#portal .agy-check{border-radius:16px;padding:13px 14px;background:color-mix(in srgb,var(--txt) 4%,transparent);display:flex;flex-direction:column;gap:7px}",
+    "#portal .agy-check-h{display:flex;justify-content:space-between;align-items:center;font-size:13px}",
+    "#portal .agy-check-h b{color:var(--txt)}#portal .agy-check-h span{color:var(--gold);font-weight:700;font-size:12px}",
+    "#portal .agy-bar{display:block;height:4px;border-radius:9px;background:color-mix(in srgb,var(--txt) 9%,transparent);overflow:hidden;margin-bottom:3px}",
+    "#portal .agy-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--mint));border-radius:9px;transition:width .3s}",
+    "#portal .agy-check label{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--dim);cursor:pointer;line-height:1.4}",
+    "#portal .agy-check input{width:16px;height:16px;margin:1px 0 0;accent-color:var(--gold);flex:0 0 auto}",
+    "#portal .agy-check input:checked+span{color:var(--txt);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--txt) 35%,transparent)}",
+    "#portal .agy-check small{font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:2px}",
+    "#portal .agy-login{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--dim)}",
+    "#portal .agy-login.ok{color:var(--mint)}#portal .agy-login.warn{color:var(--gold)}",
+    "#portal .agy-back{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:-4px}",
+    "#portal .agy-back svg{width:16px;height:16px}#portal .agy-back:hover{color:var(--txt)}",
+    "#portal .agy-hero-l{display:flex;gap:18px;align-items:center;min-width:0;flex:1 1 420px}",
+    "#portal .agy-hero-l>div{min-width:0}",
+    "#portal .agy-hero h2{overflow-wrap:anywhere}",
+    "#portal .agy-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}",
+    "#portal .agy-list{display:flex;flex-direction:column}",
+    "#portal .agy-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-top:1px solid var(--line);min-width:0}",
+    "#portal .agy-row:first-child{border-top:0}",
+    "#portal .agy-rt{flex:1;min-width:0}#portal .agy-rt b{display:block;font-size:14px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    "#portal .agy-rt small{display:block;font-size:12px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    "#portal .agy-file{flex:0 0 36px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--violet) 14%,transparent);color:var(--violet)}",
+    "#portal .agy-file svg{width:17px;height:17px}",
+    "#portal .agy-note{margin:-4px 0 6px;font-size:12.5px;color:var(--faint)}",
+    "#portal .o6-empty.sm{padding:22px 10px}",
+    "@media(max-width:900px){#portal .agy-two{grid-template-columns:1fr}}",
+    "@media(max-width:600px){#portal .agy-grid{grid-template-columns:1fr}#portal .agy-hero-l{flex-direction:column;align-items:stretch;gap:12px;flex-basis:100%;width:100%}#portal .agy-hero-l>.agy-av{align-self:flex-start}#portal .agy-av.xl{width:56px;height:56px;flex-basis:56px;font-size:19px}#portal .agy-row{flex-wrap:wrap}#portal .agy-row .agy-rt{flex:1 1 60%}}"
   ].join("\n");
-  document.head.appendChild(st);
+  document.head.appendChild(s);
 }
 
 /* ---------- Housing: a proper residence page with a way back ---------- */
@@ -30288,7 +30292,18 @@ window.f7Menu = function(ev, id){
     + '<button onclick="f7Share(\'' + jsq(id) + '\')">' + F7I.share + "Copy link</button>"
     + (p.whop_post_id ? '<button disabled>' + (typeof WHOP_ICON !== "undefined" ? WHOP_ICON : "") + "Already on Whop</button>"
         : '<button onclick="f7ToWhop(\'' + jsq(id) + '\')">' + (typeof WHOP_ICON !== "undefined" ? WHOP_ICON : "") + "Post to the Whop community</button>")
+    + (PROF && PROF.is_owner && p.author_id ? '<button onclick="f7Tick(\'' + jsq(p.author_id) + '\')">' + F7_BADGE + (F7_OFF[p.author_id] ? "Give " + esc(String(p.author_name || "them").split(" ")[0]) + " the blue tick" : "Remove " + esc(String(p.author_name || "their").split(" ")[0]) + "'s blue tick") + "</button>" : "")
     + '<button class="danger" onclick="f7Delete(\'' + jsq(id) + '\')">' + F7I.close + "Delete post</button></div>");
+};
+/* owner only: the tick comes off (or back) on every post and comment by that person */
+window.f7Tick = async function(pid){
+  var on = !!F7_OFF[pid];
+  var r = await sb.rpc("set_feed_badge", { p_profile: pid, p_on: on });
+  if(r.error){ toast(friendly(r.error), true); return; }
+  if(on) delete F7_OFF[pid]; else F7_OFF[pid] = true;
+  var m = document.querySelector(".f7-menu"); if(m) m.remove();
+  toast(on ? "Blue tick given back." : "Blue tick removed.");
+  f7Paint();
 };
 document.addEventListener("click", function(e){ var m = document.querySelector(".f7-menu"); if(m && !m.contains(e.target)) m.remove(); });
 window.f7Pin = async function(id){
