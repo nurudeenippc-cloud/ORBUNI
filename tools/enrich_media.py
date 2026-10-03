@@ -64,21 +64,28 @@ def housing_photos():
     # Orbuni's own three room photos join the mix
     photos += [{"local": "/photos/home/dorm-desk-loft.jpg"}, {"local": "/photos/home/fcard-housing.jpg"},
                {"local": "/photos/home/dorm-bunk-seaview.jpg"}]
+    # real Istanbul student-residence rooms (site/photos/housing-real), screenshotted from
+    # university and residence listing pages; every page leads with one of these
+    real = sorted(f for f in os.listdir(os.path.join(SITE, "photos", "housing-real")) if f.endswith(".jpg"))
+    first_real = len(photos)
+    photos += [{"local": "/photos/housing-real/" + f} for f in real]
     pages = sorted(glob.glob(os.path.join(SITE, "housing", "*", "index.html")))
     n = len(photos)
     # a different set of three for every page, the same every run (fixed seed)
     import random
     rnd, used, mixes = random.Random(2026), set(), []
     while len(mixes) < len(pages):
-        mix = tuple(rnd.sample(range(n), 3))
-        if mix[0] in [m[0] for m in mixes[-6:]] or frozenset(mix) in used:
+        lead = first_real + len(mixes) % len(real)          # each real photo leads in turn
+        rest = rnd.sample([j for j in range(n) if j != lead], 2)
+        mix = (lead, rest[0], rest[1])
+        if frozenset(mix) in used:
             continue
         used.add(frozenset(mix)); mixes.append(mix)
 
     def img(p, w, h, first):
         load = 'fetchpriority="high"' if first else 'loading="lazy"'
         src = p["local"] if "local" in p else f'{p["url"]}&auto=format&fit=crop&w={w}&h={h}&q=70'
-        return (f'<img class="" src="{esc(src)}" alt="Example of a furnished student room" width="{w}" height="{h}" '
+        return (f'<img class="" src="{esc(src)}" alt="A furnished student residence room in Istanbul" width="{w}" height="{h}" '
                 f'{load} decoding="async">')
 
     for i, f in enumerate(pages):
@@ -91,7 +98,7 @@ def housing_photos():
         gal = '<div class="gal">' + "".join(f"<figure><picture>{img(p, 900, 600, False)}</picture></figure>" for p in pick) + "</div>"
         s, b = re.subn(r'<div class="gal">.*?</div>(?=\s*<p class="note")', gal, s, count=1, flags=re.S)
         s = s.replace("Photos show typical Orbuni-arranged student rooms, not this exact room.",
-                      "Example rooms, not this exact residence — your counsellor sends real photos with the name and rent. Photos: Unsplash.")
+                      "Rooms in Istanbul student residences like this one, not this exact room — your counsellor sends this residence's own photos with its name and rent.")
         open(f, "w", encoding="utf-8").write(s)
         if not (a and b):
             print("housing page not changed fully:", f, a, b)

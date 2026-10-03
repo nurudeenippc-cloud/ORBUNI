@@ -29,7 +29,16 @@ this note is no longer needed — that code path was cleaned up this round,
 see below.)
 
 
-WHAT CHANGED THIS ROUND (r24, 3 Oct 2026)
+WHAT CHANGED THIS ROUND (r25, 3 Oct 2026) — includes everything in r24
+---------------------------------------------------------------------------
+  - Housing: 8 real Istanbul student-residence room photos (photos/
+    housing-real/, taken from university and residence listing pages) now
+    lead every housing page and every card on the housing list, mixed with
+    the example photos. The note under each gallery says they are rooms in
+    residences like this one, and that the counsellor sends the exact
+    residence's photos with its name and rent.
+
+PREVIOUS ROUND (r24, 3 Oct 2026)
 ------------------------------------------
   - Phones: the menu on the university / subject / housing / guide pages no
     longer slides sideways. Logo and "Apply free" on top, all five links in
