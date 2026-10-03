@@ -52,6 +52,12 @@ SUBJECTS = [
     ("nutrition-and-dietetics", "Nutrition & Dietetics", ["Nutrition and Dietetics"], "Four-year nutrition and dietetics degrees."),
 ]
 
+ICON = {"medicine": "🩺", "dentistry": "🦷", "pharmacy": "💊", "nursing": "🏥", "computer-engineering": "💻",
+        "software-engineering": "⌨️", "artificial-intelligence-engineering": "🤖", "electrical-and-electronics-engineering": "⚡",
+        "civil-engineering": "🏗️", "mechanical-engineering": "⚙️", "industrial-engineering": "🏭", "architecture": "📐",
+        "business-administration": "📊", "economics": "📈", "international-relations": "🌍", "law": "⚖️", "psychology": "🧠",
+        "physiotherapy": "🦴", "nutrition-and-dietetics": "🥗"}
+
 # university names whose page lives under a different address
 SLUG_FIX = {"TOBB ETU University of Economics & Technology": "tobb-etu-university-of-economics-and-technology"}
 
@@ -117,7 +123,27 @@ EXTRA_CSS = """<style>
 td a{color:var(--txt);text-decoration:none;font-weight:600}
 td a:hover{color:var(--gold)}
 .hero.photo{min-height:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;list-style:none;margin:0;padding:0}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:4/3;border-radius:var(--rl);overflow:hidden;
+  color:#fff;text-decoration:none;border:1px solid var(--line);background:var(--p2) var(--img) center/cover no-repeat;isolation:isolate;
+  transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .25s}
+.tile::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,12,22,.05) 25%,rgba(7,12,22,.88) 82%)}
+.tile:hover{transform:translateY(-4px);border-color:rgba(242,181,68,.6)}
+.tile .ic{position:absolute;top:12px;left:12px;font-size:22px;line-height:1;background:rgba(7,12,22,.6);backdrop-filter:blur(6px);border-radius:12px;padding:8px}
+.tile b{display:block;font:800 21px/1.15 var(--disp);letter-spacing:-.02em;padding:0 16px}
+.tile span{display:block;font-size:13px;color:#d6deea;padding:4px 16px 16px}
+.tile span em{font-style:normal;color:var(--gold);font-weight:700}
+@media(max-width:560px){.tiles{grid-template-columns:1fr 1fr;gap:9px}.tile{aspect-ratio:3/4}.tile b{font-size:16px;padding:0 11px}.tile span{font-size:11.5px;padding:3px 11px 11px}.tile .ic{font-size:18px;padding:6px}}
 .who{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+/* subject pages: the four numbers as one slim strip instead of four boxes */
+.hero .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:26px;background:rgba(7,12,22,.55);backdrop-filter:blur(8px);
+  border:1px solid var(--line2);border-radius:99px;padding:6px 8px;width:max-content;max-width:100%}
+.hero .stat{background:none;border:0;border-radius:0;padding:6px 16px;backdrop-filter:none;display:flex;align-items:baseline;gap:7px}
+.hero .stat+.stat{border-left:1px solid var(--line2)}
+.hero .stat b{font-size:19px;display:inline}
+.hero .stat span{font-size:12.5px}
+@media(max-width:560px){.hero .stats{border-radius:18px;width:100%;padding:4px}.hero .stat{width:50%;padding:8px 10px}
+  .hero .stat+.stat{border-left:0}.hero .stat:nth-child(even){border-left:1px solid var(--line2)}.hero .stat:nth-child(n+3){border-top:1px solid var(--line2)}}
 </style>"""
 
 
@@ -163,6 +189,17 @@ def faq(title):
     ]
 
 
+def tiles(made):
+    """Photo tiles for the subject hub (and the universities page)."""
+    out = []
+    for s, t, n, c, p, img in made:
+        bg = f' style="--img:url(\'{img}/01-card.jpg\')"' if img else ""
+        price = f' · from <em>{usd(c)}</em>/yr' if c else ""
+        out.append(f'<li><a class="tile" href="{p}"{bg}><i class="ic" aria-hidden="true">{ICON.get(s, "🎓")}</i>'
+                   f'<b>{esc(t)}</b><span>{n} universities{price}</span></a></li>')
+    return "".join(out)
+
+
 def build():
     rows = json.load(open(os.path.join(DATA, "bachelors.json"), encoding="utf-8"))
     rows = [r for r in rows if r[2] == "Türkiye"]
@@ -170,6 +207,7 @@ def build():
     today = date.today().isoformat()
     made = []
     dirs = photo_dirs()
+    used_tiles = set()
     for slug, title, names, line in SUBJECTS:
         want = {n.lower() for n in names}
         hits = [r for r in rows if (r[3] or "").strip().lower() in want]
@@ -209,7 +247,7 @@ def build():
                  f'<div class="stat"><b>{len(hits)}</b><span>programmes</span></div>',
                  f'<div class="stat"><b>{english}</b><span>teach it in English</span></div>']
         if cheapest:
-            stats.append(f'<div class="stat"><b>{usd(cheapest)}</b><span>a year, cheapest after discount</span></div>')
+            stats.append(f'<div class="stat"><b>{usd(cheapest)}</b><span>cheapest / year</span></div>')
         # the top photo: the campus of the university with the lowest yearly fee that has a photo
         ranked = sorted(by_uni, key=lambda u: min((float(r[8] if r[8] is not None else r[7]) for r in by_uni[u] if r[10] and (r[8] or r[7])), default=1e9))
         top = next((u for u in ranked if photo_for(u, dirs)), None)
@@ -251,13 +289,14 @@ def build():
         out = os.path.join(SITE, "study", f"{slug}-in-turkey")
         os.makedirs(out, exist_ok=True)
         open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page)
-        made.append((slug, title, len(by_uni), cheapest, path))
+        tile = next((photo_for(u, dirs) for u in ranked if photo_for(u, dirs) and photo_for(u, dirs) not in used_tiles), None) \
+            or (photo_for(top, dirs) if top else None)
+        used_tiles.add(tile)
+        made.append((slug, title, len(by_uni), cheapest, path, tile))
 
     # hub page
     url = BASE + "/study/"
-    cards = "".join(
-        f'<li><a href="{p}"><b>{esc(t)}</b><span>{n} universities' + (f' · from {usd(c)} a year' if c else "") + "</span></a></li>"
-        for s, t, n, c, p in made)
+    cards = tiles(made)
     ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Orbuni", "item": BASE + "/"},
         {"@type": "ListItem", "position": 2, "name": "Study by subject", "item": url}]},
@@ -268,11 +307,22 @@ def build():
                url, ld) + f"""<div class="hero"><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › Study by subject</p>
 <p class="eyebrow">Bachelor's degrees · Turkey (Türkiye)</p><h1>Study in Turkey by subject</h1>
 <p class="lead">Pick your subject to see every partner university in Turkey that teaches it to international students, the teaching language and the published fee.</p></div></div>
-<section class="s"><div class="wrap"><ul class="subj">{cards}</ul>
+<section class="s"><div class="wrap"><ul class="tiles">{cards}</ul>
 <p class="note" style="margin-top:18px">Not listed? <a href="/#progs">Search all programmes</a> or <a href="/universities/">browse every university</a>.</p></div></section>
 """ + FOOT
     os.makedirs(os.path.join(SITE, "study"), exist_ok=True)
     open(os.path.join(SITE, "study", "index.html"), "w", encoding="utf-8").write(hub)
+
+    # the same tiles on /universities/ ("What do you want to study in Turkey?")
+    up = os.path.join(SITE, "universities", "index.html")
+    t = open(up, encoding="utf-8").read()
+    t = re.sub(r'<section class="s" id="by-subject">.*?</section>\n', "", t, flags=re.S)
+    tile_css = re.search(r"\.tiles\{.*?\n@media\(max-width:560px\)\{[^\n]*\}", EXTRA_CSS, re.S).group(0)
+    block = (f'<section class="s" id="by-subject"><div class="wrap"><style>{tile_css}</style><p class="eyebrow">Study by subject</p>'
+             f'<h2>What do you want to study in Turkey?</h2><p class="lead2">Pick a subject to see every partner university that '
+             f'teaches it, in English or Turkish, with the published fee.</p><ul class="tiles">{tiles(made)}</ul></div></section>\n')
+    i = t.index('<section class="s')
+    open(up, "w", encoding="utf-8").write(t[:i] + block + t[i:])
 
     # sitemap: replace any earlier study entries, add the current ones before </urlset>
     sm_path = os.path.join(SITE, "sitemap.xml")

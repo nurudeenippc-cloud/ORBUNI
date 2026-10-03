@@ -33,6 +33,7 @@ upload, as in `site/HOW-TO-USE.txt`.
 - r24 (3 Oct 2026): phone menu without sliding, Ankara Medipol photo, subject pages
   with photos and "Turkey" addresses, subjects on /universities/, student-room photos.
 - r25 (3 Oct 2026): real Istanbul residence room photos lead every housing page.
+- r26 (3 Oct 2026): subject photo tiles; slim number strip on subject pages.
 
 ## Subject pages
 
