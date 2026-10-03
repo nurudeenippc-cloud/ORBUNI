@@ -37,3 +37,8 @@ begin
 end $$;
 revoke all on function public.set_job_stage(uuid, text) from public, anon;
 grant execute on function public.set_job_stage(uuid, text) to authenticated;
+
+-- ---------------------------------------------------------------- ops_tools_paid_so_far
+-- The stack: what has actually been paid for each tool, from the receipts.
+alter table public.ops_tools add column if not exists paid_so_far numeric check (paid_so_far is null or paid_so_far >= 0);
+alter table public.ops_tools add column if not exists paid_currency text not null default 'USD';

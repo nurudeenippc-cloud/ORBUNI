@@ -2796,6 +2796,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 @media(max-width:640px){#portal .r6-ev time{position:absolute;right:26px;bottom:10px;padding:0;font-size:11px}#portal .r6-ev-t{padding-bottom:14px}}
 
 /* --- Careers --- */
+#portal .r6-tool-paid{font-size:12.5px;color:var(--dim);margin-top:-2px}#portal .r6-tool-paid b{color:var(--gold);font-weight:700}
 #portal .r6-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 #portal .r6-person{background:var(--p1);border:1px solid var(--line);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 #portal .r6-person-h{display:flex;align-items:center;gap:12px}
@@ -3013,6 +3014,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 #portal .f7-pin svg{width:12px;height:12px}
 #portal .f7-aud{color:var(--f7-blue)}
 .f7-badge{width:17px;height:17px;flex:0 0 auto}
+.orb-tick{display:inline-flex;vertical-align:-2.5px;margin-left:4px}.orb-tick .f7-badge{width:15px;height:15px}
 #portal .f7-more{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:0;background:none;color:var(--dim);display:grid;place-items:center;cursor:pointer}
 #portal .f7-more:hover{background:var(--p2);color:var(--txt)}
 #portal .f7-more svg{width:20px;height:20px}
@@ -18314,6 +18316,15 @@ async function loadPeople(){
   var r = await sb.from("profiles").select("id,first_name,last_name,email,role,job_title,is_owner,photo_path");
   CHPEOPLE = {};
   (r.data || []).forEach(function(p){ CHPEOPLE[p.id] = p; });
+  try{ if(typeof f7LoadBadges === "function") await f7LoadBadges(); }catch(e){}
+}
+/* the blue tick: every Orbuni team member, wherever their name shows, unless the owner took it off */
+function orbTick(id){
+  if(!id || typeof F7_BADGE === "undefined" || !F7_BADGE) return "";
+  var p = CHPEOPLE[id];
+  var team = p ? (p.role === "staff" || p.role === "admin") : !!(PROF && PROF.role === "partner");
+  if(!team || (typeof F7_OFF !== "undefined" && F7_OFF[id])) return "";
+  return '<span class="orb-tick">' + F7_BADGE + "</span>";
 }
 function personName(id){
   var p = CHPEOPLE[id];
@@ -18431,7 +18442,7 @@ function chAvatarHtml(c, big){
 function chBtn(c){
   return '<button class="cbtn' + (CUR && CUR.id === c.id ? " on" : "") + '" onclick="chOpen(\'' + jsq(c.id) + '\')">'
     + chAvatarHtml(c)
-    + '<span class="cn">' + esc(chChannelLabel(c)) + "</span>"
+    + '<span class="cn">' + esc(chChannelLabel(c)) + (c.kind === "direct" ? orbTick(c.other_member_id) : "") + "</span>"
     + (c.unread && !c.muted ? '<span class="cu">' + c.unread + "</span>" : "") + "</button>";
 }
 // WhatsApp-style ordering: whoever was talked to most recently floats to the
@@ -18729,7 +18740,7 @@ window.chOpenSettings = async function(){
           + CONNECTOR_STATE.team.map(function(c){
               var meta = CONNECTOR_META[c.provider] || { icon:"🔌", label:c.provider };
               return '<div class="setrow" style="cursor:default"><span class="ci">' + meta.icon + "</span>"
-                + '<span class="setrow-t"><b>' + esc(personName(c.profile_id)) + "</b><i>"
+                + '<span class="setrow-t"><b>' + esc(personName(c.profile_id)) + orbTick(c.profile_id) + "</b><i>"
                 + esc(meta.label + (c.account_email ? " · " + c.account_email : "")) + "</i></span></div>";
             }).join("")
         : "")
@@ -18757,7 +18768,7 @@ window.dmPick = function(){
               + '<span class="av sm" data-face="' + esc(p.photo_path || "")
               + '" data-f="' + esc(p.first_name || "") + '" data-l="' + esc(p.last_name || "") + '">'
               + esc(initials(p.first_name, p.last_name)) + "</span>"
-              + '<div style="flex:1;min-width:0"><b>' + esc(personName(p.id)) + "</b><div class=\"s\">"
+              + '<div style="flex:1;min-width:0"><b>' + esc(personName(p.id)) + orbTick(p.id) + "</b><div class=\"s\">"
               + esc(p.job_title || p.role || "") + "</div></div>"
               + '<button class="btn btn-p btn-s" style="flex:0 0 auto" onclick="dmStart(\'' + jsq(p.id) + '\')">Message</button></div>';
           }).join("")
@@ -18870,7 +18881,7 @@ async function drawRoom(){
   room.innerHTML = '<div class="chead">'
     + (isPhone() ? '<button class="cback" onclick="chBackToList()" aria-label="Back to spaces">←</button>' : "")
     + chAvatarHtml(CUR, true)
-    + "<div><b>" + esc(roomName) + "</b><span>"
+    + "<div><b>" + esc(roomName) + (CUR.kind === "direct" ? orbTick(CUR.other_member_id) : "") + "</b><span>"
     + (asPartner && CUR.kind === "partner"
         ? "Your line to the Orbuni team"
         : CUR.kind === "direct"
@@ -19134,7 +19145,7 @@ function chMsgHtml(m, same, voiceUrls, threadFoot, inThread){
     + ' data-f="' + esc(au.first_name || "") + '" data-l="' + esc(au.last_name || "") + '">'
     + esc(initials(au.first_name, au.last_name)) + "</span>"
     + '<span class="mb">'
-    + (same ? "" : '<span class="mh"><b>' + esc(personName(m.author_id)) + "</b>"
+    + (same ? "" : '<span class="mh"><b>' + esc(personName(m.author_id)) + orbTick(m.author_id) + "</b>"
         + (tag ? '<span class="tag">' + tag + "</span>" : "")
         + (m.pinned_at ? '<span class="mpin" title="Pinned">' + NAVI.pin + "</span>" : "")
         + "<i>" + d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) + "</i></span>")
@@ -19332,7 +19343,7 @@ window.chShowPinned = async function(){
             return '<div class="pin-row"><span class="mav" data-face="' + esc(au.photo_path || "")
               + '" data-f="' + esc(au.first_name || "") + '" data-l="' + esc(au.last_name || "") + '">'
               + esc(initials(au.first_name, au.last_name)) + "</span>"
-              + '<span class="pin-body"><b>' + esc(personName(m.author_id)) + "</b> · " + esc(niceDate(m.created_at))
+              + '<span class="pin-body"><b>' + esc(personName(m.author_id)) + orbTick(m.author_id) + "</b> · " + esc(niceDate(m.created_at))
               + "<p>" + mentionBodyHtml(m.body || "", m.mentions) + "</p></span>"
               + '<button class="btn btn-o btn-s" onclick="msgUnpinFromList(\'' + jsq(m.id) + '\')">Unpin</button>'
               + "</div>";
@@ -19524,7 +19535,7 @@ async function chSearchRun(q){
               + '<span class="mav" data-face="' + esc(au.photo_path || "")
               + '" data-f="' + esc(au.first_name || "") + '" data-l="' + esc(au.last_name || "") + '">'
               + esc(initials(au.first_name, au.last_name)) + "</span>"
-              + '<span class="srch-b"><span class="srch-h"><b>' + esc(personName(m.author_id)) + "</b>"
+              + '<span class="srch-b"><span class="srch-h"><b>' + esc(personName(m.author_id)) + orbTick(m.author_id) + "</b>"
               + '<span class="srch-room">' + (c ? esc(chChannelLabel(c)) : "a room") + "</span>"
               + "<i>" + esc(shortWhen(m.created_at)) + "</i></span>"
               + "<p>" + searchSnippet(m.body || "", q) + "</p></span></button>";
@@ -20167,7 +20178,7 @@ window.chMembers = async function(){
         var p = CHPEOPLE[m.profile_id] || {};
         return '<tr><td><div class="whorow"><span class="av sm" data-face="' + esc(p.photo_path || "")
           + '" data-f="' + esc(p.first_name || "") + '" data-l="' + esc(p.last_name || "") + '">'
-          + esc(initials(p.first_name, p.last_name)) + "</span><span><b>" + esc(personName(m.profile_id)) + "</b><br>"
+          + esc(initials(p.first_name, p.last_name)) + "</span><span><b>" + esc(personName(m.profile_id)) + orbTick(m.profile_id) + "</b><br>"
           + '<span style="font-size:12px;color:var(--faint)">' + esc(p.email || "") + "</span></span></div></td>"
           + "<td>" + esc(p.job_title || p.role || "") + "</td>"
           + '<td><input type="checkbox"' + (m.is_head ? " checked" : "")
@@ -20288,10 +20299,17 @@ async function aOps(){
   (pr.data || []).forEach(function(x){ people[x.id] = ((x.first_name||"") + " " + (x.last_name||"")).trim(); });
 
   var paying = tools.filter(function(t){ return Number(t.cost_amount) > 0; });
-  var monthly = paying.reduce(function(n, t){
-    var a = Number(t.cost_amount) || 0;
-    return n + (t.cost_period === "year" ? a / 12 : t.cost_period === "month" ? a : 0);
-  }, 0);
+  // dollars and lira are added up separately: 128 lira is not 128 dollars
+  var perCur = {};
+  paying.forEach(function(t){
+    var a = Number(t.cost_amount) || 0, m = t.cost_period === "year" ? a / 12 : t.cost_period === "month" ? a : 0;
+    if(m) perCur[t.cost_currency || "USD"] = (perCur[t.cost_currency || "USD"] || 0) + m;
+  });
+  var monthly = perCur.USD || 0;
+  var monthlyOther = Object.keys(perCur).filter(function(c){ return c !== "USD"; }).map(function(c){ return c + " " + perCur[c].toFixed(0); }).join(" + ");
+  var spent = {};
+  tools.forEach(function(t){ if(Number(t.paid_so_far) > 0){ var c = t.paid_currency || "USD"; spent[c] = (spent[c] || 0) + Number(t.paid_so_far); } });
+  var spentTxt = Object.keys(spent).sort(function(a){ return a === "USD" ? -1 : 1; }).map(function(c){ return c === "USD" ? "$" + spent[c].toFixed(2) : c + " " + spent[c].toFixed(2); }).join(" + ");
   var soon = tools.filter(function(t){ var d = daysUntil(t.renews_on); return d !== null && d <= 30; });
   var noPrice = tools.filter(function(t){ return t.cost_amount == null; });
 
@@ -20314,14 +20332,16 @@ async function aOps(){
 
   box.innerHTML = dashPage([
       dashHello(null, tools.length
-          ? plural(tools.length, "tool") + " on the books · about " + (monthly ? "$" + monthly.toFixed(0) : "$0") + " a month"
+          ? plural(tools.length, "tool") + " on the books · about " + (monthly ? "$" + monthly.toFixed(0) : "$0") + (monthlyOther ? " + " + monthlyOther : "") + " a month" + (spentTxt ? " · " + spentTxt + " paid so far" : "")
           : "Nothing recorded yet",
         PROF.role === "admin"
           ? { label:"Refresh what I can read", icon:NAVI.trending, go:"opsRefresh(event)" } : null,
         "The stack"),
       dashStats([
         { label:"Roughly per month", icon:NAVI.wallet, value: monthly ? "$" + monthly.toFixed(0) : "$0",
-          foot:{ label: noPrice.length ? plural(noPrice.length, "price") + " still not recorded" : "every price recorded" } },
+          foot:{ label: (monthlyOther ? "plus " + monthlyOther + " · " : "") + (noPrice.length ? plural(noPrice.length, "price") + " still not recorded" : "every price recorded") } },
+        { label:"Paid so far", icon:NAVI.barChart, value: spentTxt ? spentTxt.split(" + ")[0] : "$0",
+          foot:{ label: spentTxt.indexOf(" + ") > -1 ? "plus " + spentTxt.split(" + ").slice(1).join(" + ") + " · from receipts" : "from the receipts recorded" } },
         { label:"Costing money", icon:NAVI.barChart, value: paying.length,
           foot:{ label: paying.length ? "of " + tools.length : "everything is on a free tier" } },
         { label:"Renewing within 30 days", icon:NAVI.clock, value: soon.length,
@@ -22948,6 +22968,11 @@ window.opsOpen = async function(id){
     + ["free","month","year","one-off"].map(function(o){
         return '<option' + (t.cost_period === o ? " selected" : "") + ">" + o + "</option>"; }).join("")
     + "</select></div></div>"
+    + '<div class="f2">' + f("Paid so far", "paid_so_far", "number", t.paid_so_far, "total of the receipts")
+    + '<div class="fld"><label>In</label><select id="op-paid_currency"' + (canEdit ? "" : " disabled") + ">"
+    + ["USD","TRY","EUR","NGN"].map(function(o){
+        return '<option' + ((t.paid_currency || "USD") === o ? " selected" : "") + ">" + o + "</option>"; }).join("")
+    + "</select></div></div>"
     + '<div class="f2">' + f("Renews on", "renews_on", "date", t.renews_on)
     + '<div class="fld"><label>Status</label><select id="op-status"' + (canEdit ? "" : " disabled") + ">"
     + ["live","trial","expiring","lapsed"].map(function(o){
@@ -22973,7 +22998,9 @@ window.opsSave = async function(id, ev){
     cost_period: v2("cost_period"),
     renews_on: v2("renews_on") || null,
     status: v2("status"),
-    notes: v2("notes") || null
+    notes: v2("notes") || null,
+    paid_so_far: v2("paid_so_far") === "" || v2("paid_so_far") == null ? null : Number(v2("paid_so_far")),
+    paid_currency: v2("paid_currency") || "USD"
   };
   var r = await sb.from("ops_tools").update(patch).eq("id", id);
   busy(btn, false);
@@ -29350,11 +29377,219 @@ window.r6AddMemberSave = async function(ev){
     + '<div class="r6-person-a"><button class="o6-btn gold" onclick="copyText(\'' + link + '\')">' + r6Ic("link") + " Copy sign-up link</button></div></section>";
 };
 
+/* ---------- Careers (founder view), redesigned to match the public careers page ----------
+   Same look as myorbuni.com careers: a big headline, a stat strip, the four hiring steps
+   (now live: each applicant sits in one of them), then roles / applicants / team. */
+var CJ_STAGES = [["new", "Applied", "Read the CV"], ["replied", "Replied", "Within 5 working days"], ["call", "30-minute call", "With you or the COO"], ["task", "Paid task", "Close to the real job"], ["hired", "Hired", "Added to the team"]];
+var CJ_STAGE_F = null;
+function cjPhoto(r){
+  var u = r && r.photo;
+  if(!u && r && r.title && typeof JOBS !== "undefined"){ var m = JOBS.filter(function(x){ return x.title === r.title; })[0]; u = m && m.photo; }
+  return u ? String(u).replace(/([?&])w=\d+/, "$1w=640").replace(/([?&])q=\d+/, "$1q=70") : "";
+}
+aJobs = async function(){
+  var box = $("a-live"); if(!box) return;
+  cjCss();
+  box.innerHTML = '<div style="padding:30px;color:var(--faint)"><span class="spin"></span> Loading…</div>';
+  var owner = !!(PROF && PROF.is_owner), canEdit = owner || canManageSec("jobs");
+  var res = await Promise.all([
+    sb.from("job_applications").select("*").order("created_at", { ascending:false }).limit(200),
+    sb.from("job_openings").select("*").order("created_at", { ascending:false }),
+    sb.from("profiles").select("id,first_name,last_name,job_title,role,is_owner,photo_path,email").in("role", ["staff","admin"]).order("created_at"),
+    sb.from("feed_badges").select("profile_id,verified")
+  ]);
+  var apps = res[0].data || [], roles = res[1].data || [], team = res[2].data || [];
+  var off = {}; (res[3].data || []).forEach(function(x){ if(!x.verified) off[x.profile_id] = true; });
+  var builtIn = (typeof JOBS !== "undefined" ? JOBS : []).filter(function(j){ return !j.__db; });
+  var openN = roles.filter(function(r){ return r.status === "open"; }).length + builtIn.length;
+  var privN = roles.filter(function(r){ return r.visibility === "link" && r.status === "open"; }).length;
+  var weekN = apps.filter(function(a){ return Date.now() - new Date(a.created_at) < 7 * 864e5; }).length;
+  var waiting = apps.filter(function(a){ return (a.stage || "new") === "new" && Date.now() - new Date(a.created_at) > 5 * 864e5; }).length;
+  R6J = { apps: apps, roles: roles, team: team, builtIn: builtIn, canEdit: canEdit, owner: owner, off: off };
+  box.innerHTML = '<div class="cj">'
+    + '<section class="cj-hero"><span class="cj-eye">Careers · founder view</span>'
+    + '<h2>Build the team that gets a student <span class="grad">from a dream to a lecture hall.</span></h2>'
+    + "<p>Open a role on the website or as a private link, move every applicant through the four hiring steps, and add the people you hire straight to the team.</p>"
+    + '<div class="cj-acts">' + (canEdit ? '<button class="o6-btn gold" onclick="r6RoleEdit()">' + r6Ic("plus") + " Open a role</button>" : "")
+    + (owner ? '<button class="o6-btn" onclick="r6JobsTab(\'team\');setTimeout(r6AddMember,50)">' + r6Ic("users") + " Add a team member</button>" : "")
+    + '<a class="o6-btn" href="/#careers" target="_blank" rel="noopener">' + r6Ic("link") + " See the public page</a></div>"
+    + '<div class="cj-stats">'
+    + "<div><b>" + openN + "</b><span>open roles" + (privN ? " · " + privN + " by private link" : "") + "</span></div>"
+    + "<div><b>" + apps.length + "</b><span>applicants · " + (weekN ? weekN + " this week" : "none this week") + "</span></div>"
+    + "<div" + (waiting ? ' class="warn"' : "") + "><b>" + waiting + "</b><span>" + (waiting ? "waiting more than 5 days for a reply" : "nobody waiting on a reply") + "</span></div>"
+    + "<div><b>" + team.length + "</b><span>people on the team</span></div></div></section>"
+    + '<section class="cj-sec"><span class="cj-eye">How hiring works</span><h3>Four steps, then hired</h3><ol class="cj-steps" id="cj-steps"></ol></section>'
+    + '<section class="cj-sec"><div class="cj-tabs" role="tablist">' + [["roles", "Open roles", openN], ["apps", "Applicants", apps.length], ["team", "Team", team.length]].map(function(t){
+        return '<button data-t="' + t[0] + '" class="' + (JOBS_TAB === t[0] ? "on" : "") + '" onclick="r6JobsTab(\'' + t[0] + '\')">' + t[1] + " <b>" + t[2] + "</b></button>"; }).join("") + "</div>"
+    + '<div id="r6-jobs-body"></div></section></div>';
+  cjSteps();
+  r6JobsPaint();
+};
+aJobs.__r6 = true;
+function cjSteps(){
+  var el = $("cj-steps"); if(!el || !R6J) return;
+  el.innerHTML = CJ_STAGES.map(function(s){
+    var n = R6J.apps.filter(function(a){ return (a.stage || "new") === s[0]; }).length;
+    return '<li class="' + (CJ_STAGE_F === s[0] ? "on" : "") + '"><button onclick="cjStage(\'' + s[0] + '\')"><b>' + s[1] + "</b><em>" + n + "</em><span>" + s[2] + "</span></button></li>";
+  }).join("");
+}
+window.cjStage = function(s){ CJ_STAGE_F = CJ_STAGE_F === s ? null : s; cjSteps(); r6JobsTab("apps"); };
+window.r6JobsTab = function(t){ JOBS_TAB = t; document.querySelectorAll("#a-live .cj-tabs button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-t") === t); }); r6JobsPaint(); };
+r6JobsPaint = function(){
+  var body = $("r6-jobs-body"); if(!body || !R6J) return;
+  if(JOBS_TAB === "apps"){
+    var list = R6J.apps.filter(function(a){ return !CJ_STAGE_F || (a.stage || "new") === CJ_STAGE_F; });
+    var lab = CJ_STAGE_F ? CJ_STAGES.filter(function(s){ return s[0] === CJ_STAGE_F; })[0][1] : "";
+    body.innerHTML = (CJ_STAGE_F ? '<div class="cj-filter">Showing <b>' + esc(lab) + '</b> <button onclick="cjStage(\'' + CJ_STAGE_F + '\')">Show everyone ×</button></div>' : "")
+      + (list.length ? '<div class="cj-grid">' + list.map(function(j){
+      var parts = String(j.name || "").split(" "), st = j.stage || "new";
+      var late = st === "new" && Date.now() - new Date(j.created_at) > 5 * 864e5;
+      return '<article class="cj-card cj-app"><div class="cj-who"><span class="o6-av">' + esc(initials(parts[0], parts[1])) + "</span><div><b>" + esc(j.name) + "</b><small>" + esc(j.role_applied || "Open application") + " · " + esc(ago(j.created_at)) + "</small></div>"
+        + (late ? '<span class="cj-pill warn">Reply due</span>' : st === "declined" ? '<span class="cj-pill">Declined</span>' : "") + "</div>"
+        + (j.message ? '<p class="cj-quote">' + esc(String(j.message).slice(0, 240)) + (String(j.message).length > 240 ? "…" : "") + "</p>" : "")
+        + '<div class="cj-stage" role="group" aria-label="Hiring step">' + CJ_STAGES.concat([["declined", "Declined"]]).map(function(s){
+            return '<button class="' + (st === s[0] ? "on" : "") + (s[0] === "declined" ? " no" : "") + '" onclick="cjMove(\'' + jsq(j.id) + "','" + s[0] + '\')">' + s[1] + "</button>"; }).join("") + "</div>"
+        + '<div class="cj-a">' + (j.cv_path ? '<button class="o6-btn sm white" onclick="aOpenCV(\'' + jsq(j.cv_path) + '\')">' + r6Ic("doc") + " Open CV</button>" : "")
+        + '<a class="o6-btn sm" href="mailto:' + esc(j.email) + '">' + r6Ic("mail") + " Email</a>"
+        + (j.phone ? '<a class="o6-btn sm" href="https://wa.me/' + esc(String(j.phone).replace(/[^\d]/g, "")) + '" target="_blank" rel="noopener">WhatsApp</a>' : "")
+        + (R6J.owner && st !== "declined" ? '<button class="o6-btn sm" onclick="r6JobsTab(\'team\');setTimeout(function(){r6AddMember(' + "'" + jsq(j.name) + "','" + jsq(j.email) + "','" + jsq(j.role_applied || "") + "'" + ')},50)">' + r6Ic("plus") + " Hire</button>" : "")
+        + "</div></article>";
+    }).join("") + "</div>" : '<div class="cj-empty">' + r6Ic("brief") + "<b>" + (CJ_STAGE_F ? "Nobody at this step" : "Nobody has applied yet") + "</b><span>Share a role's link and applications land here with the CV attached.</span></div>");
+    return;
+  }
+  if(JOBS_TAB === "team"){
+    body.innerHTML = '<div id="r6-add-member"></div><div class="cj-grid">' + R6J.team.map(function(t){
+      var name = ((t.first_name || "") + " " + (t.last_name || "")).trim() || t.email, ticked = !R6J.off[t.id];
+      return '<article class="cj-card"><div class="cj-who"><span class="o6-av" data-face="' + esc(t.photo_path || "") + '" data-f="' + esc(t.first_name || "") + '" data-l="' + esc(t.last_name || "") + '">' + esc(initials(t.first_name, t.last_name)) + "</span>"
+        + "<div><b>" + esc(name) + (ticked ? " " + F7_BADGE : "") + "</b><small>" + esc(t.job_title || (t.is_owner ? "Founder" : t.role)) + "</small></div>" + (t.is_owner ? '<span class="cj-pill gold">Owner</span>' : "") + "</div>"
+        + (R6J.owner ? '<label class="cj-tick"><span><b>Blue tick on the Feed</b><small>' + (ticked ? "Shown next to their name" : "Removed — not shown") + '</small></span><input type="checkbox" role="switch"' + (ticked ? " checked" : "") + ' onchange="cjTick(\'' + jsq(t.id) + '\',this)"><i></i></label>' : "")
+        + '<div class="cj-a">' + (R6J.owner && !t.photo_path ? '<button class="o6-btn sm" onclick="teamSetPhoto(\'' + jsq(t.id) + '\')">Set photo</button>' : "")
+        + (ME && t.id === ME.id ? "" : '<button class="o6-btn sm" onclick="aMessagePerson(\'' + jsq(t.id) + '\')">' + r6Ic("mail") + " Message</button>") + "</div></article>";
+    }).join("") + "</div>";
+    try{ paintFaces(body); }catch(e){}
+    return;
+  }
+  function card(r, i, db){
+    var st = !db ? ["On the website", "ok"] : r.status === "open" ? (r.visibility === "public" ? ["On the website", "ok"] : ["Private link", "info"]) : r.status === "paused" ? ["Paused", "warn"] : ["Filled", ""];
+    var ph = cjPhoto(r), n = R6J.apps.filter(function(a){ return a.role_applied === r.title; }).length;
+    var link = db ? r6RoleLink(r) : "https://myorbuni.com/#job-" + i;
+    return '<article class="cj-role"><div class="cj-role-ph" style="--ac:var(--' + esc(r.ac || "violet") + ')">' + (ph ? '<img src="' + esc(ph) + '" alt="" loading="lazy" decoding="async">' : r6Ic("brief"))
+      + '<span class="cj-pill ' + st[1] + '">' + st[0] + "</span></div>"
+      + '<div class="cj-role-b"><small>' + esc([r.dept, r.loc, r.type].filter(Boolean).join(" · ")) + "</small><h4>" + esc(r.title) + "</h4>"
+      + '<span class="cj-n">' + (n ? n + (n === 1 ? " applicant" : " applicants") : "No applicants yet") + "</span>"
+      + '<div class="cj-a">' + (!db || r.status === "open" ? '<button class="o6-btn sm white" onclick="copyText(\'' + jsq(link) + '\')">' + r6Ic("link") + " Copy link</button>" : "")
+      + (db && R6J.canEdit ? '<button class="o6-btn sm" onclick="r6RoleEdit(\'' + jsq(r.id) + '\')">' + r6Ic("edit") + " Edit</button>" : "") + "</div></div></article>";
+  }
+  var cards = R6J.roles.map(function(r){ return card(r, 0, true); }).join("") + R6J.builtIn.map(function(j, i){ return card(j, i, false); }).join("");
+  body.innerHTML = '<div id="r6-role-form"></div>' + (cards ? '<div class="cj-roles">' + cards + "</div>" : '<div class="cj-empty">' + r6Ic("brief") + "<b>No open roles</b><span>Open one and it can go on the website or out as a private link.</span></div>");
+};
+window.cjMove = async function(id, stage){
+  var a = R6J && R6J.apps.filter(function(x){ return x.id === id; })[0]; if(!a) return;
+  var was = a.stage; a.stage = stage; cjSteps(); r6JobsPaint();
+  var r = await sb.rpc("set_job_stage", { p_id: id, p_stage: stage });
+  if(r.error){ a.stage = was; cjSteps(); r6JobsPaint(); toast(friendly(r.error), true); return; }
+  toast(stage === "hired" ? "Marked as hired. Press Hire to give them a login." : "Moved.");
+};
+window.cjTick = async function(id, el){
+  var on = el.checked;
+  var r = await sb.rpc("set_feed_badge", { p_profile: id, p_on: on });
+  if(r.error){ el.checked = !on; toast(friendly(r.error), true); return; }
+  if(on) delete R6J.off[id]; else R6J.off[id] = true;
+  if(typeof F7_OFF !== "undefined"){ if(on) delete F7_OFF[id]; else F7_OFF[id] = true; }
+  toast(on ? "Blue tick given back." : "Blue tick removed."); r6JobsPaint();
+};
+function cjCss(){
+  if($("cj-css")) return;
+  var st = document.createElement("style"); st.id = "cj-css";
+  st.textContent = [
+    "#portal .cj{display:flex;flex-direction:column;gap:34px;padding-bottom:30px}",
+    "#portal .cj>section.cj-sec{padding:0;margin:0}",
+    "#portal .cj-eye{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:10px}",
+    "#portal .cj-eye::before{content:'';width:22px;height:1px;background:var(--gold);opacity:.7}",
+    "#portal .cj-hero{padding:34px 34px 0;border-radius:26px;border:1px solid var(--line);background:radial-gradient(80% 120% at 0% 0%,color-mix(in srgb,var(--gold) 10%,transparent),transparent 60%),radial-gradient(70% 120% at 100% 0%,color-mix(in srgb,var(--violet) 12%,transparent),transparent 60%),var(--p1);overflow:hidden}",
+    "#portal .cj-hero h2{font-family:var(--disp);font-size:clamp(28px,4vw,48px);line-height:1.05;letter-spacing:-.035em;margin:14px 0 14px;max-width:20ch;text-wrap:balance}",
+    "#portal .cj-hero p{color:var(--dim);font-size:15px;line-height:1.6;max-width:62ch;margin:0}",
+    "#portal .cj-acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}",
+    "#portal .cj-stats{display:grid;grid-template-columns:repeat(4,1fr);margin:30px -34px 0;border-top:1px solid var(--line)}",
+    "#portal .cj-stats>div{padding:18px 22px 20px 34px;min-width:0}",
+    "#portal .cj-stats>div+div{border-left:1px solid var(--line);padding-left:22px}",
+    "#portal .cj-stats b{display:block;font-family:var(--disp);font-size:28px;letter-spacing:-.03em;color:var(--txt);line-height:1.1}",
+    "#portal .cj-stats span{font-size:12.5px;color:var(--dim)}",
+    "#portal .cj-stats .warn b{color:var(--gold)}",
+    "#portal .cj-sec h3{font-family:var(--disp);font-size:clamp(22px,2.6vw,30px);letter-spacing:-.025em;margin:10px 0 16px}",
+    "#portal .cj-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:cjs}",
+    "#portal .cj-steps li{counter-increment:cjs;min-width:0}",
+    "#portal .cj-steps button{all:unset;box-sizing:border-box;display:block;width:100%;height:100%;cursor:pointer;padding:16px 16px 18px;border-top:2px solid var(--gold);border-radius:0 0 14px 14px;background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 7%,transparent),transparent 75%);transition:background .2s}",
+    "#portal .cj-steps button::before{content:counter(cjs,decimal-leading-zero);display:block;font:600 11px var(--mono);letter-spacing:.14em;color:var(--gold);margin-bottom:8px}",
+    "#portal .cj-steps li:last-child button{border-top-color:var(--mint)}#portal .cj-steps li:last-child button::before{color:var(--mint)}",
+    "#portal .cj-steps button:hover,#portal .cj-steps li.on button{background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent 90%)}",
+    "#portal .cj-steps li.on button{outline:1px solid color-mix(in srgb,var(--gold) 45%,transparent);outline-offset:-1px}",
+    "#portal .cj-steps b{display:block;font-size:14.5px;color:var(--txt)}",
+    "#portal .cj-steps em{display:block;font:700 26px var(--disp);font-style:normal;color:var(--txt);margin:6px 0 2px;letter-spacing:-.02em}",
+    "#portal .cj-steps span{font-size:12.5px;color:var(--dim);line-height:1.45}",
+    "#portal .cj-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}",
+    "#portal .cj-tabs button{height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--line2,var(--line));background:none;color:var(--dim);font:600 13px inherit;font-family:inherit;cursor:pointer}",
+    "#portal .cj-tabs button b{opacity:.6;margin-left:3px}",
+    "#portal .cj-tabs button.on{background:var(--txt);color:var(--bg);border-color:transparent}",
+    "#portal .cj-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}",
+    "#portal .cj-role{border:1px solid var(--line);border-radius:20px;background:var(--p1);overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:transform .25s,border-color .25s}",
+    "#portal .cj-role:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--gold) 35%,var(--line))}",
+    "#portal .cj-role-ph{position:relative;aspect-ratio:16/9;background:radial-gradient(100% 100% at 30% 20%,color-mix(in srgb,var(--ac) 35%,transparent),transparent 70%),var(--p2);display:grid;place-items:center;color:var(--ac)}",
+    "#portal .cj-role-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}",
+    "#portal .cj-role-ph>svg{width:38px;height:38px}",
+    "#portal .cj-role-ph .cj-pill{position:absolute;left:12px;top:12px;backdrop-filter:blur(8px)}",
+    "#portal .cj-role-b{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}",
+    "#portal .cj-role-b small{font:500 11px var(--mono);letter-spacing:.06em;color:var(--faint);text-transform:uppercase}",
+    "#portal .cj-role-b h4{margin:2px 0 0;font-size:16.5px;line-height:1.3;color:var(--txt)}",
+    "#portal .cj-n{font-size:12.5px;color:var(--dim)}",
+    "#portal .cj-a{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:10px}",
+    "#portal .cj-pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font:600 11.5px inherit;font-family:inherit;background:rgba(10,14,26,.62);color:#fff;border:1px solid rgba(255,255,255,.14);white-space:nowrap}",
+    "#portal .cj-pill.ok{color:#7ff0c0}#portal .cj-pill.info{color:#a9c8ff}#portal .cj-pill.warn{color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent);border-color:transparent}#portal .cj-pill.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);border-color:transparent}",
+    "#portal .cj-who .cj-pill{background:color-mix(in srgb,var(--txt) 7%,transparent);color:var(--dim);border-color:transparent}",
+    "#portal .cj-who .cj-pill.warn,#portal .cj-who .cj-pill.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 13%,transparent)}",
+    "#portal .cj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}",
+    "#portal .cj-card{border:1px solid var(--line);border-radius:20px;background:var(--p1);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}",
+    "#portal .cj-who{display:flex;align-items:center;gap:12px;min-width:0}",
+    "#portal .cj-who>div{flex:1;min-width:0}",
+    "#portal .cj-who b{display:block;font-size:15px;color:var(--txt);overflow-wrap:anywhere}",
+    "#portal .cj-who b .f7-badge{display:inline-block;width:16px;height:16px;vertical-align:-2.5px}",
+    "#portal .cj-who small{display:block;font-size:12.5px;color:var(--dim);margin-top:2px}",
+    "#portal .cj-quote{margin:0;font-size:13.5px;line-height:1.55;color:var(--dim);padding-left:12px;border-left:2px solid color-mix(in srgb,var(--gold) 50%,transparent)}",
+    "#portal .cj-stage{display:flex;flex-wrap:wrap;gap:5px}",
+    "#portal .cj-stage button{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 12px inherit;font-family:inherit;cursor:pointer}",
+    "#portal .cj-stage button.on{background:var(--gold);color:#1a1205;border-color:transparent}",
+    "#portal .cj-stage button.no.on{background:color-mix(in srgb,var(--txt) 14%,transparent);color:var(--txt)}",
+    "#portal .cj-tick{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-radius:14px;background:color-mix(in srgb,var(--txt) 4%,transparent);cursor:pointer;position:relative}",
+    "#portal .cj-tick b{display:block;font-size:13px;color:var(--txt)}#portal .cj-tick small{font-size:12px;color:var(--dim)}",
+    "#portal .cj-tick input{position:absolute;opacity:0;width:1px;height:1px}",
+    "#portal .cj-tick i{flex:0 0 auto;width:40px;height:23px;border-radius:99px;background:color-mix(in srgb,var(--txt) 18%,transparent);position:relative;transition:background .2s}",
+    "#portal .cj-tick i::after{content:'';position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}",
+    "#portal .cj-tick input:checked+i{background:#0095F6}#portal .cj-tick input:checked+i::after{transform:translateX(17px)}",
+    "#portal .cj-tick input:focus-visible+i{outline:2px solid var(--gold);outline-offset:2px}",
+    "#portal .cj-filter{display:flex;align-items:center;gap:10px;margin:-4px 0 12px;font-size:13px;color:var(--dim)}",
+    "#portal .cj-filter button{all:unset;cursor:pointer;color:var(--gold);font-weight:600}",
+    "#portal .cj-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:40px 20px;border:1px dashed var(--line);border-radius:20px;color:var(--dim)}",
+    "#portal .cj-empty svg{width:28px;height:28px;color:var(--gold)}#portal .cj-empty b{color:var(--txt)}",
+    "@media(max-width:1100px){#portal .cj-steps{grid-template-columns:repeat(3,1fr)}}",
+    "@media(max-width:900px){#portal .cj-stats{grid-template-columns:1fr 1fr}#portal .cj-stats>div:nth-child(3){border-left:0;padding-left:34px}#portal .cj-stats>div:nth-child(n+3){border-top:1px solid var(--line)}}",
+    "@media(max-width:600px){#portal .cj{gap:26px}#portal .cj-hero{padding:24px 20px 0;border-radius:22px}#portal .cj-stats{margin:24px -20px 0}#portal .cj-stats>div,#portal .cj-stats>div:nth-child(3){padding:14px 14px 16px 20px}#portal .cj-stats>div+div{padding-left:14px}#portal .cj-stats>div:nth-child(3){padding-left:20px}#portal .cj-stats b{font-size:23px}#portal .cj-steps{grid-template-columns:1fr 1fr}#portal .cj-steps li:last-child{grid-column:1/-1}#portal .cj-grid,#portal .cj-roles{grid-template-columns:1fr}}"
+  ].join("\n");
+  document.head.appendChild(st);
+}
+
 /* ---------- Partner requests, redesigned: cards, a checklist before approving, a proper agency page ---------- */
 var PR_TAB = null, PR = null;
 var PR_CHECKS = [["search", "Searched the agency name online"], ["site", "Found a real website or business address"], ["call", "Called the phone number they gave"], ["godfrey", "Asked Godfrey if anything looked odd"]];
 function prChecks(id){ try{ return JSON.parse(localStorage.getItem("orb-prc-" + id) || "{}"); }catch(e){ return {}; } }
 window.prCheck = function(id, k, el){ var c = prChecks(id); if(el.checked) c[k] = 1; else delete c[k]; try{ localStorage.setItem("orb-prc-" + id, JSON.stringify(c)); }catch(e){} prPaint(); };
+/* a real photograph of where the agency works, the way Careers shows each role */
+var AGY_PH = [["nigeria|lagos|abuja|kano", "photo-1765475467677-579353b25ce0"], ["ghana|accra|kumasi", "photo-1599393921693-857c47cf53c8"],
+  ["kenya|nairobi", "photo-1741991110666-88115e724741"], ["turk|istanbul|ankara", "photo-1531168301421-0f2e507f2d2d"]];
+function agyPhoto(p, w){
+  var c = String((p && (p.country || "")) || "").toLowerCase(), id = "photo-1568992688065-536aad8a12f6";
+  for(var i = 0; i < AGY_PH.length; i++) if(new RegExp(AGY_PH[i][0]).test(c)){ id = AGY_PH[i][1]; break; }
+  return "https://images.unsplash.com/" + id + "?auto=format&fit=crop&fm=jpg&q=70&w=" + (w || 800);
+}
 function prInit(name){ var w = String(name || "?").trim().split(/\s+/); return esc(initials(w[0], w[1])); }
 function prWa(phone){ var d = String(phone || "").replace(/[^\d]/g, ""); return d.length > 6 ? "https://wa.me/" + d : ""; }
 aPartners = async function(){
@@ -29400,8 +29635,10 @@ function prPaint(){
     var st = p.status === "approved" ? ["Approved", "ok"] : p.status === "rejected" ? ["Declined", "bad"] : ["Waiting", "warn"];
     var s = PR.studs[p.id] || 0, ow = PR.owed[p.id] || 0, wa = prWa(p.phone);
     var h = '<article class="agy-card' + (p.status === "pending" ? " is-new" : "") + '">'
-      + '<div class="agy-top"><span class="agy-av">' + prInit(p.agency_name) + "</span><div><b>" + esc(p.agency_name || "Unnamed agency") + "</b><small>"
-      + esc([p.contact_name, p.country].filter(Boolean).join(" · ") || "No contact name") + '</small></div><span class="o6-st ' + st[1] + '">' + st[0] + "</span></div>"
+      + '<div class="agy-ph"><img src="' + esc(agyPhoto(p)) + '" alt="" loading="lazy" decoding="async"><span class="agy-pill ' + st[1] + '">' + st[0] + "</span>"
+      + (p.country ? '<span class="agy-where">' + r6Ic("pin") + " " + esc(p.country) + "</span>" : "") + "</div>"
+      + '<div class="agy-in"><div class="agy-top"><span class="agy-av">' + prInit(p.agency_name) + "</span><div><b>" + esc(p.agency_name || "Unnamed agency") + "</b><small>"
+      + esc(p.contact_name || "No contact name") + "</small></div></div>"
       + '<div class="agy-meta"><span>' + r6Ic("users") + " " + plural(s, "student") + "</span>"
       + (p.commission_rate != null ? "<span>" + r6Ic("wallet") + " " + esc(String(Number(p.commission_rate))) + "% commission</span>" : "")
       + "<span>" + r6Ic("clock") + " Applied " + esc(ago(p.created_at)) + "</span>"
@@ -29427,7 +29664,7 @@ function prPaint(){
       h += '<div class="r6-person-a"><button class="o6-btn sm" onclick="aPartnerOpen(\'' + jsq(p.id) + '\')">' + r6Ic("eye") + " Open</button>"
         + '<button class="o6-btn sm" onclick="aPartner(\'' + jsq(p.id) + '\',\'approved\')">' + r6Ic("undo") + " Approve after all</button></div>";
     }
-    return h + "</article>";
+    return h + "</div></article>";
   }).join("") + "</div>";
 }
 window.aPartnerOpen = async function(id){
@@ -29457,7 +29694,7 @@ window.aPartnerOpen = async function(id){
   var wa = prWa(p.phone);
   box.innerHTML = '<div class="o6 agy">'
     + '<button class="agy-back" onclick="aGo(\'partners\')">' + r6Ic("undo") + " All partner agencies</button>"
-    + '<section class="o6-hero agy-hero"><div class="agy-hero-l"><span class="agy-av xl">' + prInit(p.agency_name) + "</span><div>"
+    + '<section class="o6-hero agy-hero" style="--agy-ph:url(\'' + agyPhoto(p, 1600) + '\')"><div class="agy-hero-l"><span class="agy-av xl">' + prInit(p.agency_name) + "</span><div>"
     + '<span class="o6-eye">Partner agency · <span class="o6-st ' + st[1] + '">' + st[0] + "</span></span><h2>" + esc(p.agency_name || "Unnamed agency") + "</h2>"
     + "<p>" + esc([p.contact_name, p.country, "joined " + ago(p.created_at)].filter(Boolean).join(" · ")) + "</p>"
     + '<div class="agy-contact light">' + (p.email ? '<a href="mailto:' + esc(p.email) + '">' + r6Ic("mail") + "<span>" + esc(p.email) + "</span></a>" : "")
@@ -29502,7 +29739,20 @@ function prCss(){
   s.textContent = [
     "#portal .agy .o6-eye{display:inline-flex;align-items:center;gap:8px}",
     "#portal .agy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}",
-    "#portal .agy-card{background:var(--p1);border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:13px;min-width:0}",
+    "#portal .agy-card{background:var(--p1);border:1px solid var(--line);border-radius:22px;padding:0;overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:transform .25s,border-color .25s}",
+    "#portal .agy-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--gold) 35%,var(--line))}",
+    "#portal .agy-in{padding:0 18px 18px;display:flex;flex-direction:column;gap:13px;flex:1}",
+    "#portal .agy-ph{position:relative;aspect-ratio:16/7;background:linear-gradient(135deg,#1c2a4a,#0e1626);overflow:hidden}",
+    "#portal .agy-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s}",
+    "#portal .agy-card:hover .agy-ph img{transform:scale(1.04)}",
+    "#portal .agy-ph::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,22,.05) 40%,rgba(8,12,22,.55))}",
+    "#portal .agy-pill{position:absolute;left:12px;top:12px;z-index:2;display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:rgba(10,14,26,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16)}",
+    "#portal .agy-pill.ok{color:#7ff0c0}#portal .agy-pill.warn{color:#FFD98A}#portal .agy-pill.bad{color:#FFB4A9}",
+    "#portal .agy-where{position:absolute;right:12px;bottom:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5)}",
+    "#portal .agy-where svg{width:13px;height:13px}",
+    "#portal .agy-in .agy-top{padding-top:12px;position:relative;z-index:2;align-items:flex-start}",
+    "#portal .agy-in .agy-av{box-shadow:0 0 0 4px var(--p1);width:52px;height:52px;flex-basis:52px;border-radius:16px;font-size:17px;margin-top:-38px}",
+    "#portal .agy-hero{background-image:linear-gradient(100deg,rgba(10,16,32,.94) 30%,rgba(10,16,32,.55)),var(--agy-ph);background-size:cover;background-position:center}",
     "#portal .agy-card.is-new{border-color:color-mix(in srgb,var(--gold) 38%,var(--line));background:radial-gradient(120% 80% at 100% 0%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 60%),var(--p1)}",
     "#portal .agy-top{display:flex;align-items:center;gap:12px;min-width:0}",
     "#portal .agy-top>div{flex:1;min-width:0}",
@@ -29654,6 +29904,7 @@ if(typeof opsPaint === "function" && !opsPaint.__r6){
         + '<span class="o6-st ' + (t.status === "live" || !t.status ? "ok" : "warn") + '">' + esc(t.status || "live") + "</span></div>"
         + "<p>" + esc(t.what_it_does || t.usage_note || "") + "</p>"
         + '<div class="r6-tool-f"><span class="r6-cost">' + esc(cost) + '</span><span class="' + (soon ? "r6-soon" : "") + '">' + esc(renew) + "</span></div>"
+        + (Number(t.paid_so_far) > 0 ? '<div class="r6-tool-paid">Paid so far <b>' + esc(money2(t.paid_so_far, t.paid_currency || "USD")) + "</b></div>" : "")
         + '<div class="r6-tool-o">' + (t.__owner ? "<span>" + r6Ic("users") + " " + esc(t.__owner) + "</span>" : "<span></span>")
         + "<span>" + (t.checked_at ? "checked " + esc(ago(t.checked_at)) : "never checked") + "</span></div></button>";
     }).join("") + "</div>";
