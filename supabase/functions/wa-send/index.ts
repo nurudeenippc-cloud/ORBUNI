@@ -5,9 +5,10 @@
 //   { action:"ai",       contact_id, on:true|false }         switch the AI agent on/off for this chat
 //   { action:"resolve",  contact_id }                       done with the handover → AI may answer again
 //   { action:"read",     contact_id }                       clear the unread count
+//   { action:"media",    contact_id, path, type, caption }  send a file the browser uploaded to wa-media/out/…
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { sb, json, CORS, e164, sendAndLog, SUPABASE_URL, ANON_KEY } from "./wa.ts";
+import { sb, json, CORS, e164, sendAndLog, signedUrl, SUPABASE_URL, ANON_KEY } from "./wa.ts";
 
 const DAY = 24 * 3600 * 1000;
 
@@ -35,6 +36,8 @@ Deno.serve(async (req: Request) => {
     if (!contact) return json(404, { error: "chat not found" });
   }
 
+  if (["read", "ai", "resolve", "reply", "media"].includes(action) && !contact) return json(400, { error: "pick a chat first" });
+
   if (action === "read") {
     await db.from("wa_contacts").update({ unread: 0 }).eq("id", contact.id);
     return json(200, { ok: true });
@@ -44,7 +47,7 @@ Deno.serve(async (req: Request) => {
     return json(200, { ok: true, ai_on: !!b.on });
   }
   if (action === "resolve") {
-    await db.from("wa_contacts").update({ needs_human: false, handoff_reason: null, handoff_at: null, unread: 0 }).eq("id", contact.id);
+    await db.from("wa_contacts").update({ needs_human: false, handoff_reason: null, handoff_at: null, held_ack_at: null, unread: 0, resolved_at: new Date().toISOString() }).eq("id", contact.id);
     return json(200, { ok: true });
   }
 
@@ -58,6 +61,21 @@ Deno.serve(async (req: Request) => {
     }
     const r = await sendAndLog(db, contact, { author: "staff", staffId: uid, body: text });
     // a person answered: the handover is being dealt with
+    await db.from("wa_contacts").update({ unread: 0, assigned_to: contact.assigned_to || uid }).eq("id", contact.id);
+    return r.ok ? json(200, { ok: true, id: r.id }) : json(502, { error: "WhatsApp didn't accept it: " + r.error });
+  }
+
+  if (action === "media") {
+    const path = String(b.path || "");
+    const type = String(b.type || "application/octet-stream").slice(0, 80);
+    if (!/^out\/[\w\-./]+$/.test(path) || path.includes("..")) return json(400, { error: "bad file" });
+    if (contact.opted_out) return json(409, { error: "This student sent STOP. You can't message them until they reply START." });
+    const last = contact.last_inbound_at ? Date.parse(contact.last_inbound_at) : 0;
+    if (Date.now() - last > DAY) return json(409, { error: "More than 24 hours since their last message — send a template first.", needs_template: true });
+    const url = await signedUrl(db, path, 3600);
+    if (!url) return json(400, { error: "couldn't read the uploaded file" });
+    const caption = String(b.caption || "").trim();
+    const r = await sendAndLog(db, contact, { author: "staff", staffId: uid, body: caption, mediaUrls: [url], media: [{ path, type, name: String(b.name || "").slice(0, 120) }] });
     await db.from("wa_contacts").update({ unread: 0, assigned_to: contact.assigned_to || uid }).eq("id", contact.id);
     return r.ok ? json(200, { ok: true, id: r.id }) : json(502, { error: "WhatsApp didn't accept it: " + r.error });
   }

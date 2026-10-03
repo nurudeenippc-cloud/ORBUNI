@@ -346,3 +346,5 @@ def build():
 
 if __name__ == "__main__":
     build()
+    import subprocess, sys   # rebuilt pages need the WhatsApp button again
+    subprocess.run([sys.executable, os.path.join(ROOT, "tools", "add_whatsapp_button.py")], check=True)

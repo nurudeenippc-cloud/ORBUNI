@@ -3107,10 +3107,12 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 /* ---------------- SPACES ---------------- */
 #portal .chat.sp7{grid-template-columns:340px 1fr;gap:0;border:1px solid var(--line);border-radius:24px;overflow:hidden;background:var(--p1);position:relative}
 #portal .chat.sp7.thread-open{grid-template-columns:340px 1fr 340px}
+/* On a computer Spaces always shows the list and the conversation side by side
+   (it used to collapse to one narrow centred column whenever no room was open,
+   which left most of the screen empty and cut the list off). */
 @media(min-width:901px){
-  #portal .chat.sp7.lf{grid-template-columns:1fr}
-  #portal .chat.sp7.lf .chat-room,#portal .chat.sp7.lf .chat-thread{display:none}
-  #portal .chat.sp7.lf .chat-list-col{border-right:0;max-width:760px;width:100%;margin:0 auto}
+  #portal .chat.sp7.lf{grid-template-columns:340px 1fr}
+  #portal .chat.sp7.lf .chat-thread{display:none}
 }
 #portal .sp7 .chat-list-col{background:var(--p1);border:0;border-right:1px solid var(--line);border-radius:0;padding:0;display:flex;flex-direction:column;min-height:0;max-height:none}
 #portal .sp7-top{display:flex;align-items:center;gap:10px;padding:14px 14px 10px;position:relative}
@@ -13552,253 +13554,700 @@ window.aGo = function(v){
 };
 
 
-/* ---------- WhatsApp inbox (Twilio number +1 443 448 1577) ----------
-   Every student WhatsApp chat in one place. The AI agent (wa-webhook) answers
-   on its own; anything sensitive is handed over and shows here under
-   "Needs you" with the reason. A person can reply within WhatsApp's 24-hour
-   window, or send an approved template after it. All sending goes through the
-   wa-send edge function — the browser never sees the Twilio keys. */
-var WA = { tab:"needs", cur:null, contacts:[], msgs:[], tpls:[], live:null, people:{} };
+/* ---------- WhatsApp inbox (Twilio number +1 443 448 1577) — v2 ----------
+   One screen like WhatsApp Web: chats on the left, the conversation in the
+   middle, the student's file on the right (a slide-over on a phone).
+   The AI agent (wa-webhook) answers by itself; anything sensitive lands under
+   "Needs you". The team replies here inside WhatsApp's 24-hour window, sends a
+   Meta-approved template after it, sends photos/PDFs, uses saved replies and
+   labels, and can alert the whole team. All sending goes through the wa-send
+   edge function — the browser never sees the Twilio keys.
+   State is kept between visits, so leaving the page and coming back shows the
+   chats at once and refreshes them quietly. */
+var WA = { tab:"all", label:"", q:"", cur:null, contacts:[], msgs:[], tpls:[], qrs:[], people:{}, staff:[], urls:{},
+  live:null, loaded:false, loading:false, info:false, infoHidden:false, err:"" };
+var WA_LABELS = [
+  { id:"hot", l:"Hot lead", c:"#FF7A6B" }, { id:"paid", l:"Paid", c:"#3ED598" }, { id:"docs", l:"Waiting for documents", c:"#F2B544" },
+  { id:"scholarship", l:"Scholarship", c:"#5CC8F5" }, { id:"visa", l:"Visa", c:"#A98BF0" }, { id:"parent", l:"Parent", c:"#E08A33" },
+  { id:"cold", l:"Not interested", c:"#8C94A3" } ];
+var WA_LBL = {}; WA_LABELS.forEach(function(x){ WA_LBL[x.id] = x; });
+var WA_ICON = {
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  clip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l-.1 6.5L15 12 3.3 13.9z"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.6-.3z"/></svg>'
+};
+
 function waName(c){
   var p = c && WA.people[c.profile_id];
-  var n = p ? ((p.first_name||"") + " " + (p.last_name||"")).trim() : "";
-  return n || (c && c.wa_name) || (c && c.phone) || "Unknown";
+  var n = p ? ((p.first_name || "") + " " + (p.last_name || "")).trim() : "";
+  return n || (c && c.wa_name && c.wa_name.replace(/[.…\s]+/g, "") ? c.wa_name : "") || (c && c.phone) || "Unknown";
+}
+function waHue(s){ var h = 0; s = String(s || ""); for(var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
+function waAv(c, big){
+  var n = waName(c), parts = n.replace(/^\+/, "").split(/\s+/);
+  var ini = /^\+?\d/.test(n) ? "#" : ((parts[0] || "")[0] || "") + ((parts[1] || "")[0] || "");
+  return '<span class="wa2-av' + (big ? " big" : "") + '" style="background:hsl(' + waHue(c && c.phone) + ',55%,42%)">' + esc(ini.toUpperCase()) + "</span>";
 }
 function waWindowLeft(c){
   if(!c || !c.last_inbound_at) return 0;
   return Math.max(0, new Date(c.last_inbound_at).getTime() + 864e5 - Date.now());
 }
+function waLeftText(ms){ var h = Math.floor(ms / 36e5), m = Math.floor((ms % 36e5) / 6e4); return h ? h + "h " + m + "m" : m + "m"; }
+function waTime(t){
+  if(!t) return "";
+  var d = new Date(t), now = new Date();
+  if(d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  var y = new Date(now); y.setDate(now.getDate() - 1);
+  if(d.toDateString() === y.toDateString()) return "Yesterday";
+  return d.toLocaleDateString([], { day:"numeric", month:"short" });
+}
+function waCur(){ return WA.contacts.filter(function(x){ return x.id === WA.cur; })[0] || null; }
+async function waErr(e){
+  try{ var j = await e.context.json(); return j.error || e.message; }catch(x){ return (e && e.message) || "Something went wrong"; }
+}
+async function waCall(body){
+  var r = await sb.functions.invoke("wa-send", { body:body });
+  if(r.error) return { error: await waErr(r.error) };
+  if(r.data && r.data.error) return { error: r.data.error };
+  return { data: r.data || {} };
+}
+
 function waCss(){
-  if($("wa-css")) return;
-  var s = document.createElement("style"); s.id = "wa-css";
+  if($("wa2-css")) return;
+  var s = document.createElement("style"); s.id = "wa2-css";
   s.textContent = ""
-    + ".wa-wrap{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:14px;min-height:calc(100vh - 210px)}"
-    + ".wa-list{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:calc(100vh - 210px)}"
-    + ".wa-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:var(--p1);cursor:pointer;text-align:left;width:100%;color:inherit;font:inherit}"
-    + ".wa-item.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}"
-    + ".wa-item .t{flex:1;min-width:0}.wa-item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
-    + ".wa-item .pv{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}"
-    + ".wa-item .m{font-size:11px;color:var(--faint);text-align:right;white-space:nowrap}"
-    + ".wa-dot{display:inline-block;min-width:18px;padding:1px 6px;border-radius:9px;background:var(--mint);color:#062;font-size:11px;font-weight:700;text-align:center;margin-top:4px}"
-    + ".wa-flag{display:inline-block;padding:1px 7px;border-radius:9px;background:rgba(255,122,107,.16);color:var(--red);font-size:10.5px;font-weight:700;margin-left:6px;vertical-align:1px}"
-    + ".wa-chat{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;background:var(--p1);min-height:420px;max-height:calc(100vh - 210px)}"
-    + ".wa-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}"
-    + ".wa-head h3{margin:0;font-size:15.5px}.wa-head .s{font-size:12px;color:var(--faint)}"
-    + ".wa-msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}"
-    + ".wa-b{max-width:78%;padding:8px 11px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}"
-    + ".wa-b.in{align-self:flex-start;background:var(--p2);border-top-left-radius:4px}"
-    + ".wa-b.out{align-self:flex-end;background:rgba(62,213,152,.16);border-top-right-radius:4px}"
-    + ".wa-b .who{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}"
-    + ".wa-b .meta{display:block;font-size:10.5px;color:var(--faint);margin-top:3px;text-align:right}"
-    + ".wa-b .err{color:var(--red)}"
-    + ".wa-note{margin:10px 14px 0;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.45}"
-    + ".wa-note.red{background:rgba(255,122,107,.12);color:var(--red)}.wa-note.gold{background:rgba(242,181,68,.13);color:var(--gold)}"
-    + ".wa-comp{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:flex-end}"
-    + ".wa-comp textarea{flex:1;min-height:44px;max-height:160px;resize:vertical;border-radius:12px;padding:10px 12px;font:inherit}"
-    + ".wa-back{display:none}"
-    + "@media(max-width:820px){.wa-wrap{grid-template-columns:1fr}.wa-wrap.has-cur .wa-list{display:none}.wa-wrap:not(.has-cur) .wa-chat{display:none}.wa-back{display:inline-flex}"
-    + ".wa-chat,.wa-list{max-height:none}.wa-chat{min-height:calc(100vh - 190px)}}";
+  + ".wa2{--wa-in:var(--p2);--wa-out:rgba(62,213,152,.17);--wa-r:18px;display:flex;flex-direction:column;gap:12px}"
+  + ".wa2-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}"
+  + ".wa2-top .t{flex:1;min-width:200px;display:flex;align-items:center;gap:12px}"
+  + ".wa2-top .t>div{min-width:0}"
+  + ".wa2-top .t i{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:rgba(37,211,102,.14);color:#25D366;flex:0 0 auto}"
+  + ".wa2-top .t i svg{width:24px;height:24px}"
+  + ".wa2-top h2{margin:0;font:800 20px/1.15 var(--round,inherit);color:var(--txt)}"
+  + ".wa2-top .t span{display:block;font-size:12.5px;color:var(--faint);margin-top:2px}"
+  + ".wa2-btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:var(--p1);color:var(--txt);font:700 13px var(--round,inherit);cursor:pointer;white-space:nowrap}"
+  + ".wa2-btn:hover{background:var(--p2)}.wa2-btn svg{width:16px;height:16px}"
+  + ".wa2-btn.pri{background:#25D366;border-color:#25D366;color:#05210f}.wa2-btn.pri:hover{filter:brightness(1.05)}"
+  + ".wa2-btn.warn{background:rgba(255,122,107,.14);border-color:transparent;color:var(--red)}"
+  + ".wa2-grid{display:grid;grid-template-columns:330px minmax(0,1fr) 300px;height:calc(100vh - 200px);min-height:520px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:var(--p1)}"
+  + ".wa2-grid.no-info{grid-template-columns:330px minmax(0,1fr)}"
+  + ".wa2-grid.no-info .wa2-info{display:none}"
+  + ".wa2-list,.wa2-chat,.wa2-info{margin:0;padding:0}"
+  + ".wa2-list{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}"
+  + ".wa2-search{display:flex;align-items:center;gap:8px;margin:12px 12px 8px;height:40px;border-radius:12px;background:var(--p2);padding:0 12px;color:var(--faint)}"
+  + ".wa2-search svg{width:17px;height:17px;flex:0 0 auto}"
+  + ".wa2-search input{flex:1;min-width:0;border:0!important;background:none!important;outline:none;color:var(--txt);font:600 14px var(--round,inherit);padding:0!important;height:100%;box-shadow:none!important}"
+  + ".wa2-chips{display:flex;gap:6px;padding:0 12px 10px;overflow-x:auto;scrollbar-width:none;flex:0 0 auto}.wa2-chips::-webkit-scrollbar{display:none}"
+  + ".wa2-chips button{flex:0 0 auto;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--dim);font:700 12.5px var(--round,inherit);cursor:pointer;display:inline-flex;align-items:center;gap:6px}"
+  + ".wa2-chips button.on{background:var(--txt);color:var(--bg);border-color:transparent}"
+  + ".wa2-chips button b{font-weight:800;opacity:.75}"
+  + ".wa2-chips .dot{width:8px;height:8px;border-radius:50%}"
+  + ".wa2-rows{flex:1;overflow-y:auto;min-height:0;padding:0 6px 10px}"
+  + ".wa2-row{display:flex;gap:11px;align-items:center;width:100%;padding:10px 8px;border:0;border-radius:14px;background:none;text-align:left;color:var(--txt);cursor:pointer;font:inherit}"
+  + ".wa2-row:hover{background:var(--p2)}.wa2-row.on{background:var(--p2);box-shadow:inset 3px 0 0 #25D366}"
+  + ".wa2-av{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 15px var(--round,inherit);letter-spacing:.02em}"
+  + ".wa2-av.big{width:64px;height:64px;font-size:22px}"
+  + ".wa2-row .tx{flex:1;min-width:0}"
+  + ".wa2-row .l1{display:flex;align-items:center;gap:6px}"
+  + ".wa2-row .l1 b{flex:1;min-width:0;font:800 14.5px/1.3 var(--round,inherit);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-row .l1 time{flex:0 0 auto;font-size:11.5px;color:var(--faint)}"
+  + ".wa2-row.un .l1 time{color:#25D366;font-weight:700}"
+  + ".wa2-row .l2{display:flex;align-items:center;gap:6px;margin-top:3px}"
+  + ".wa2-row .l2 em{flex:1;min-width:0;font-style:normal;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-row.un .l2 em{color:var(--txt);font-weight:600}"
+  + ".wa2-badge{flex:0 0 auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#25D366;color:#05210f;font:800 11px/20px var(--round,inherit);text-align:center}"
+  + ".wa2-pill{flex:0 0 auto;display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;font:800 10px/19px var(--round,inherit);letter-spacing:.03em;text-transform:uppercase}"
+  + ".wa2-pill.need{background:rgba(255,122,107,.16);color:var(--red)}.wa2-pill.stop{background:var(--p3,var(--p2));color:var(--faint)}"
+  + ".wa2-pill.ai{background:rgba(92,200,245,.14);color:var(--cyan,#5CC8F5)}"
+  + ".wa2-lbls{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}"
+  + ".wa2-lbl{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 8px;border-radius:999px;font:700 11px var(--round,inherit);background:var(--p2);color:var(--dim)}"
+  + ".wa2-lbl i{width:7px;height:7px;border-radius:50%}"
+  + ".wa2-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:40px 22px;color:var(--dim);height:100%}"
+  + ".wa2-empty i{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:rgba(37,211,102,.12);color:#25D366;margin-bottom:6px}"
+  + ".wa2-empty i svg{width:30px;height:30px}.wa2-empty b{font:800 16px var(--round,inherit);color:var(--txt)}.wa2-empty span{font-size:13.5px;line-height:1.55;max-width:300px}"
+  + ".wa2-chat{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}"
+  + ".wa2-chead{display:flex;align-items:center;gap:11px;padding:10px 14px;background:var(--p1);border-bottom:1px solid var(--line);flex:0 0 auto;min-height:62px}"
+  + ".wa2-chead .nm{flex:1;min-width:0;cursor:pointer}.wa2-chead .nm b{display:block;font:800 15.5px/1.25 var(--round,inherit);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-chead .nm span{display:block;font-size:12px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-ic{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:0;background:none;color:var(--dim);cursor:pointer}"
+  + ".wa2-ic:hover{background:var(--p2);color:var(--txt)}.wa2-ic svg{width:20px;height:20px}"
+  + ".wa2-sw{display:inline-flex;align-items:center;gap:8px;font:700 12.5px var(--round,inherit);color:var(--dim);cursor:pointer;user-select:none;white-space:nowrap}"
+  + ".wa2-sw input{display:none}.wa2-sw i{width:34px;height:20px;border-radius:999px;background:var(--line2);position:relative;transition:background .15s}"
+  + ".wa2-sw i:after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}"
+  + ".wa2-sw input:checked+i{background:#25D366}.wa2-sw input:checked+i:after{left:16px}"
+  + ".wa2-ban{margin:10px 14px 0;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:center;flex:0 0 auto}"
+  + ".wa2-ban.red{background:rgba(255,122,107,.12);color:var(--txt)}.wa2-ban.red b{color:var(--red)}"
+  + ".wa2-ban.gold{background:rgba(242,181,68,.12);color:var(--txt)}.wa2-ban .sp{flex:1;min-width:0}"
+  + ".wa2-msgs{flex:1;overflow-y:auto;min-height:0;padding:16px 6% 10px;display:flex;flex-direction:column;gap:4px}"
+  + ".wa2-day{align-self:center;margin:10px 0 6px;padding:4px 12px;border-radius:999px;background:var(--p1);border:1px solid var(--line);font:700 11.5px var(--round,inherit);color:var(--faint)}"
+  + ".wa2-b{position:relative;max-width:min(72%,560px);padding:7px 11px 6px;border-radius:var(--wa-r);font-size:14.2px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;color:var(--txt)}"
+  + ".wa2-b.in{align-self:flex-start;background:var(--wa-in);border-top-left-radius:6px}"
+  + ".wa2-b.out{align-self:flex-end;background:var(--wa-out);border-top-right-radius:6px}"
+  + ".wa2-b.sys{align-self:center;background:none;border:1px dashed var(--line2);color:var(--dim);font-size:12.5px;max-width:80%;text-align:center}"
+  + ".wa2-b .who{display:block;font:800 10.5px var(--round,inherit);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;color:#25D366}"
+  + ".wa2-b .who.ai{color:var(--cyan,#5CC8F5)}.wa2-b .who.tpl{color:var(--gold)}"
+  + ".wa2-b .meta{display:flex;justify-content:flex-end;gap:5px;font-size:10.8px;color:var(--faint);margin-top:2px}"
+  + ".wa2-b .meta .rd{color:#53BDEB}.wa2-b .err{display:block;color:var(--red);font-size:11.5px;margin-top:3px}"
+  + ".wa2-b img{display:block;max-width:100%;max-height:300px;border-radius:12px;margin:2px 0 4px;cursor:zoom-in;background:var(--p2);min-width:120px;min-height:80px;object-fit:cover}"
+  + ".wa2-b audio{display:block;max-width:260px;margin:2px 0 4px}"
+  + ".wa2-file{display:flex;align-items:center;gap:9px;padding:9px 11px;margin:2px 0 4px;border-radius:12px;background:rgba(0,0,0,.14);color:var(--txt);text-decoration:none;font-size:13px;font-weight:700}"
+  + ".wa2-file svg{width:20px;height:20px;flex:0 0 auto;color:var(--gold)}"
+  + ".wa2-comp{flex:0 0 auto;padding:10px 12px;background:var(--p1);border-top:1px solid var(--line);position:relative}"
+  + ".wa2-comp .row{display:flex;align-items:flex-end;gap:6px}"
+  + ".wa2-comp textarea{flex:1;min-height:42px;max-height:150px;resize:none;border-radius:22px!important;padding:11px 16px!important;font:500 14.5px/1.4 var(--round,inherit);border:1px solid var(--line2)!important;background:var(--p2)!important;color:var(--txt)}"
+  + ".wa2-send{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:0;background:#25D366;color:#05210f;display:grid;place-items:center;cursor:pointer}"
+  + ".wa2-send svg{width:20px;height:20px}.wa2-send:disabled{opacity:.5;cursor:default}"
+  + ".wa2-comp .hint{font-size:11.5px;color:var(--faint);margin:6px 6px 0}"
+  + ".wa2-file-pend{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:7px 10px;border-radius:12px;background:var(--p2);font-size:12.5px}"
+  + ".wa2-file-pend span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-pop{position:absolute;bottom:calc(100% + 6px);left:12px;width:min(380px,calc(100% - 24px));max-height:340px;overflow:auto;background:var(--p1);border:1px solid var(--line2);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.35);z-index:20;padding:6px}"
+  + ".wa2-pop .h{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;font:800 13px var(--round,inherit)}.wa2-pop .h span{flex:1}"
+  + ".wa2-qr{display:block;width:100%;text-align:left;border:0;background:none;color:var(--txt);padding:9px 10px;border-radius:10px;cursor:pointer;font:inherit}"
+  + ".wa2-qr:hover{background:var(--p2)}.wa2-qr b{display:block;font:800 13px var(--round,inherit)}.wa2-qr span{display:block;font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+  + ".wa2-tpl{padding:12px 14px;background:var(--p1);border-top:1px solid var(--line);flex:0 0 auto}"
+  + ".wa2-tpl p{margin:0 0 8px;font-size:13px;color:var(--dim);line-height:1.5}.wa2-tpl .row{display:flex;gap:8px;flex-wrap:wrap}"
+  + ".wa2-tpl select{flex:1;min-width:180px;height:38px;border-radius:12px}"
+  + ".wa2-info{display:flex;flex-direction:column;min-height:0;overflow-y:auto;border-left:1px solid var(--line);background:var(--p1)}"
+  + ".wa2-info .hd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 16px 16px;border-bottom:1px solid var(--line)}"
+  + ".wa2-info .hd>b{font:800 17px var(--round,inherit)}.wa2-info .hd .sub{font-size:12.5px;color:var(--faint)}"
+  + ".wa2-sec{padding:14px 16px;border-bottom:1px solid var(--line)}"
+  + ".wa2-sec h4{margin:0 0 9px;font:800 11px var(--round,inherit);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}"
+  + ".wa2-kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0}.wa2-kv span{color:var(--faint)}.wa2-kv b{font-weight:700;text-align:right}"
+  + ".wa2-tog{display:flex;flex-wrap:wrap;gap:6px}"
+  + ".wa2-tog button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--dim);font:700 12px var(--round,inherit);cursor:pointer}"
+  + ".wa2-tog button i{width:8px;height:8px;border-radius:50%}"
+  + ".wa2-tog button.on{color:var(--txt);border-color:transparent;background:var(--p2);box-shadow:inset 0 0 0 1.5px var(--c)}"
+  + ".wa2-x{position:absolute;top:10px;right:10px}"
+  + ".wa2-modal{position:fixed;inset:0;z-index:15000;background:rgba(3,6,12,.6);display:grid;place-items:center;padding:16px}"
+  + ".wa2-modal .box{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--p1);border:1px solid var(--line2);border-radius:22px;padding:20px;position:relative}"
+  + ".wa2-modal h3{margin:0 0 4px;font:800 18px var(--round,inherit)}.wa2-modal p.s{margin:0 0 14px;font-size:13px;color:var(--dim)}"
+  + ".wa2-modal label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin:10px 0 5px}"
+  + ".wa2-modal input[type=text],.wa2-modal input[type=tel],.wa2-modal textarea,.wa2-modal select,.wa2-tpl select{width:100%;box-sizing:border-box;background:var(--p2);color:var(--txt);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;font:500 14px/1.45 var(--round,inherit);outline:none}"
+  + ".wa2-modal input:focus,.wa2-modal textarea:focus,.wa2-modal select:focus{border-color:#25D366}"
+  + ".wa2-modal input[type=checkbox]{width:17px;height:17px;accent-color:#25D366}"
+  + ".wa2-modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}"
+  + ".wa2-chk{display:flex!important;align-items:center;gap:8px;font-weight:600!important;color:var(--txt)!important;margin:6px 0!important;cursor:pointer}"
+  + ".wa2-light{position:fixed;inset:0;z-index:16000;background:rgba(0,0,0,.85);display:grid;place-items:center;cursor:zoom-out}.wa2-light img{max-width:94vw;max-height:92vh;border-radius:10px}"
+  + ".wa2-back{display:none}"
+  + "@media(max-width:1180px){.wa2-grid,.wa2-grid.no-info{grid-template-columns:300px minmax(0,1fr)}.wa2-info{position:absolute;top:0;right:0;bottom:0;width:min(320px,90%);z-index:12;box-shadow:-20px 0 40px rgba(0,0,0,.35);display:none}"
+  + ".wa2-grid{position:relative}.wa2-grid.info-open .wa2-info{display:flex}.wa2-grid.no-info .wa2-info{display:none}}"
+  + "@media(max-width:820px){.wa2-grid,.wa2-grid.no-info{grid-template-columns:1fr;height:calc(100vh - 150px);border-radius:18px}"
+  + ".wa2-grid.has-cur .wa2-list{display:none}.wa2-grid:not(.has-cur) .wa2-chat{display:none}.wa2-back{display:grid}"
+  + ".wa2-msgs{padding:12px 10px 8px}.wa2-b{max-width:86%}.wa2-top{flex-wrap:nowrap}.wa2-top .t{min-width:0}.wa2-top h2{font-size:17px}"
+  + ".wa2-top .t span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa2-top .t i{display:none}"
+  + ".wa2-top .wa2-btn span{display:none}.wa2-top .wa2-btn{padding:0 11px;flex:0 0 auto}"
+  + ".wa2-ban{flex-wrap:wrap}.wa2-ban .wa2-btn{width:100%;justify-content:center}}";
   document.head.appendChild(s);
+}
+
+/* ---- loading ---- */
+async function waLoad(){
+  if(WA.loading) return;
+  WA.loading = true; WA.err = "";
+  try{
+    var res = await Promise.all([
+      sb.from("wa_contacts").select("*").order("last_message_at", { ascending:false, nullsFirst:false }).limit(400),
+      sb.from("wa_templates").select("*").order("key"),
+      sb.from("wa_quick_replies").select("*").order("sort").order("created_at"),
+      sb.from("profiles").select("id,first_name,last_name,role,photo_path").in("role", ["staff","admin"])
+    ]);
+    if(res[0].error) throw res[0].error;
+    WA.contacts = res[0].data || [];
+    WA.tpls = res[1].data || [];
+    WA.qrs = res[2].data || [];
+    WA.staff = (res[3].data || []);
+    var ids = WA.contacts.map(function(c){ return c.profile_id; }).filter(function(x){ return x && !WA.people[x]; });
+    if(ids.length){
+      var pr = await sb.from("profiles").select("id,first_name,last_name,email,phone,whatsapp,counsellor_id,created_at").in("id", ids);
+      (pr.data || []).forEach(function(p){ WA.people[p.id] = p; });
+    }
+    WA.loaded = true;
+  }catch(e){
+    WA.err = (typeof friendly === "function" ? friendly(e) : (e && e.message)) || "Could not load the chats";
+  }
+  WA.loading = false;
 }
 
 async function aWhatsApp(){
   waCss();
   var box = $("a-live"); if(!box) return;
-  var cr = await sb.from("wa_contacts").select("*").order("last_message_at", { ascending:false, nullsFirst:false }).limit(300);
-  if(cr.error){ box.innerHTML = '<div class="panel"><div class="err">' + esc(friendly(cr.error)) + "</div></div>"; return; }
-  WA.contacts = cr.data || [];
-  var ids = WA.contacts.map(function(c){ return c.profile_id; }).filter(Boolean);
-  if(ids.length){
-    var pr = await sb.from("profiles").select("id,first_name,last_name,email").in("id", ids);
-    (pr.data || []).forEach(function(p){ WA.people[p.id] = p; });
+  if(WA.loaded) waPaint();     // show what we already have at once …
+  else box.innerHTML = '<div class="panel"><div style="padding:26px;color:var(--faint)"><span class="spin"></span> Loading the WhatsApp inbox…</div></div>';
+  await waLoad();               // … then refresh quietly
+  if(window.AV !== "wa") return;
+  if(!WA.loaded){
+    box.innerHTML = '<div class="panel"><div class="err" style="margin-bottom:10px">' + esc(WA.err) + '</div>'
+      + '<button class="btn btn-p btn-s" onclick="aGo(\'wa\')">Try again</button></div>';
+    return;
   }
-  var tr = await sb.from("wa_templates").select("*").order("key");
-  WA.tpls = tr.data || [];
+  if(WA.err) toast("Couldn't refresh: " + WA.err, true);
   waPaint();
   waLive();
   if(WA.cur) waOpen(WA.cur, true);
 }
 
+/* ---- layout ---- */
 function waPaint(){
   var box = $("a-live"); if(!box) return;
-  var all = WA.contacts;
-  var needs = all.filter(function(c){ return c.needs_human; });
-  var aiOn = all.filter(function(c){ return c.ai_on && !c.needs_human; });
-  var unread = all.reduce(function(n, c){ return n + (c.unread || 0); }, 0);
-  if(WA.tab === "needs" && !needs.length && all.length) WA.tab = "all";
-  var rows = WA.tab === "needs" ? needs : WA.tab === "ai" ? aiOn : all;
-  function tab(v, label, n){
-    return '<button class="btn btn-s ' + (WA.tab === v ? "btn-p" : "btn-o") + '" onclick="waTab(\'' + v + '\')">' + esc(label)
-      + (n != null ? ' <span style="opacity:.7">' + n + "</span>" : "") + "</button>";
+  var need = WA.contacts.filter(function(c){ return c.needs_human; }).length;
+  var grid = $("wa2-grid");
+  if(!grid || !box.contains(grid)){
+    box.innerHTML = '<div class="wa2">'
+      + '<div class="wa2-top"><div class="t"><i>' + WA_ICON.wa + '</i><div><h2>WhatsApp inbox</h2>'
+      + '<span id="wa2-sub"></span></div></div>'
+      + '<button class="wa2-btn" onclick="waAlertTeam()">' + WA_ICON.bell + '<span>Alert the team</span></button>'
+      + '<button class="wa2-btn" onclick="waQRManage()">' + WA_ICON.bolt + '<span>Saved replies</span></button>'
+      + '<button class="wa2-btn pri" onclick="waNew()">' + WA_ICON.plus + '<span>Message a student</span></button></div>'
+      + '<div class="wa2-grid" id="wa2-grid">'
+      + '<div class="wa2-list"><label class="wa2-search">' + WA_ICON.search
+      + '<input id="wa2-q" type="search" placeholder="Search name, number or message" autocomplete="off" oninput="waSearch(this.value)"></label>'
+      + '<div class="wa2-chips" id="wa2-chips"></div><div class="wa2-rows" id="wa2-rows"></div></div>'
+      + '<div class="wa2-chat" id="wa2-chat"></div>'
+      + '<div class="wa2-info" id="wa2-info"></div></div></div>';
+    grid = $("wa2-grid");
+    if($("wa2-q")) $("wa2-q").value = WA.q;
   }
-  var cur = WA.cur && all.find(function(c){ return c.id === WA.cur; });
-  box.innerHTML = '<div class="grid g4" style="margin-bottom:14px">'
-    + kpi("Needs you", needs.length, needs.length ? "the AI handed these over" : "nothing waiting")
-    + kpi("Unread", unread, "messages from students")
-    + kpi("AI answering", aiOn.length, "chats on autopilot")
-    + kpi("All chats", all.length, "on +1 443 448 1577")
-    + "</div>"
-    + '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center">'
-    + tab("needs", "Needs you", needs.length) + tab("all", "All", all.length) + tab("ai", "AI answering", aiOn.length)
-    + '<span style="flex:1"></span><button class="btn btn-o btn-s" onclick="waNew()">+ Message a student</button></div>'
-    + '<div class="wa-wrap' + (cur ? " has-cur" : "") + '">'
-    + '<div class="wa-list">' + (rows.length ? rows.map(waItem).join("")
-        : emptyBox("💬", WA.tab === "needs" ? "Nobody is waiting for you." : "No chats yet.",
-            "When a student writes to +1 443 448 1577 the chat appears here. The AI answers by itself and hands over anything sensitive.")) + "</div>"
-    + '<div class="wa-chat" id="wa-chat">' + (cur ? "" : '<div style="margin:auto;padding:30px;color:var(--faint);text-align:center">Pick a chat on the left.</div>') + "</div>"
-    + "</div>";
-  if(cur) waPaintChat();
+  $("wa2-sub").textContent = "+1 443 448 1577 · " + plural(WA.contacts.length, "chat")
+    + (need ? " · " + need + " waiting for you" : " · nobody waiting");
+  waPaintList();
+  waPaintChat();
 }
-function waItem(c){
-  return '<button class="wa-item' + (WA.cur === c.id ? " on" : "") + '" onclick="waOpen(\'' + jsq(c.id) + '\')">'
-    + '<div class="t"><b>' + esc(waName(c)) + (c.needs_human ? '<span class="wa-flag">NEEDS YOU</span>' : "")
-    + (c.opted_out ? '<span class="wa-flag">STOPPED</span>' : "") + "</b>"
-    + '<div class="pv">' + esc(c.last_preview || "") + "</div></div>"
-    + '<div class="m">' + (c.last_message_at ? esc(ago(c.last_message_at)) : "")
-    + (c.unread ? '<br><span class="wa-dot">' + c.unread + "</span>" : "")
-    + (!c.ai_on ? '<br><span style="font-size:10.5px">AI off</span>' : "") + "</div></button>";
+function waLayout(){
+  var g = $("wa2-grid"); if(!g) return;
+  var cur = waCur();
+  g.classList.toggle("has-cur", !!cur);
+  var wide = window.innerWidth > 1180;
+  g.classList.toggle("no-info", !cur || (wide && WA.infoHidden));
+  g.classList.toggle("info-open", !!(cur && !wide && WA.info));
 }
-window.waTab = function(t){ WA.tab = t; waPaint(); };
 
+function waFiltered(){
+  var q = WA.q.trim().toLowerCase();
+  return WA.contacts.filter(function(c){
+    if(WA.tab === "needs" && !c.needs_human) return false;
+    if(WA.tab === "unread" && !c.unread) return false;
+    if(WA.tab === "ai" && (!c.ai_on || c.needs_human)) return false;
+    if(WA.label && (c.labels || []).indexOf(WA.label) < 0) return false;
+    if(q){
+      var hay = (waName(c) + " " + c.phone + " " + (c.wa_name || "") + " " + (c.last_preview || "")).toLowerCase();
+      if(hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+}
+function waPaintList(){
+  var chips = $("wa2-chips"), rowsEl = $("wa2-rows"); if(!rowsEl) return;
+  var all = WA.contacts;
+  var n = { all:all.length, needs:all.filter(function(c){ return c.needs_human; }).length,
+    unread:all.filter(function(c){ return c.unread; }).length, ai:all.filter(function(c){ return c.ai_on && !c.needs_human; }).length };
+  function chip(v, l){ return '<button class="' + (WA.tab === v ? "on" : "") + '" onclick="waTab(\'' + v + '\')">' + l + (n[v] ? " <b>" + n[v] + "</b>" : "") + "</button>"; }
+  var used = {}; all.forEach(function(c){ (c.labels || []).forEach(function(l){ used[l] = 1; }); });
+  chips.innerHTML = chip("all", "All") + chip("needs", "Needs you") + chip("unread", "Unread") + chip("ai", "AI")
+    + WA_LABELS.filter(function(x){ return used[x.id] || WA.label === x.id; }).map(function(x){
+        return '<button class="' + (WA.label === x.id ? "on" : "") + '" onclick="waLabelFilter(\'' + x.id + '\')"><span class="dot" style="background:' + x.c + '"></span>' + esc(x.l) + "</button>";
+      }).join("");
+  var rows = waFiltered();
+  rowsEl.innerHTML = rows.length ? rows.map(waRow).join("")
+    : '<div class="wa2-empty"><i>' + WA_ICON.wa + "</i><b>" + (all.length ? "Nothing in this view" : "No chats yet")
+      + "</b><span>" + (all.length ? "Try another filter, or clear the search." : "When a student writes to +1 443 448 1577 the chat appears here. The AI answers by itself and hands over anything sensitive.") + "</span></div>";
+}
+function waRow(c){
+  var lb = (c.labels || []).map(function(id){ var x = WA_LBL[id]; return x ? '<span class="wa2-lbl"><i style="background:' + x.c + '"></i>' + esc(x.l) + "</span>" : ""; }).join("");
+  return '<button class="wa2-row' + (WA.cur === c.id ? " on" : "") + (c.unread ? " un" : "") + '" onclick="waOpen(\'' + jsq(c.id) + '\')">'
+    + waAv(c) + '<div class="tx"><div class="l1"><b>' + esc(waName(c)) + "</b><time>" + esc(waTime(c.last_message_at)) + "</time></div>"
+    + '<div class="l2"><em>' + esc(c.last_preview || "") + "</em>"
+    + (c.needs_human ? '<span class="wa2-pill need">Needs you</span>' : "")
+    + (c.opted_out ? '<span class="wa2-pill stop">Stopped</span>' : "")
+    + (c.unread ? '<span class="wa2-badge">' + c.unread + "</span>" : "") + "</div>"
+    + (lb ? '<div class="wa2-lbls">' + lb + "</div>" : "") + "</div></button>";
+}
+window.waTab = function(t){ WA.tab = t; waPaintList(); };
+window.waLabelFilter = function(id){ WA.label = WA.label === id ? "" : id; waPaintList(); };
+var WA_QT = null;
+window.waSearch = function(v){ WA.q = v || ""; clearTimeout(WA_QT); WA_QT = setTimeout(waPaintList, 120); };
+
+/* ---- conversation ---- */
 window.waOpen = async function(id, quiet){
+  var switching = WA.cur !== id;
   WA.cur = id;
-  var r = await sb.from("wa_messages").select("*").eq("contact_id", id).order("created_at", { ascending:true }).limit(500);
+  if(switching){ WA.msgs = []; WA.pending = null; }
+  var c = waCur();
+  if(!c){ WA.cur = null; waPaintChat(); return; }
+  if(!quiet || switching){ waPaintList(); waPaintChat(); }
+  var r = await sb.from("wa_messages").select("*").eq("contact_id", id).order("created_at", { ascending:true }).limit(600);
+  if(WA.cur !== id) return;
   WA.msgs = r.data || [];
-  var c = WA.contacts.find(function(x){ return x.id === id; });
-  if(c && c.unread){
-    c.unread = 0;
-    sb.functions.invoke("wa-send", { body:{ action:"read", contact_id:id } });
-  }
-  if(quiet) waPaintChat(); else waPaint();
+  waPaintMsgs(true);
+  if(c.unread){ c.unread = 0; waPaintList(); waCall({ action:"read", contact_id:id }); }
 };
-window.waClose = function(){ WA.cur = null; waPaint(); };
+window.waClose = function(){ WA.cur = null; WA.info = false; waPaintList(); waPaintChat(); };
+window.waToggleInfo = function(){ if(window.innerWidth > 1180) WA.infoHidden = !WA.infoHidden; else WA.info = !WA.info; waLayout(); };
 
 function waPaintChat(){
-  var el = $("wa-chat"); if(!el) return;
-  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(!c) return;
+  var el = $("wa2-chat"); if(!el) return;
+  waLayout();
+  var c = waCur();
+  if(!c){
+    el.innerHTML = '<div class="wa2-empty"><i>' + WA_ICON.wa + "</i><b>Pick a chat</b><span>Chats waiting for a person are marked <b style=\"color:var(--red)\">Needs you</b>. Everything else the AI is answering.</span></div>";
+    $("wa2-info").innerHTML = "";
+    return;
+  }
+  var draft = $("wa2-text") ? $("wa2-text").value : "";
+  el.innerHTML = '<div class="wa2-chead" id="wa2-chead"></div><div id="wa2-bans"></div>'
+    + '<div class="wa2-msgs" id="wa2-msgs"></div><div id="wa2-foot"></div>';
+  waPaintHead(); waPaintMsgs(true); waPaintFoot(draft); waPaintInfo();
+}
+function waPaintHead(){
+  var c = waCur(), h = $("wa2-chead"), b = $("wa2-bans"); if(!c || !h) return;
   var p = WA.people[c.profile_id];
-  var left = waWindowLeft(c);
-  var hrs = Math.floor(left / 36e5), mins = Math.floor((left % 36e5) / 6e4);
-  var who = { student:"", ai:"AI assistant", staff:"Team", system:"Automatic", template:"Template" };
-  var drafts = el.querySelector("textarea"); var keep = drafts ? drafts.value : "";
-  el.innerHTML = '<div class="wa-head">'
-    + '<button class="btn btn-o btn-s wa-back" onclick="waClose()">← Chats</button>'
-    + '<div style="flex:1;min-width:0"><h3>' + esc(waName(c)) + "</h3>"
-    + '<div class="s">' + esc(c.phone) + (c.wa_name && p ? " · WhatsApp name: " + esc(c.wa_name) : "")
-    + (p ? ' · <a href="#" onclick="aStudent(\'' + jsq(p.id) + '\');return false">open student file</a>' : c.lead_id ? " · matched to a lead" : " · new enquiry") + "</div></div>"
-    + '<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;cursor:pointer"><input type="checkbox" ' + (c.ai_on ? "checked" : "")
-    + ' onchange="waAi(this.checked)"> AI answers</label>'
-    + (c.needs_human ? '<button class="btn btn-p btn-s" onclick="waResolve()">Done — hand back to AI</button>' : "")
-    + "</div>"
-    + (c.needs_human ? '<div class="wa-note red"><b>Handed to you</b>' + (c.handoff_at ? " " + esc(ago(c.handoff_at)) : "") + ": " + esc(String(c.handoff_reason || "the AI asked for a person").replace(/[.\s]+$/, ""))
-        + ". The AI stays quiet on this chat until you press “Done”.</div>" : "")
-    + (c.opted_out ? '<div class="wa-note red">This student sent STOP. Nothing can be sent until they reply START.</div>' : "")
-    + '<div class="wa-msgs" id="wa-msgs">'
-    + (WA.msgs.length ? WA.msgs.map(function(m){
-        var tick = m.direction === "out" ? ({ read:"✓✓ read", delivered:"✓✓", sent:"✓", queued:"…", accepted:"…", failed:"failed", undelivered:"not delivered" }[m.status] || m.status || "") : "";
-        var media = (m.media || []).map(function(x){ return " [" + esc((x.type || "file").split("/")[0]) + "]"; }).join("");
-        return '<div class="wa-b ' + m.direction + '">'
-          + (who[m.author] ? '<span class="who">' + who[m.author] + "</span>" : "")
-          + esc(m.body || "") + media
-          + '<span class="meta">' + esc(ago(m.created_at)) + (tick ? " · " + esc(tick) : "") + "</span>"
-          + (m.error ? '<span class="meta err">' + esc(m.error) + "</span>" : "")
-          + "</div>";
-      }).join("") : '<div style="margin:auto;color:var(--faint)">No messages yet.</div>')
-    + "</div>"
-    + (left > 0 && !c.opted_out
-        ? '<div class="wa-comp"><textarea id="wa-text" placeholder="Reply as the Orbuni team…  (free reply window: ' + hrs + "h " + mins + 'm left)"'
-          + ' onkeydown="if(event.key===\'Enter\'&&(event.ctrlKey||event.metaKey)){waSend()}">' + esc(keep) + "</textarea>"
-          + '<button class="btn btn-p" id="wa-sendbtn" onclick="waSend()">Send</button></div>'
-        : !c.opted_out ? '<div class="wa-note gold" style="margin-bottom:12px">More than 24 hours since their last message, so WhatsApp only allows an approved template. '
-          + waTplPicker(c.id) + "</div>" : "");
-  var ms = $("wa-msgs"); if(ms) ms.scrollTop = ms.scrollHeight;
+  h.innerHTML = '<button class="wa2-ic wa2-back" onclick="waClose()" title="Back to chats">' + WA_ICON.back + "</button>"
+    + waAv(c) + '<div class="nm" onclick="waToggleInfo()"><b>' + esc(waName(c)) + "</b><span>" + esc(c.phone)
+    + (p ? " · student file" : c.lead_id ? " · lead" : " · new enquiry") + "</span></div>"
+    + '<label class="wa2-sw" title="When on, the AI replies to this chat by itself"><input type="checkbox" ' + (c.ai_on ? "checked" : "")
+    + ' onchange="waAi(this.checked)"><i></i>AI</label>'
+    + '<button class="wa2-ic" onclick="waToggleInfo()" title="Details">' + WA_ICON.info + "</button>";
+  var bans = "";
+  if(c.needs_human) bans += '<div class="wa2-ban red"><div class="sp"><b>Needs you</b>' + (c.handoff_at ? " · " + esc(ago(c.handoff_at)) : "") + " — "
+    + esc(String(c.handoff_reason || "the AI asked for a person").replace(/[.\s]+$/, ""))
+    + ". The AI is paused here; the student was told the team will reply.</div>"
+    + '<button class="wa2-btn pri" onclick="waResolve()">Done — hand back to AI</button></div>';
+  if(c.opted_out) bans += '<div class="wa2-ban gold"><div class="sp">This student sent <b>STOP</b>. Nothing can be sent until they reply START.</div></div>';
+  if(b) b.innerHTML = bans;
 }
-
-function waTplPicker(contactId, phoneInputId){
-  var ok = WA.tpls.filter(function(t){ return t.approval === "approved"; });
-  if(!ok.length) return "<br>No templates are approved by Meta yet — they usually take a few minutes to a day after submission.";
-  return '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">'
-    + '<select id="wa-tpl">' + ok.map(function(t){ return '<option value="' + esc(t.key) + '">' + esc(t.key.replace(/_/g, " ")) + "</option>"; }).join("") + "</select>"
-    + '<button class="btn btn-p btn-s" onclick="waSendTpl(\'' + jsq(contactId || "") + '\',\'' + jsq(phoneInputId || "") + '\')">Send template</button></div>'
-    + '<div class="s" style="margin-top:6px;font-size:12px;color:var(--faint)">The student\'s first name is filled in automatically.</div>';
+function waDayLabel(t){
+  var d = new Date(t), now = new Date();
+  if(d.toDateString() === now.toDateString()) return "Today";
+  var y = new Date(now); y.setDate(now.getDate() - 1);
+  if(d.toDateString() === y.toDateString()) return "Yesterday";
+  return d.toLocaleDateString([], { weekday:"short", day:"numeric", month:"short", year: d.getFullYear() === now.getFullYear() ? undefined : "numeric" });
 }
-
-window.waSend = async function(){
-  var t = $("wa-text"); var text = t ? t.value.trim() : ""; if(!text) return;
-  var btn = $("wa-sendbtn"); if(btn){ btn.disabled = true; btn.textContent = "Sending…"; }
-  var r = await sb.functions.invoke("wa-send", { body:{ action:"reply", contact_id:WA.cur, body:text } });
-  if(btn){ btn.disabled = false; btn.textContent = "Send"; }
-  var err = r.error ? await waErr(r.error) : (r.data && r.data.error);
-  if(err){ toast(err, true); return; }
-  if(t) t.value = "";
-  waOpen(WA.cur, true);
+function waMediaHtml(m){
+  return (m.media || []).map(function(x, i){
+    var key = m.id + ":" + i, type = String(x.type || ""), url = x.path ? WA.urls[x.path] : null;
+    var attrs = ' data-wa-path="' + esc(x.path || "") + '"';
+    if(/^image\//.test(type)) return '<img alt="photo"' + attrs + (url ? ' src="' + esc(url) + '"' : "") + ' onclick="waZoom(this)">';
+    if(/^audio\//.test(type)) return '<audio controls preload="none"' + attrs + (url ? ' src="' + esc(url) + '"' : "") + "></audio>";
+    return '<a class="wa2-file" target="_blank" rel="noopener"' + attrs + (url ? ' href="' + esc(url) + '"' : ' href="#"') + ">" + WA_ICON.file
+      + "<span>" + esc(x.name || (/pdf/.test(type) ? "PDF document" : /video/.test(type) ? "Video" : "File")) + "</span></a>";
+  }).join("");
+}
+function waPaintMsgs(toBottom){
+  var el = $("wa2-msgs"); if(!el) return;
+  var nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  var who = { ai:'<span class="who ai">AI assistant</span>', staff:"", template:'<span class="who tpl">Template</span>', system:"" };
+  var staffName = {}; WA.staff.forEach(function(s){ staffName[s.id] = s.first_name || "Team"; });
+  var last = "", out = "";
+  WA.msgs.forEach(function(m){
+    var day = waDayLabel(m.created_at);
+    if(day !== last){ out += '<div class="wa2-day">' + esc(day) + "</div>"; last = day; }
+    var isSys = m.author === "system";
+    var tick = m.direction === "out" ? ({ read:'<span class="rd">✓✓</span>', delivered:"✓✓", sent:"✓", queued:"🕓", accepted:"🕓", sending:"🕓", failed:"⚠ not sent", undelivered:"⚠ not delivered" }[m.status] || "") : "";
+    var label = m.author === "staff" ? '<span class="who">' + esc(staffName[m.staff_id] || "Team") + "</span>" : (who[m.author] || "");
+    var body = m.body || "";
+    if((m.media || []).length && /^\[(image|audio|video|application|file)[^\]]*\]$/.test(body)) body = "";
+    out += '<div class="wa2-b ' + (isSys ? "sys" : m.direction) + '">' + (isSys ? "" : label) + waMediaHtml(m) + esc(body)
+      + (isSys ? "" : '<span class="meta">' + esc(new Date(m.created_at).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })) + (tick ? " " + tick : "") + "</span>")
+      + (m.error ? '<span class="err">' + esc(m.error) + "</span>" : "") + "</div>";
+  });
+  el.innerHTML = out || '<div class="wa2-empty"><b>No messages yet</b></div>';
+  if(toBottom || nearBottom) el.scrollTop = el.scrollHeight;
+  waHydrate();
+}
+async function waHydrate(){
+  var need = [];
+  document.querySelectorAll("#wa2-msgs [data-wa-path]").forEach(function(n){
+    var p = n.getAttribute("data-wa-path"); if(p && !WA.urls[p] && need.indexOf(p) < 0) need.push(p);
+  });
+  if(!need.length) return;
+  var r = await sb.storage.from("wa-media").createSignedUrls(need, 3600);
+  (r.data || []).forEach(function(x){ if(x.signedUrl) WA.urls[x.path] = x.signedUrl; });
+  document.querySelectorAll("#wa2-msgs [data-wa-path]").forEach(function(n){
+    var u = WA.urls[n.getAttribute("data-wa-path")]; if(!u) return;
+    if(n.tagName === "A") n.href = u; else if(!n.getAttribute("src")) n.src = u;
+  });
+}
+window.waZoom = function(img){
+  if(!img.src) return;
+  var d = document.createElement("div"); d.className = "wa2-light";
+  d.innerHTML = '<img src="' + esc(img.src) + '" alt="">'; d.onclick = function(){ d.remove(); };
+  document.body.appendChild(d);
 };
-window.waSendTpl = async function(contactId, phoneInputId){
-  var key = ($("wa-tpl") || {}).value; if(!key) return;
+
+function waPaintFoot(draft){
+  var f = $("wa2-foot"), c = waCur(); if(!f || !c) return;
+  if(c.opted_out){ f.innerHTML = ""; return; }
+  var left = waWindowLeft(c);
+  if(left > 0){
+    var keep = draft != null ? draft : ($("wa2-text") ? $("wa2-text").value : "");
+    f.innerHTML = '<div class="wa2-comp" id="wa2-comp">'
+      + (WA.pending ? '<div class="wa2-file-pend">' + WA_ICON.file + "<span>" + esc(WA.pending.name) + ' — will be sent with your message (optional caption)</span><button class="wa2-ic" onclick="waClearFile()" title="Remove">' + WA_ICON.close + "</button></div>" : "")
+      + '<div class="row"><button class="wa2-ic" onclick="waQRToggle()" title="Saved replies">' + WA_ICON.bolt + "</button>"
+      + '<button class="wa2-ic" onclick="$(\'wa2-file\').click()" title="Send a photo or PDF">' + WA_ICON.clip + "</button>"
+      + '<input type="file" id="wa2-file" accept="image/jpeg,image/png,application/pdf" style="display:none" onchange="waPickFile(this)">'
+      + '<textarea id="wa2-text" rows="1" placeholder="Type a message" oninput="waGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();waSend()}">' + esc(keep) + "</textarea>"
+      + '<button class="wa2-send" id="wa2-sendbtn" onclick="waSend()" title="Send">' + WA_ICON.send + "</button></div>"
+      + '<div class="hint">Enter sends · Shift+Enter new line · free-reply window closes in ' + waLeftText(left) + "</div></div>";
+    var t = $("wa2-text"); if(t) waGrow(t);
+  }else{
+    f.innerHTML = '<div class="wa2-tpl"><p>More than 24 hours since their last message — WhatsApp only allows an approved template now. When they reply, you can write freely again.</p>'
+      + waTplPicker(c.id, "", "wa2-tpl-c") + "</div>";
+  }
+}
+window.waGrow = function(t){ t.style.height = "auto"; t.style.height = Math.min(150, t.scrollHeight + 2) + "px"; };
+function waTplPicker(contactId, phoneInputId, selId){
+  var ok = WA.tpls.filter(function(t){ return t.approval === "approved"; });
+  if(!ok.length){
+    var pend = WA.tpls.length ? plural(WA.tpls.length, "template") + " are waiting for Meta's approval" : "No templates yet";
+    return '<p style="margin:0;font-size:13px;color:var(--faint)">' + esc(pend) + " — usually minutes to a day. The system checks every 30 minutes.</p>";
+  }
+  return '<div class="row"><select id="' + selId + '">' + ok.map(function(t){
+      return '<option value="' + esc(t.key) + '">' + esc(t.key.replace(/^orbuni_/, "").replace(/_/g, " ")) + "</option>"; }).join("")
+    + '</select><button class="wa2-btn pri" onclick="waSendTpl(\'' + jsq(contactId || "") + "','" + jsq(phoneInputId || "") + "','" + selId + '\')">Send template</button></div>'
+    + '<p style="margin:8px 0 0;font-size:12px;color:var(--faint)">The student\'s first name is filled in automatically.</p>';
+}
+
+/* ---- sending ---- */
+window.waPickFile = function(inp){
+  var f = inp.files && inp.files[0]; if(!f) return;
+  if(f.size > 5 * 1024 * 1024){ toast("That file is over 5 MB — WhatsApp may refuse it. Please send a smaller one.", true); inp.value = ""; return; }
+  WA.pending = f; waPaintFoot();
+  var t = $("wa2-text"); if(t) t.focus();
+};
+window.waClearFile = function(){ WA.pending = null; waPaintFoot(); };
+window.waSend = async function(){
+  var c = waCur(); if(!c) return;
+  var t = $("wa2-text"), text = t ? t.value.trim() : "";
+  var file = WA.pending;
+  if(!text && !file) return;
+  var btn = $("wa2-sendbtn"); if(btn) btn.disabled = true;
+  var r;
+  if(file){
+    var safe = String(file.name || "file").replace(/[^\w.\-]+/g, "_").slice(-60);
+    var path = "out/" + c.id + "/" + Date.now() + "-" + safe;
+    var up = await sb.storage.from("wa-media").upload(path, file, { contentType: file.type || "application/octet-stream", upsert:false });
+    if(up.error){ if(btn) btn.disabled = false; toast("Upload failed: " + (up.error.message || up.error), true); return; }
+    r = await waCall({ action:"media", contact_id:c.id, path:path, type:file.type, caption:text, name:file.name });
+  }else{
+    r = await waCall({ action:"reply", contact_id:c.id, body:text });
+  }
+  if(btn) btn.disabled = false;
+  if(r.error){ toast(r.error, true); return; }
+  if(t){ t.value = ""; waGrow(t); }
+  WA.pending = null;
+  var fresh = await sb.from("wa_messages").select("*").eq("contact_id", c.id).order("created_at", { ascending:true }).limit(600);
+  if(WA.cur === c.id){ WA.msgs = fresh.data || WA.msgs; waPaintMsgs(true); waPaintFoot(""); }
+};
+window.waSendTpl = async function(contactId, phoneInputId, selId){
+  var key = ($(selId) || {}).value; if(!key) return;
   var body = { action:"template", key:key, vars:{} };
-  var c = contactId && WA.contacts.find(function(x){ return x.id === contactId; });
+  var c = contactId && WA.contacts.filter(function(x){ return x.id === contactId; })[0];
   if(c){ body.contact_id = c.id; body.vars["1"] = (waName(c).split(" ")[0] || "there"); }
-  else {
+  else{
     body.phone = (($(phoneInputId) || {}).value || "").trim();
-    body.name = (($("wa-new-name") || {}).value || "").trim();
+    body.name = (($("wa2-new-name") || {}).value || "").trim();
     body.vars["1"] = (body.name.split(" ")[0] || "there");
   }
-  var r = await sb.functions.invoke("wa-send", { body:body });
-  var err = r.error ? await waErr(r.error) : (r.data && r.data.error);
-  if(err){ toast(err, true); return; }
-  toast("Sent.");
-  if(r.data && r.data.contact_id) WA.cur = r.data.contact_id;
-  aWhatsApp();
+  var r = await waCall(body);
+  if(r.error){ toast(r.error, true); return; }
+  toast("Template sent.");
+  waModalClose();
+  if(r.data.contact_id) WA.cur = r.data.contact_id;
+  await waLoad(); waPaint(); if(WA.cur) waOpen(WA.cur, true);
 };
 window.waAi = async function(on){
-  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(c) c.ai_on = on;
-  await sb.functions.invoke("wa-send", { body:{ action:"ai", contact_id:WA.cur, on:on } });
+  var c = waCur(); if(!c) return;
+  c.ai_on = on;
+  var r = await waCall({ action:"ai", contact_id:c.id, on:on });
+  if(r.error){ toast(r.error, true); return; }
   toast(on ? "The AI will answer this chat." : "AI is off for this chat — only the team replies.");
+  waPaintList(); waPaintInfo();
 };
 window.waResolve = async function(){
-  await sb.functions.invoke("wa-send", { body:{ action:"resolve", contact_id:WA.cur } });
-  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(c){ c.needs_human = false; c.handoff_reason = null; }
-  toast("Handed back to the AI.");
+  var c = waCur(); if(!c) return;
+  var r = await waCall({ action:"resolve", contact_id:c.id });
+  if(r.error){ toast(r.error, true); return; }
+  c.needs_human = false; c.handoff_reason = null; c.resolved_at = new Date().toISOString();
+  toast("Handed back to the AI. It will only look at new messages from now on.");
   waPaint();
 };
-window.waNew = function(){
-  WA.cur = null; waPaint();
-  var el = $("wa-chat"); if(!el) return;
-  $("a-live").querySelector(".wa-wrap").classList.add("has-cur");
-  el.innerHTML = '<div class="wa-head"><button class="btn btn-o btn-s wa-back" onclick="waClose()">← Chats</button><h3>Message a student</h3></div>'
-    + '<div style="padding:14px;display:flex;flex-direction:column;gap:10px;max-width:460px">'
-    + '<label style="font-size:13px">WhatsApp number (with country code)<input id="wa-new-phone" placeholder="+234 801 234 5678" style="width:100%;margin-top:4px"></label>'
-    + '<label style="font-size:13px">First name<input id="wa-new-name" placeholder="Aisha" style="width:100%;margin-top:4px"></label>'
-    + '<div style="font-size:13px;color:var(--dim)">WhatsApp lets a business start a chat only with an approved template. Once they reply, you (and the AI) can write freely for 24 hours.</div>'
-    + waTplPicker("", "wa-new-phone") + "</div>";
-};
-async function waErr(e){
-  try{ var j = await e.context.json(); return j.error || e.message; }catch(x){ return (e && e.message) || "Something went wrong"; }
-}
 
+/* ---- saved replies ---- */
+window.waQRToggle = function(){
+  var comp = $("wa2-comp"); if(!comp) return;
+  var open = $("wa2-pop"); if(open){ open.remove(); return; }
+  var d = document.createElement("div"); d.className = "wa2-pop"; d.id = "wa2-pop";
+  d.innerHTML = '<div class="h"><span>Saved replies</span><button class="wa2-btn" style="height:30px" onclick="waQRManage()">Edit</button></div>'
+    + (WA.qrs.length ? WA.qrs.map(function(q){
+        return '<button class="wa2-qr" onclick="waQRUse(\'' + jsq(q.id) + '\')"><b>' + esc(q.title) + "</b><span>" + esc(q.body) + "</span></button>";
+      }).join("") : '<div style="padding:10px;color:var(--faint);font-size:13px">No saved replies yet — press Edit to add one.</div>');
+  comp.appendChild(d);
+};
+window.waQRUse = function(id){
+  var q = WA.qrs.filter(function(x){ return x.id === id; })[0]; if(!q) return;
+  var t = $("wa2-text"); if(t){ t.value = (t.value ? t.value.replace(/\s*$/, " ") : "") + q.body; waGrow(t); t.focus(); }
+  var p = $("wa2-pop"); if(p) p.remove();
+};
+window.waQRManage = function(){
+  var p = $("wa2-pop"); if(p) p.remove();
+  waModal('<h3>Saved replies</h3><p class="s">One tap puts the text in the message box. Everyone on the team shares this list.</p>'
+    + '<div id="wa2-qrlist">' + WA.qrs.map(function(q){
+        return '<div class="wa2-sec" style="padding:10px 0"><input type="text" value="' + esc(q.title) + '" data-qr-t="' + esc(q.id) + '">'
+          + '<textarea rows="3" style="margin-top:6px" data-qr-b="' + esc(q.id) + '">' + esc(q.body) + "</textarea>"
+          + '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px"><button class="wa2-btn warn" onclick="waQRDelete(\'' + jsq(q.id) + '\')">Delete</button>'
+          + '<button class="wa2-btn" onclick="waQRSave(\'' + jsq(q.id) + '\')">Save</button></div></div>';
+      }).join("") + "</div>"
+    + '<label>New saved reply</label><input type="text" id="wa2-qr-nt" placeholder="Short name, e.g. Visa documents">'
+    + '<textarea id="wa2-qr-nb" rows="3" style="margin-top:6px" placeholder="The message text"></textarea>'
+    + '<div class="acts"><button class="wa2-btn" onclick="waModalClose()">Close</button><button class="wa2-btn pri" onclick="waQRAdd()">Add</button></div>');
+};
+async function waQRReload(){ var r = await sb.from("wa_quick_replies").select("*").order("sort").order("created_at"); WA.qrs = r.data || WA.qrs; }
+window.waQRAdd = async function(){
+  var t = ($("wa2-qr-nt").value || "").trim(), b = ($("wa2-qr-nb").value || "").trim();
+  if(!t || !b){ toast("Give it a name and the text.", true); return; }
+  var r = await sb.from("wa_quick_replies").insert({ title:t, body:b, sort:200, created_by: ME && ME.id });
+  if(r.error){ toast(friendly(r.error), true); return; }
+  await waQRReload(); toast("Saved."); waQRManage();
+};
+window.waQRSave = async function(id){
+  var t = document.querySelector('[data-qr-t="' + id + '"]').value.trim(), b = document.querySelector('[data-qr-b="' + id + '"]').value.trim();
+  if(!t || !b){ toast("Name and text can't be empty.", true); return; }
+  var r = await sb.from("wa_quick_replies").update({ title:t, body:b }).eq("id", id);
+  if(r.error){ toast(friendly(r.error), true); return; }
+  await waQRReload(); toast("Saved.");
+};
+window.waQRDelete = async function(id){
+  if(!confirm("Delete this saved reply?")) return;
+  var r = await sb.from("wa_quick_replies").delete().eq("id", id);
+  if(r.error){ toast(friendly(r.error), true); return; }
+  await waQRReload(); waQRManage();
+};
+
+/* ---- details panel ---- */
+function waPaintInfo(){
+  var el = $("wa2-info"), c = waCur(); if(!el || !c){ if(el) el.innerHTML = ""; return; }
+  var p = WA.people[c.profile_id];
+  var left = waWindowLeft(c);
+  var mine = c.labels || [];
+  el.innerHTML = '<div class="hd" style="position:relative"><button class="wa2-ic wa2-x" onclick="waToggleInfo()" title="Close">' + WA_ICON.close + "</button>"
+    + waAv(c, true) + "<b>" + esc(waName(c)) + '</b><span class="sub">' + esc(c.phone) + (c.wa_name ? " · WhatsApp name: " + esc(c.wa_name) : "") + "</span>"
+    + (p ? '<button class="wa2-btn" style="margin-top:6px" onclick="aStudent(\'' + jsq(p.id) + '\')">Open student file</button>' : "") + "</div>"
+    + '<div class="wa2-sec"><h4>Status</h4>'
+    + '<div class="wa2-kv"><span>Who is answering</span><b>' + (c.needs_human ? '<span style="color:var(--red)">The team</span>' : c.ai_on ? "AI assistant" : "The team (AI off)") + "</b></div>"
+    + '<div class="wa2-kv"><span>Free-reply window</span><b>' + (left > 0 ? "open · " + waLeftText(left) : "closed — template only") + "</b></div>"
+    + '<div class="wa2-kv"><span>Last message from them</span><b>' + (c.last_inbound_at ? esc(ago(c.last_inbound_at)) : "never") + "</b></div>"
+    + '<div class="wa2-kv"><span>In Orbuni as</span><b>' + (p ? "Student" : c.lead_id ? "Lead" : "Not yet") + "</b></div>"
+    + (p && p.email ? '<div class="wa2-kv"><span>Email</span><b>' + esc(p.email) + "</b></div>" : "")
+    + "</div>"
+    + '<div class="wa2-sec"><h4>Labels</h4><div class="wa2-tog">' + WA_LABELS.map(function(x){
+        return '<button class="' + (mine.indexOf(x.id) >= 0 ? "on" : "") + '" style="--c:' + x.c + '" onclick="waToggleLabel(\'' + x.id + '\')"><i style="background:' + x.c + '"></i>' + esc(x.l) + "</button>";
+      }).join("") + "</div></div>"
+    + '<div class="wa2-sec"><h4>Team</h4><button class="wa2-btn" style="width:100%;justify-content:center" onclick="waAlertTeam(\'' + jsq(c.id) + '\')">' + WA_ICON.bell + " Alert the team about this chat</button></div>";
+}
+window.waToggleLabel = async function(id){
+  var c = waCur(); if(!c) return;
+  var l = (c.labels || []).slice(), i = l.indexOf(id);
+  if(i >= 0) l.splice(i, 1); else l.push(id);
+  var r = await sb.from("wa_contacts").update({ labels:l }).eq("id", c.id);
+  if(r.error){ toast(friendly(r.error), true); return; }
+  c.labels = l; waPaintInfo(); waPaintList();
+};
+
+/* ---- new chat / team alert (modals) ---- */
+function waModal(html){
+  waModalClose();
+  var d = document.createElement("div"); d.className = "wa2-modal"; d.id = "wa2-modal";
+  d.innerHTML = '<div class="box"><button class="wa2-ic wa2-x" onclick="waModalClose()" title="Close">' + WA_ICON.close + "</button>" + html + "</div>";
+  d.addEventListener("click", function(e){ if(e.target === d) waModalClose(); });
+  document.body.appendChild(d);
+}
+window.waModalClose = function(){ var m = $("wa2-modal"); if(m) m.remove(); };
+window.waNew = function(){
+  waModal('<h3>Message a student</h3><p class="s">WhatsApp lets a business start a chat only with an approved template. Once they reply, you — and the AI — can write freely for 24 hours.</p>'
+    + '<label>WhatsApp number (with country code)</label><input type="tel" id="wa2-new-phone" placeholder="+234 801 234 5678">'
+    + '<label>First name</label><input type="text" id="wa2-new-name" placeholder="Aisha">'
+    + '<label>Template</label>' + waTplPicker("", "wa2-new-phone", "wa2-tpl-n"));
+};
+window.waAlertTeam = function(contactId){
+  var c = contactId ? WA.contacts.filter(function(x){ return x.id === contactId; })[0] : null;
+  var others = WA.staff.filter(function(s){ return !(ME && s.id === ME.id); });
+  waModal('<h3>Alert the team</h3><p class="s">Goes to their portal bell, phone (push) and email within about 2 minutes.</p>'
+    + '<label>What is it about?</label><input type="text" id="wa2-al-t" maxlength="140" value="' + esc(c ? "WhatsApp: " + waName(c) + " needs attention" : "") + '" placeholder="e.g. Student arriving tonight — pickup not confirmed">'
+    + '<label>Details</label><textarea id="wa2-al-b" rows="4" placeholder="What should they do?">' + esc(c ? (c.handoff_reason ? "Why: " + c.handoff_reason + "\n" : "") + "Chat: " + c.phone + "\nOpen it in the WhatsApp inbox." : "") + "</textarea>"
+    + '<label class="wa2-chk"><input type="checkbox" id="wa2-al-c"' + (c && c.needs_human ? " checked" : "") + "> Urgent (marked URGENT at the top)</label>"
+    + "<label>Send to</label>" + (others.length ? others.map(function(s){
+        return '<label class="wa2-chk"><input type="checkbox" class="wa2-al-to" value="' + esc(s.id) + '" checked> ' + esc(((s.first_name || "") + " " + (s.last_name || "")).trim()) + "</label>";
+      }).join("") : '<p class="s">There is nobody else on the team yet.</p>')
+    + '<div class="acts"><button class="wa2-btn" onclick="waModalClose()">Cancel</button><button class="wa2-btn pri" onclick="waAlertSend()">Send alert</button></div>');
+};
+window.waAlertSend = async function(){
+  var t = ($("wa2-al-t").value || "").trim(), b = ($("wa2-al-b").value || "").trim();
+  if(!t){ toast("Write what the alert is about.", true); return; }
+  var to = Array.prototype.map.call(document.querySelectorAll(".wa2-al-to:checked"), function(x){ return x.value; });
+  if(!to.length){ toast("Pick at least one person.", true); return; }
+  var r = await sb.rpc("team_alert", { p_title:t, p_body:b, p_critical: !!$("wa2-al-c").checked, p_to: to });
+  if(r.error){ toast(friendly(r.error), true); return; }
+  waModalClose(); toast("Alert sent to " + plural(r.data || to.length, "person", "people") + ".");
+};
+
+/* ---- live updates ---- */
 function waLive(){
   if(WA.live) return;
   try{
     WA.live = sb.channel("orb-wa")
       .on("postgres_changes", { event:"*", schema:"public", table:"wa_contacts" }, function(p){
-        if(window.AV !== "wa") return;
         var n = p.new; if(!n || !n.id) return;
-        var i = WA.contacts.findIndex(function(c){ return c.id === n.id; });
+        var i = -1; WA.contacts.forEach(function(c, k){ if(c.id === n.id) i = k; });
         if(i >= 0) WA.contacts[i] = n; else WA.contacts.unshift(n);
         WA.contacts.sort(function(a, b){ return new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0); });
-        if(n.id === WA.cur && n.unread){ n.unread = 0; sb.functions.invoke("wa-send", { body:{ action:"read", contact_id:n.id } }); }
-        var typing = $("wa-text") && document.activeElement === $("wa-text");
-        if(!typing) waPaint();
+        if(window.AV !== "wa") return;
+        if(n.id === WA.cur && n.unread){ n.unread = 0; waCall({ action:"read", contact_id:n.id }); }
+        if(n.profile_id && !WA.people[n.profile_id]){ waLoad().then(function(){ if(window.AV === "wa") waPaintList(); }); }
+        var sub = $("wa2-sub"); if(sub){ var need = WA.contacts.filter(function(c){ return c.needs_human; }).length;
+          sub.textContent = "+1 443 448 1577 · " + plural(WA.contacts.length, "chat") + (need ? " · " + need + " waiting for you" : " · nobody waiting"); }
+        waPaintList();
+        if(n.id === WA.cur){
+          var hadComposer = !!$("wa2-comp"), canWrite = waWindowLeft(n) > 0 && !n.opted_out;
+          waPaintHead(); waPaintInfo();
+          if(hadComposer !== canWrite) waPaintFoot();
+        }
       })
       .on("postgres_changes", { event:"*", schema:"public", table:"wa_messages" }, function(p){
-        if(window.AV !== "wa") return;
         var m = p.new; if(!m || m.contact_id !== WA.cur) return;
-        var i = WA.msgs.findIndex(function(x){ return x.id === m.id; });
+        var i = -1; WA.msgs.forEach(function(x, k){ if(x.id === m.id) i = k; });
         if(i >= 0) WA.msgs[i] = m; else WA.msgs.push(m);
-        waPaintChat();
+        if(window.AV === "wa") waPaintMsgs(false);
       }).subscribe();
   }catch(e){}
 }
+
+/* Alerts about a WhatsApp chat open that chat; team alerts get their own icons. */
+setTimeout(function(){
+  try{
+    Object.assign(NI, { whatsapp_handoff:"💬", team_alert:"🚨" });
+    Object.assign(NI_COLOR, { whatsapp_handoff:"red", team_alert:"red" });
+  }catch(e){}
+  var orig = window.aOpenAlert;
+  if(typeof orig === "function" && !orig.__wa){
+    window.aOpenAlert = async function(nid, subject, entityType, entityId){
+      if(entityType === "wa_chat"){
+        try{ await sb.from("notification_recipients").update({ read_at:new Date().toISOString() })
+          .eq("notification_id", nid).eq("profile_id", ME.id).is("read_at", null); }catch(e){}
+        try{ pollAlerts(); }catch(e){}
+        if(entityId) WA.cur = entityId;
+        aGo("wa"); return;
+      }
+      return orig.apply(this, arguments);
+    };
+    window.aOpenAlert.__wa = true;
+  }
+}, 0);
 
 var NI = { student_signup:"🎓", application_submitted:"📋", document_uploaded:"📄",
   documents_missing:"⚠️", status_change:"🔁", student_assigned:"👤",
@@ -29223,6 +29672,7 @@ async function r7Feed(boxId){
   box.innerHTML = '<div class="f7"><div class="f7-skel"></div><div class="f7-skel"></div></div>';
   var err = await f7Load();
   f7Paint();
+  f7Live();
   if(err) toast(friendly(err), true);
   var want = window.__f7Want; window.__f7Want = null;
   if(want){ var el = $("fp-" + want); if(el){ el.scrollIntoView({ block:"start" }); el.classList.add("f7-flash"); } }
@@ -29257,6 +29707,41 @@ function f7Watch(){
 async function f7Flush(){
   var ids = FEED7.pending.splice(0); if(!ids.length) return;
   try{ await sb.rpc("feed_seen", { p_ids: ids }); }catch(e){}
+  // show the new totals straight away (your own view included), even if live updates are blocked
+  try{
+    var r = await sb.from("feed_posts").select("id,view_count,like_count,comment_count").in("id", ids);
+    (r.data || []).forEach(function(n){ var p = FEED7.posts.filter(function(x){ return x.id === n.id; })[0]; if(p){ p.view_count = n.view_count; p.comment_count = n.comment_count; f7Counts(p); } });
+  }catch(e){}
+}
+/* live: views, likes and comments change on screen while people read; a new or
+   removed post reloads the list (unless someone is in the middle of typing) */
+function f7Counts(p){
+  var el = document.getElementById("fp-" + p.id); if(!el) return;
+  var v = el.querySelector(".f7-views span"); if(v) v.textContent = f7Num(p.view_count);
+  var l = el.querySelector(".f7-like span"); if(l) l.textContent = f7Num(p.like_count);
+  var c = el.querySelector('.f7-a[aria-label="Comments"] span'); if(c) c.textContent = f7Num(p.comment_count);
+}
+function f7Busy(){
+  var f = document.querySelector(".f7-new-form"); if(f && !f.hidden) return true;
+  return [].some.call(document.querySelectorAll(".f7-cm textarea,.f7-cm input"), function(i){ return i.value && i.value.trim(); });
+}
+function f7Live(){
+  if(FEED7.sub || !sb.channel) return;
+  try{
+    FEED7.sub = sb.channel("f7-live").on("postgres_changes", { event:"*", schema:"public", table:"feed_posts" }, function(ev){
+      var n = ev.new || {}, id = n.id || (ev.old || {}).id; if(!id) return;
+      var p = FEED7.posts.filter(function(x){ return x.id === id; })[0];
+      if(ev.eventType === "UPDATE" && p && !n.deleted_at && !!p.pinned === !!n.pinned){
+        ["view_count","like_count","comment_count"].forEach(function(k){ if(n[k] != null) p[k] = n[k]; });
+        f7Counts(p); return;
+      }
+      clearTimeout(FEED7.rt);
+      FEED7.rt = setTimeout(async function(){
+        var box = $(FEED7.box); if(!box || !box.querySelector(".f7") || f7Busy()) return;
+        await f7Load(); f7Paint();
+      }, 800);
+    }).subscribe();
+  }catch(e){}
 }
 
 window.f7See = function(btn){
@@ -31767,5 +32252,23 @@ window.ulineStop = function(btn){
 })();
 </script>
 
+<!--orb-wa--><style>
+.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
+padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
+font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
+.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
+@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
+body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
+@media print{.orb-wa{display:none}}
+</style>
+<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
+<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
+<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
+var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
+var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
+if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
+a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
+function s(){a.classList.toggle("off",/^#portal=/.test(location.hash||""))}s();addEventListener("hashchange",s);})();</script>
+<!--/orb-wa-->
 </body>
 </html>

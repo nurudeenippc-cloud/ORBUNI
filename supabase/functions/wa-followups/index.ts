@@ -39,9 +39,9 @@ Deno.serve(async (req) => {
     const bal = Number(b.balance);
     out.balance = bal;
     if (Number.isFinite(bal) && bal < 5) {
-      await alertStaff(db, `Twilio balance is low: $${bal.toFixed(2)}`,
+      await alertStaff(db, "Twilio balance is low",
         `The WhatsApp number's prepaid balance is $${bal.toFixed(2)}. When it reaches $0, WhatsApp messages (and the AI replies) stop.\n\nTop up: console.twilio.com → Billing → Add funds ($20 is enough for a few thousand messages).`,
-        `wa-balance:${new Date().toISOString().slice(0, 10)}`);
+        null, 20 * 60);   // at most once a day
     }
   } catch { /* balance check is best-effort */ }
 

@@ -1,7 +1,7 @@
 // Orbuni WhatsApp — shared by wa-webhook and wa-send (copied into each function
 // folder on deploy). Twilio does the WhatsApp side; Claude writes the replies.
 // Secrets: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, ANTHROPIC_API_KEY
-// (and RESEND_* via the existing email outbox for staff alerts).
+// Staff alerts go through the portal notifications (send-alerts: bell, push, email).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
@@ -44,7 +44,7 @@ export async function twilioValid(req: Request, params: Record<string, string>):
   return b64 === sig;
 }
 
-type SendOpts = { body?: string; contentSid?: string; vars?: Record<string, string> };
+type SendOpts = { body?: string; contentSid?: string; vars?: Record<string, string>; mediaUrls?: string[] };
 export async function twilioSend(toE164: string, o: SendOpts): Promise<{ ok: boolean; sid?: string; status?: string; error?: string }> {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + toE164, StatusCallback: WEBHOOK_URL });
   if (o.contentSid) {
@@ -52,6 +52,7 @@ export async function twilioSend(toE164: string, o: SendOpts): Promise<{ ok: boo
     if (o.vars) form.set("ContentVariables", JSON.stringify(o.vars));
   } else {
     form.set("Body", (o.body || "").slice(0, 1600));
+    for (const u of o.mediaUrls || []) form.append("MediaUrl", u);
   }
   try {
     const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
@@ -71,35 +72,62 @@ export async function twilioSend(toE164: string, o: SendOpts): Promise<{ ok: boo
 export async function sendAndLog(
   db: ReturnType<typeof sb>,
   contact: { id: string; phone: string },
-  o: SendOpts & { author: "ai" | "staff" | "system" | "template"; staffId?: string | null; templateKey?: string | null; preview?: string },
+  o: SendOpts & { author: "ai" | "staff" | "system" | "template"; staffId?: string | null; templateKey?: string | null; preview?: string; media?: unknown[] | null },
 ) {
   const res = await twilioSend(contact.phone, o);
   const text = o.body ?? o.preview ?? (o.templateKey ? `[template: ${o.templateKey}]` : "");
   const { data } = await db.from("wa_messages").insert({
     contact_id: contact.id, direction: "out", author: o.author, staff_id: o.staffId || null,
-    body: text, template_key: o.templateKey || null,
+    body: text, template_key: o.templateKey || null, media: o.media || null,
     twilio_sid: res.sid || null, status: res.ok ? (res.status || "queued") : "failed", error: res.ok ? null : res.error,
   }).select("id").single();
   await db.from("wa_contacts").update({
     last_message_at: new Date().toISOString(),
-    last_preview: (o.author === "ai" ? "AI: " : o.author === "staff" ? "You: " : "") + text.slice(0, 120),
+    last_preview: (o.author === "ai" ? "AI: " : o.author === "staff" ? "You: " : "") + (text || (o.media?.length ? "[file]" : "")).slice(0, 120),
   }).eq("id", contact.id);
   return { ...res, id: data?.id };
 }
 
 // ---------------------------------------------------------------- staff alert
-// Emails the owner(s) through the existing email outbox (same pipeline as every
-// other Orbuni email), so a handover is never missed.
-export async function alertStaff(db: ReturnType<typeof sb>, subject: string, body: string, dedupe: string) {
-  const { data: owners } = await db.from("profiles").select("id,email").or("is_owner.eq.true,role.eq.admin");
-  for (const p of owners || []) {
-    if (!p.email) continue;
-    await db.from("email_outbox").insert({
-      profile_id: p.id, to_email: p.email, template: "custom_notice",
-      vars: { subject, body: body + "\n\nOpen the WhatsApp inbox: " + PORTAL + "/#portal=admin:wa" },
-      dedupe_key: dedupe + ":" + p.id,
-    }).then(() => {}, () => {});
+// Tells every team member through the portal's own alerts (bell + phone push +
+// email, sent by send-alerts within ~2 minutes). The same alert is not repeated
+// for the same chat within `windowMin` minutes.
+export async function alertStaff(db: ReturnType<typeof sb>, subject: string, body: string, contactId: string | null, windowMin = 60) {
+  let q = db.from("notifications").select("id").eq("kind", "whatsapp_handoff").eq("title", subject)
+    .gte("created_at", new Date(Date.now() - windowMin * 60e3).toISOString()).limit(1);
+  q = contactId ? q.eq("entity_id", contactId) : q.is("entity_id", null);
+  const { data: dup } = await q;
+  if (dup && dup.length) return;
+  await db.rpc("wa_notify_team", { p_contact: contactId, p_title: subject, p_body: (body + "\n\nOpen the WhatsApp inbox: " + PORTAL + "/#portal=admin:wa").slice(0, 1500) });
+}
+
+// ---------------------------------------------------------------- files
+// Copies a file a student sent (Twilio keeps it behind our account login) into
+// our private storage, so the portal can show it and it never expires.
+const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf",
+  "audio/ogg": "ogg", "audio/mpeg": "mp3", "audio/mp4": "m4a", "video/mp4": "mp4", "text/vcard": "vcf" };
+export async function storeIncomingMedia(db: ReturnType<typeof sb>, contactId: string, sid: string, items: { url: string; type: string }[]) {
+  const out: { path?: string; type: string; url?: string; name?: string }[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    try {
+      const r = await fetch(it.url, { headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN) } });
+      if (!r.ok) throw new Error("download " + r.status);
+      const type = (r.headers.get("content-type") || it.type || "application/octet-stream").split(";")[0];
+      const path = `in/${contactId}/${sid}-${i}.${EXT[type] || "bin"}`;
+      const up = await db.storage.from("wa-media").upload(path, new Uint8Array(await r.arrayBuffer()), { contentType: type, upsert: true });
+      if (up.error) throw up.error;
+      out.push({ path, type });
+    } catch (e) {
+      console.error("media copy failed", String(e));
+      out.push({ type: it.type, url: it.url });          // keep Twilio's link as a fallback
+    }
   }
+  return out;
+}
+export async function signedUrl(db: ReturnType<typeof sb>, path: string, seconds = 3600) {
+  const { data } = await db.storage.from("wa-media").createSignedUrl(path, seconds);
+  return data?.signedUrl || null;
 }
 
 // ---------------------------------------------------------------- the AI agent
@@ -110,7 +138,8 @@ const RULES = `You are the WhatsApp assistant for Orbuni. You reply to students 
 
 ABOUT ORBUNI
 - Orbuni helps international students (mostly from Africa and the Middle East) get admission and scholarships at universities in Türkiye and Northern Cyprus — from choosing a programme to the offer letter, visa, airport pickup and registration. Office: Istanbul.
-- Start here: the free 2-minute assessment at https://myorbuni.com/#start — it matches the student to programmes and shows real fees. The student portal (track the application, upload documents, message the counsellor) is https://myorbuni.com
+- Start here: https://myorbuni.com/#start — a short video, then a free 2-minute assessment (eight honest questions) that tells the student which path fits them. The student portal (track the application, upload documents, message the counsellor) is https://myorbuni.com
+- Applying is FREE. Our service fee is paid only AFTER the offer letter arrives: the student then chooses Standard, Plus or Premier and pays once. Tuition is always paid straight to the university, never to Orbuni.
 - Service packages (one-time service fee, in USD):
   • Standard $800 — university and programme selection; application preparation and submission; every document checked before it is sent; every update from submission to offer letter; acceptance steps after the offer; a named Orbuni counsellor.
   • Plus $1,650 — everything in Standard + visa assistance (what to prepare, how to apply; government fees paid by the student) + airport pickup in Türkiye + arrival assistance in the first days.
@@ -120,15 +149,35 @@ ABOUT ORBUNI
 - Refunds (Student Service Agreement): the service fee is never refunded in full, because work starts the day you pay. When a refund is due (Orbuni cannot complete the service, e.g. visa refused, or the student stops before it is complete) the student gets back 10% on Standard, 20% on Plus, 30–40% on Premier. If the visa is refused the student may instead carry the service over to the next intake at no extra fee. Extra services (e.g. airport pickup) are refunded in full if cancelled 48h+ before. Refund requests: email hello@myorbuni.com with the subject "Refund". Masterclass ($10): full refund within 7 days.
 - Safety: never ask for or accept money, card details, passwords or documents over WhatsApp. Documents are uploaded only inside the portal. If someone claims to be Orbuni and asks for money elsewhere, it is a scam.
 
+USEFUL LINKS (send the exact link; never make up a link)
+- Assessment / start an application: https://myorbuni.com/#start
+- Find a programme and its fee: https://myorbuni.com/#progs  · Universities: https://myorbuni.com/universities/  · By subject: https://myorbuni.com/study/
+- Scholarship discounts (25–75%): https://myorbuni.com/scholarships/  · 100% scholarship places, each with its full one-off price: https://myorbuni.com/#schol
+- How scholarships really work: https://myorbuni.com/articles/how-turkish-scholarships-work/  · Visa guide: https://myorbuni.com/articles/nigerian-student-visa-refusals/  · Real costs: https://myorbuni.com/articles/what-turkiye-actually-costs/  · IELTS: https://myorbuni.com/articles/do-you-need-ielts/  · Is Orbuni real: https://myorbuni.com/articles/is-this-agency-real/
+- Student housing: https://myorbuni.com/housing/
+
+HOW WE SELL (honest, helpful, never pushy)
+- Your goal is to move every new enquiry to the next right step. For almost every first question — "how do I apply", "how do I get a scholarship", "how do I get 100% scholarship", "which school", "how much" — give a short honest answer, then send https://myorbuni.com/#start and say: watch the short video, then take the free 2-minute assessment; it shows which path fits them and their scholarship options, before they pay anything.
+- The assessment result decides the path, and you follow the same logic:
+  • Still researching / not ready yet → the free WhatsApp community (its link appears on their assessment result) and the $10 Scholarship Masterclass (the whole process explained, before spending real money; full refund within 7 days).
+  • Nearly ready / comparing → the free application: up to three programmes, every fee and scholarship shown in writing, and a personal shortlist.
+  • Documents ready → a counsellor messages them within 30 minutes in working hours and the application starts the same day; then the packages after the offer.
+- Students can apply by themselves: after the assessment they create a free account at https://myorbuni.com, pick up to three programmes and upload documents in the portal. Applying costs nothing. Encourage this — they don't need to wait for us.
+- SCHOLARSHIPS — say it the way the website does: at Turkish private universities a "scholarship" is a discount on tuition (bands of 25%, 50%, 75%, sometimes 100%), not money sent to you. Results, applying early, the subject and applying through an official partner channel decide the band. A 100% place is a separate, limited allocation with ONE one-off payment that covers tuition for the whole programme — not free; every place is listed with its full price at https://myorbuni.com/#schol and places are taken as applications arrive. Never quote a 100% price yourself — send the link. If they want fully free: Türkiye Bursları (the Turkish government scholarship) is fully funded but very competitive, opens once a year, is applied for by the student directly at turkiyeburslari.gov.tr, and nobody (us included) can sell it or improve the odds.
+- VISA — we prepare the file and check every document against every other; the consulate decides and nobody can influence it. Most refusals are about the file: weak or sudden financial evidence, names that don't match across documents, a story that doesn't fit, expired paperwork. Visa help is included in Plus and Premier (Premier adds a visa agent in their own country). Government fees are paid by the student.
+- Packages: mention them when the student is ready or asks about cost or what we do; always add that the fee comes only after the offer letter.
+- Close each reply with one clear next step and, for new enquiries, ask one simple question that helps (e.g. which subject, which level, their latest results).
+
 HOW TO REPLY
-- WhatsApp style: short (usually 1–4 sentences), warm, plain English. Reply in the language the student writes in (English, French, Arabic, Turkish…).
+- WhatsApp style: short (usually 1–4 sentences), warm, plain English. WhatsApp formatting only: *bold* with ONE asterisk on each side, never **double asterisks**, never # headings or [text](link) — paste links as plain URLs. Reply in the language the student writes in (English, French, Arabic, Turkish…).
 - One clear next step per message (take the assessment, log in to the portal, upload a document, choose a package, book a call).
 - Use the STUDENT FILE below when it exists: their name, application status, missing or rejected documents, payments. Do not read the whole file back to them; use what answers the question.
 - If they send a photo or document here, thank them and ask them to upload it in the portal (Documents), because files on WhatsApp are not stored in their application.
 - Never promise admission, a visa, a scholarship amount or a date. Say what is usual and that their counsellor confirms.
 - If you don't know, say so and hand over — don't guess.
+- If the conversation starts with a note that the team handled an earlier issue, treat that issue as closed: answer the new question normally and only hand over again if the student raises a sensitive matter again.
 
-HAND OVER TO A HUMAN (set handoff=true) when:
+HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest message(s), not older ones. A short reply such as "ok", "thanks", "hello" or "noted" never needs a hand-over. Hand over when the newest message:
 - they ask for a refund, cancellation or money back; they complain or are angry; they mention a scam, fraud, police or lawyer;
 - their visa was refused, or there is an emergency (arrival problems, safety, health);
 - they ask for a human / Nurudeen / Godfrey / a call;

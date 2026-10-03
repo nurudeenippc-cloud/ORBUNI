@@ -7,7 +7,7 @@
 // the chat is flagged in the portal inbox and they get an email.
 // STOP / START work as the student expects.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS } from "./wa.ts";
+import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia } from "./wa.ts";
 
 const TWIML_EMPTY = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
 const twiml = () => new Response(TWIML_EMPTY, { headers: { "Content-Type": "text/xml" } });
@@ -102,8 +102,23 @@ Deno.serve(async (req: Request) => {
     return twiml();
   }
 
+  // Photos / documents: copy them into our own storage after Twilio has its answer.
+  if (media && saved?.id && sid) {
+    // @ts-ignore EdgeRuntime is provided by Supabase
+    EdgeRuntime.waitUntil(storeIncomingMedia(db, contact.id, sid, media as any).then((m) =>
+      db.from("wa_messages").update({ media: m }).eq("id", saved.id)));
+  }
+
+  // Handed over to a person: the AI stays out of it, but the student is never left
+  // in silence — at most one short note every 30 minutes — and the team is reminded.
+  if (contact.needs_human && !contact.opted_out) {
+    // @ts-ignore EdgeRuntime is provided by Supabase
+    EdgeRuntime.waitUntil(holding(contact.id, body));
+    return twiml();
+  }
+
   // AI reply runs after Twilio gets its answer (Twilio waits only 15s).
-  if (contact.ai_on && !contact.needs_human) {
+  if (contact.ai_on) {
     // @ts-ignore EdgeRuntime is provided by Supabase
     EdgeRuntime.waitUntil(answer(contact.id, saved?.id || null));
   }
@@ -121,8 +136,11 @@ async function answer(contactId: string, messageId: string | null) {
   const { data: c } = await db.from("wa_contacts").select("*").eq("id", contactId).single();
   if (!c || !c.ai_on || c.needs_human || c.opted_out) return;   // a person took over meanwhile
 
-  const { data: msgs } = await db.from("wa_messages").select("direction,author,body,created_at")
-    .eq("contact_id", contactId).order("created_at", { ascending: false }).limit(24);
+  // Only what was said since a person last pressed "Done" — an issue the team already
+  // handled must not make the AI hand the chat over again.
+  let mq = db.from("wa_messages").select("direction,author,body,created_at").eq("contact_id", contactId);
+  if (c.resolved_at) mq = mq.gte("created_at", c.resolved_at);
+  const { data: msgs } = await mq.order("created_at", { ascending: false }).limit(24);
   const rows = (msgs || []).reverse();
 
   // Claude wants alternating turns starting with the student.
@@ -137,6 +155,7 @@ async function answer(contactId: string, messageId: string | null) {
   }
   while (history.length && history[0].role !== "user") history.shift();
   if (!history.length || history[history.length - 1].role !== "user") return;
+  if (c.resolved_at) history[0].content = "[Note: the Orbuni team already handled this student's earlier issue.]\n" + history[0].content;
 
   const { data: file } = await db.rpc("wa_person_context", { p_phone: c.phone });
   if (file && (!c.profile_id && file.profile_id || !c.lead_id && file.lead_id)) {
@@ -162,10 +181,25 @@ async function answer(contactId: string, messageId: string | null) {
 }
 
 async function handOver(db: ReturnType<typeof sb>, c: any, reason: string, lastText: string) {
-  await db.from("wa_contacts").update({ needs_human: true, handoff_reason: reason.slice(0, 300), handoff_at: new Date().toISOString() }).eq("id", c.id);
+  await db.from("wa_contacts").update({ needs_human: true, handoff_reason: reason.slice(0, 300), handoff_at: new Date().toISOString(), held_ack_at: new Date().toISOString() }).eq("id", c.id);
   const who = c.wa_name || c.phone;
-  await alertStaff(db,
-    `WhatsApp: ${who} needs a person`,
-    `${who} (${c.phone}) needs a reply from the team.\n\nWhy: ${reason}\n\nTheir last message:\n"${lastText.slice(0, 500)}"\n\nThe AI has paused on this chat until someone replies.`,
-    `wa-handoff:${c.id}:${new Date().toISOString().slice(0, 13)}`);
+  await alertStaff(db, `WhatsApp: ${who} needs a person`,
+    `${who} (${c.phone}) needs a reply from the team.\nWhy: ${reason}\nTheir last message: "${lastText.slice(0, 400)}"\nThe AI has paused on this chat until someone presses Done.`,
+    c.id, 60);
+}
+
+// A student writes while the chat is waiting for the team.
+async function holding(contactId: string, text: string) {
+  const db = sb();
+  const { data: c } = await db.from("wa_contacts").select("*").eq("id", contactId).single();
+  if (!c || !c.needs_human) return;
+  const last = c.held_ack_at ? Date.parse(c.held_ack_at) : 0;
+  if (Date.now() - last > 30 * 60e3) {
+    await sendAndLog(db, c, { author: "system", body: "Thanks for your message — a member of the Orbuni team has your chat and will reply here personally soon." });
+    await db.from("wa_contacts").update({ held_ack_at: new Date().toISOString() }).eq("id", c.id);
+  }
+  const who = c.wa_name || c.phone;
+  await alertStaff(db, `WhatsApp: ${who} is still waiting`,
+    `${who} (${c.phone}) wrote again while waiting for the team: "${String(text || "[file]").slice(0, 400)}"\nWhy it was handed over: ${c.handoff_reason || "-"}`,
+    c.id, 60);
 }
