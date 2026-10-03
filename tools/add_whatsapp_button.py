@@ -4,7 +4,8 @@
 The button opens a WhatsApp chat with Orbuni's number (+1 443 448 1577), where the
 AI assistant answers straight away and hands over to the team when needed. The
 message is pre-filled with the page the student was on ("…about Sabanci University").
-On the home page it hides itself while the student/staff portal is open.
+On the home page it hides itself while the student/staff portal is actually open
+(it watches #portal.on, not the address bar: leaving the portal keeps a #portal= hash).
 
 Safe to run again: the block sits between <!--orb-wa--> markers and is replaced.
 Run:  python3 tools/add_whatsapp_button.py   (after any page builder)
@@ -32,7 +33,8 @@ var h=document.querySelector("h1"),t=h?h.textContent.replace(/\\s+/g," ").trim()
 var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
 if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \\u201c"+t+"\\u201d and I have a question.";
 a.href="https://wa.me/NUMBER?text="+encodeURIComponent(m);
-function s(){a.classList.toggle("off",/^#portal=/.test(location.hash||""))}s();addEventListener("hashchange",s);})();</script>
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
 <!--/orb-wa-->""".replace("NUMBER", NUMBER)
 
 PAT = re.compile(r"<!--orb-wa-->.*?<!--/orb-wa-->\n?", re.S)

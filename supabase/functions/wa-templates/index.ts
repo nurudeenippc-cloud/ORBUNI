@@ -2,7 +2,8 @@
 // for approval, and keeps public.wa_templates in step with Meta's decision.
 // Called by pg_cron (x-orb-secret) — safe to run any number of times: a template
 // that already exists is only re-checked, never duplicated.
-// {{1}} is always the student's first name.
+// {{1}} is the student's first name, except in orbuni_staff_alert (sent to the team:
+// {{1}} what happened, {{2}} the details).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -16,7 +17,7 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 
 // Keep these short and factual: Meta rejects pushy or vague marketing wording,
 // and "utility" templates (about something the student already started) are cheaper.
-export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string }[] = [
+export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string> }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
   { key: "orbuni_quiz_followup", category: "MARKETING",
@@ -31,6 +32,9 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
     body: "Hi {{1}}, it is Orbuni checking in. Are you still planning to study in Türkiye? Reply here with any question and we will help with your next step. Reply STOP to opt out." },
   { key: "orbuni_team_reply", category: "UTILITY",
     body: "Hi {{1}}, this is the Orbuni team following up on your message. Reply here and we will continue where we left off." },
+  { key: "orbuni_staff_alert", category: "UTILITY",
+    body: "Orbuni team alert: {{1}}. Details: {{2}}. Open the Orbuni portal to see it and take action.",
+    vars: { "1": "Call booked with Aisha Bello", "2": "Mon 6 Oct, 14:00 Turkiye time with Nurudeen" } },
 ];
 
 async function tw(url: string, init: RequestInit = {}) {
@@ -53,7 +57,7 @@ Deno.serve(async (req) => {
     if (!row?.content_sid) {
       const c = await tw("https://content.twilio.com/v1/Content", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendly_name: t.key, language: "en", variables: { "1": "Aisha" }, types: { "twilio/text": { body: t.body } } }),
+        body: JSON.stringify({ friendly_name: t.key, language: "en", variables: t.vars || { "1": "Aisha" }, types: { "twilio/text": { body: t.body } } }),
       });
       if (!c.ok) { report.push({ key: t.key, step: "create", error: c.j.message || c.status }); continue; }
       row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body };

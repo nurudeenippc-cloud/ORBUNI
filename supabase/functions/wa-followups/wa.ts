@@ -185,45 +185,68 @@ HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest mess
 - you have already failed to answer the same question twice, or the question needs a decision only staff can make (special discounts, exceptions, fee negotiations).
 When handing over, still send a short kind reply: say a member of the team will reply here personally soon (Istanbul working hours), and don't argue or decide anything yourself.`;
 
-export type AgentOut = { reply: string; handoff: boolean; reason: string; model: string };
+export type AgentOut = { reply: string; handoff: boolean; reason: string; model: string; usage?: Record<string, number> };
 
 export async function runAgent(history: { role: "user" | "assistant"; content: string }[], file: unknown, contactName: string): Promise<AgentOut | null> {
   if (!ANTHROPIC_KEY) return null;
-  const system = RULES + "\n\nSTUDENT FILE (from Orbuni's records; may be empty for a new enquiry):\n" + JSON.stringify(file ?? {}, null, 0).slice(0, 6000) +
-    (contactName ? `\nTheir WhatsApp profile name: ${contactName}` : "") +
-    `\nToday: ${new Date().toISOString().slice(0, 10)} (Istanbul time zone).`;
+  // The rules never change, so they are cached (a cache read costs a tenth of normal
+  // input). The student's file and today's date change, so they come after the marker.
+  const system = [
+    { type: "text", text: RULES + "\n\nAlways answer by calling the respond tool, exactly once.", cache_control: { type: "ephemeral" } },
+    { type: "text", text: "STUDENT FILE (from Orbuni's records; may be empty for a new enquiry):\n" + JSON.stringify(file ?? {}, null, 0).slice(0, 6000) +
+      (contactName ? `\nTheir WhatsApp profile name: ${contactName}` : "") +
+      `\nToday: ${new Date().toISOString().slice(0, 10)} (Istanbul time zone).` },
+  ];
   const tools = [{
     name: "respond",
-    description: "Send the WhatsApp reply to the student.",
+    description: "Send the WhatsApp reply to the student. Call this once for every reply.",
+    strict: true,
     input_schema: {
       type: "object",
+      additionalProperties: false,
       properties: {
         reply: { type: "string", description: "The message to send, WhatsApp style." },
         handoff: { type: "boolean", description: "true if a human (Nurudeen/Godfrey) must take over this chat." },
-        reason: { type: "string", description: "If handoff: one short line for the team saying why." },
+        reason: { type: "string", description: "If handoff: one short line for the team saying why. Empty otherwise." },
       },
-      required: ["reply", "handoff"],
+      required: ["reply", "handoff", "reason"],
     },
   }];
   const order = GOOD_MODEL ? [GOOD_MODEL, ...MODELS.filter((m) => m !== GOOD_MODEL)] : MODELS;
   for (const model of order) {
     try {
+      // Newer models choose the tool themselves (forcing it is refused) and take an
+      // effort level; "low" suits short chat replies and keeps thinking cheap.
+      const newer = /sonnet-5|opus-5|fable/.test(model);
+      const body: Record<string, unknown> = { model, max_tokens: newer ? 4000 : 700, system, messages: history, tools,
+        tool_choice: newer ? { type: "auto" } : { type: "tool", name: "respond" } };
+      if (newer) body.output_config = { effort: "low" };
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "content-type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model, max_tokens: 700, system, messages: history, tools, tool_choice: { type: "tool", name: "respond" } }),
+        body: JSON.stringify(body),
       });
       if (!r.ok) {
         const t = await r.text();
-        if (r.status === 404 || /model/i.test(t)) continue;   // try the next model
-        console.error("anthropic", r.status, t.slice(0, 300));
+        console.error("anthropic", model, r.status, t.slice(0, 300));
+        if (r.status === 404 || r.status === 400) continue;   // model not available here: try the next one
         return null;
       }
       const j = await r.json();
-      const use = (j.content || []).find((c: any) => c.type === "tool_use");
-      if (!use?.input?.reply) return null;
+      if (j.stop_reason === "refusal") { console.warn("anthropic refusal", model); continue; }
+      const use = (j.content || []).find((c: any) => c.type === "tool_use" && c.name === "respond");
+      let out: { reply: string; handoff: boolean; reason: string } | null = null;
+      if (use?.input?.reply) out = { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || "") };
+      else {
+        // answered in plain text instead of the tool: still a usable reply
+        const txt = (j.content || []).filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim();
+        if (txt) out = { reply: txt, handoff: false, reason: "" };
+      }
+      if (!out) return null;
       GOOD_MODEL = model;
-      return { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || ""), model };
+      const u = j.usage || {};
+      console.log("ai", model, "in", u.input_tokens, "cached", u.cache_read_input_tokens || 0, "written", u.cache_creation_input_tokens || 0, "out", u.output_tokens);
+      return { ...out, model, usage: u };
     } catch (e) {
       console.error("anthropic fetch", String(e));
       return null;

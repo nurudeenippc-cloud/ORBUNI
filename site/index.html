@@ -1422,6 +1422,21 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
   opacity:.30;pointer-events:none;filter:blur(.3px)}
 @media(max-width:960px){.hshot{order:2}.hshot-frame{aspect-ratio:16/9}}
 @media (prefers-reduced-motion:reduce){.hshot .hs{transition:none}.hshot .hs img{transition:none;transform:none}}
+/* the photograph melts into the page: no frame, no shadow — its edges dissolve into
+   the background and the campus name sits on the page itself, below the picture */
+.hshot-frame{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;
+  animation:hsfloat 10s ease-in-out infinite}
+.hshot .hs{-webkit-mask-image:radial-gradient(ellipse 62% 64% at 56% 44%,#000 58%,transparent 100%),linear-gradient(to right,transparent,#000 30%,#000 78%,transparent),linear-gradient(to bottom,transparent,#000 18%,#000 66%,transparent);
+  -webkit-mask-composite:source-in,source-in;
+  mask-image:radial-gradient(ellipse 62% 64% at 56% 44%,#000 58%,transparent 100%),linear-gradient(to right,transparent,#000 30%,#000 78%,transparent),linear-gradient(to bottom,transparent,#000 18%,#000 66%,transparent);
+  mask-composite:intersect,intersect}
+.hshot-scrim{display:none}
+.hs-plate{background:none;left:9%;right:9%;bottom:-2%;padding:0}
+.hs-name{text-shadow:0 2px 18px rgba(0,0,0,.65)}
+html[data-theme="light"] .hs-name{color:var(--txt);text-shadow:none}
+html[data-theme="light"] .hs-city{color:var(--dim);text-shadow:none}
+@keyframes hsfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.hshot-frame{animation:none}}
 
 /* closing call to action, over a photograph */
 .final.has-shot{position:relative;overflow:hidden;isolation:isolate}
@@ -2621,7 +2636,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 #portal .o6-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 #portal .o6-rt b{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #portal .o6-rt small{font-size:12.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#portal .o6-pill{font-size:12px;font-weight:700;padding:6px 11px;border-radius:100px;background:var(--tn);color:var(--tc);white-space:nowrap}
+#portal .o6-pill{font-size:12px;font-weight:700;padding:6px 11px;border-radius:100px;background:var(--tn);color:var(--tc);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 #portal .o6-amt{font-family:var(--disp);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #portal .o6-st{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:100px;white-space:nowrap;background:rgba(255,255,255,.07);color:var(--dim)}
 #portal .o6-st.ok{background:rgba(62,213,152,.14);color:#7FE8BC}
@@ -2987,6 +3002,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 #portal .f7-more svg{width:20px;height:20px}
 #portal .f7-t{font-family:var(--disp);font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.25;margin:14px 0 6px;color:var(--txt);text-wrap:balance}
 #portal .f7-b{font-size:14.5px;line-height:1.62;color:var(--txt);opacity:.92}
+#portal .f7-b,.f7-pubcard .f7-b{overflow-wrap:anywhere;word-break:break-word}#portal .f7-b a{overflow-wrap:anywhere}
 #portal .f7-b p{margin:0 0 10px}
 #portal .f7-b a{color:var(--f7-blue)}
 #portal .f7-b.clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
@@ -13704,7 +13720,7 @@ function waCss(){
   + ".wa2-comp textarea{flex:1;min-height:42px;max-height:150px;resize:none;border-radius:22px!important;padding:11px 16px!important;font:500 14.5px/1.4 var(--round,inherit);border:1px solid var(--line2)!important;background:var(--p2)!important;color:var(--txt)}"
   + ".wa2-send{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:0;background:#25D366;color:#05210f;display:grid;place-items:center;cursor:pointer}"
   + ".wa2-send svg{width:20px;height:20px}.wa2-send:disabled{opacity:.5;cursor:default}"
-  + ".wa2-comp .hint{font-size:11.5px;color:var(--faint);margin:6px 6px 0}"
+  + ".wa2-comp .wa2-hint{font-size:11.5px;line-height:1.3;color:var(--faint);margin:6px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
   + ".wa2-file-pend{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:7px 10px;border-radius:12px;background:var(--p2);font-size:12.5px}"
   + ".wa2-file-pend span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
   + ".wa2-pop{position:absolute;bottom:calc(100% + 6px);left:12px;width:min(380px,calc(100% - 24px));max-height:340px;overflow:auto;background:var(--p1);border:1px solid var(--line2);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.35);z-index:20;padding:6px}"
@@ -13743,7 +13759,10 @@ function waCss(){
   + ".wa2-msgs{padding:12px 10px 8px}.wa2-b{max-width:86%}.wa2-top{flex-wrap:nowrap}.wa2-top .t{min-width:0}.wa2-top h2{font-size:17px}"
   + ".wa2-top .t span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa2-top .t i{display:none}"
   + ".wa2-top .wa2-btn span{display:none}.wa2-top .wa2-btn{padding:0 11px;flex:0 0 auto}"
-  + ".wa2-ban{flex-wrap:wrap}.wa2-ban .wa2-btn{width:100%;justify-content:center}}";
+  + ".wa2-ban{flex-wrap:wrap}.wa2-ban .wa2-btn{width:100%;justify-content:center}"
+  + ".wa2-comp .wa2-hint{display:none}.wa2.chat-open .wa2-top{display:none}.wa2.chat-open{gap:0}}"
+  + ".wa2-grid{min-height:0}"
+  + "#portal #a-body:has(.wa2-grid){padding-bottom:0!important}";
   document.head.appendChild(s);
 }
 
@@ -13826,6 +13845,37 @@ function waLayout(){
   var wide = window.innerWidth > 1180;
   g.classList.toggle("no-info", !cur || (wide && WA.infoHidden));
   g.classList.toggle("info-open", !!(cur && !wide && WA.info));
+  var w = g.parentNode; if(w) w.classList.toggle("chat-open", !!cur);
+  waFit();
+}
+/* The inbox fills exactly the space left on screen — title and typing box always
+   visible, only the lists inside scroll. Measured, because the portal header and the
+   phone's bottom menu change height between devices and browser bars come and go. */
+function waFit(){
+  var g = $("wa2-grid"); if(!g || !g.offsetParent) return;
+  var sc = $("a-body");
+  if(sc) sc.scrollTop = 0;
+  var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  var bottom = vh - 14;
+  var bn = $("bnav");
+  if(bn && getComputedStyle(bn).display !== "none" && getComputedStyle(bn).visibility !== "hidden"){
+    var br = bn.getBoundingClientRect();
+    if(br.height && br.top < vh) bottom = Math.min(bottom, br.top - 10);
+  }
+  var h = Math.max(360, Math.floor(bottom - g.getBoundingClientRect().top));
+  g.style.height = h + "px";
+  // whatever padding the page adds below must not make it scroll either
+  if(sc){
+    var extra = sc.scrollHeight - sc.clientHeight;
+    if(extra > 0 && h - extra >= 360){ g.style.height = (h - extra) + "px"; }
+    sc.scrollTop = 0;
+  }
+}
+if(!window.__waFitHooked){
+  window.__waFitHooked = true;
+  var _waFitSoon = function(){ clearTimeout(window.__waFitT); window.__waFitT = setTimeout(function(){ if(window.AV === "wa") waFit(); }, 60); };
+  window.addEventListener("resize", _waFitSoon);
+  if(window.visualViewport) window.visualViewport.addEventListener("resize", _waFitSoon);
 }
 
 function waFiltered(){
@@ -13993,7 +14043,7 @@ function waPaintFoot(draft){
       + '<input type="file" id="wa2-file" accept="image/jpeg,image/png,application/pdf" style="display:none" onchange="waPickFile(this)">'
       + '<textarea id="wa2-text" rows="1" placeholder="Type a message" oninput="waGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();waSend()}">' + esc(keep) + "</textarea>"
       + '<button class="wa2-send" id="wa2-sendbtn" onclick="waSend()" title="Send">' + WA_ICON.send + "</button></div>"
-      + '<div class="hint">Enter sends · Shift+Enter new line · free-reply window closes in ' + waLeftText(left) + "</div></div>";
+      + '<div class="wa2-hint">Enter sends · Shift+Enter new line · free-reply window closes in ' + waLeftText(left) + "</div></div>";
     var t = $("wa2-text"); if(t) waGrow(t);
   }else{
     f.innerHTML = '<div class="wa2-tpl"><p>More than 24 hours since their last message — WhatsApp only allows an approved template now. When they reply, you can write freely again.</p>'
@@ -26686,7 +26736,9 @@ window.lpcBook = async function(){
   orbTrack("lead", { email: email, name: c.name });
   var box = document.getElementById("lpr-call");
   box.innerHTML = '<div class="lpr-done"><span>✓</span><div><b>You are booked — ' + esc(d.when || "") + " (Türkiye time)</b>"
-    + "<small>" + (d.host ? "With " + esc(d.host) + ". " : "") + "The Google Calendar invitation and the Meet link are on their way to " + esc(email) + ".</small>"
+    + "<small>" + (d.host ? "With " + esc(d.host) + ". " : "")
+    + (d.join_url ? "The Google Calendar invitation and the Meet link are on their way to " + esc(email) + "."
+                  : "A counsellor will confirm on WhatsApp shortly and send you the video-call link. A confirmation is on its way to " + esc(email) + ".") + "</small>"
     + (d.join_url ? '<a href="' + esc(d.join_url) + '" target="_blank" rel="noopener">Open the Meet link</a>' : "") + "</div></div>";
 };
 
@@ -26858,11 +26910,12 @@ lpResult = function(res, name, noPush){
   } else {
     head = "Start with the basics" + (first ? ", " + first : "") + ".";
     sub = "You are early in the process — the best time to learn how it really works, before anyone asks you for money.";
+    // Learning first: the WhatsApp community is the next step (no call booking on this path).
     body = '<div class="lpr-comm">'
+      + (ORB_FUNNEL.whatsappGroup ? '<a class="lpr-cm wa" href="' + esc(ORB_FUNNEL.whatsappGroup) + '" target="_blank" rel="noopener" onclick="lpEvent(\'community_join\',null,\'wa_group\',\'lower\')">'
+          + '<span class="lpr-ic">' + lpIc("chat") + '</span><b>Orbuni WhatsApp community</b><small>Free · deadlines, scholarship news and answers on your phone</small><em>Join on WhatsApp →</em></a>' : "")
       + (ORB_FUNNEL.community ? '<a class="lpr-cm whop" href="' + esc(ORB_FUNNEL.community) + '" target="_blank" rel="noopener" onclick="lpEvent(\'community_join\',null,\'whop\',\'lower\')">'
-          + '<span class="lpr-ic">' + lpIc("users") + '</span><b>Orbuni Community</b><small>Free · weekly Q&amp;A, real student stories, deadlines as they open</small><em>Join free →</em></a>' : "")
-      + (ORB_FUNNEL.whatsappGroup ? '<a class="lpr-cm wa" href="' + esc(ORB_FUNNEL.whatsappGroup) + '" target="_blank" rel="noopener" onclick="lpEvent(\'cta_click\',null,\'wa_group\',\'lower\')">'
-          + '<span class="lpr-ic">' + lpIc("chat") + '</span><b>WhatsApp group</b><small>Updates and deadlines on your phone</small><em>Join →</em></a>' : "")
+          + '<span class="lpr-ic">' + lpIc("users") + '</span><b>Live webinars on Whop</b><small>Free · live Q&amp;A sessions and recordings, and 1-on-1 sessions with the team</small><em>Join free →</em></a>' : "")
       + "</div>" + lpfMaster(res) + lpfNext(res);
   }
   var acts;
@@ -26870,8 +26923,10 @@ lpResult = function(res, name, noPush){
     + '<button class="lp-pill lp-pill-ghost" onclick="lpScrollTo(\'lpr-call-card\')">Book a free call ↓</button>';
   else if(res.pathway === "medium") acts = applyBtn("Start my free application →", "signup_medium")
     + '<button class="lp-pill lp-pill-ghost" onclick="lpCallOpen(\'medium\')">Prefer to talk first? Book a call</button>';
-  else acts = (ORB_FUNNEL.community ? '<a class="lp-pill lp-pill-gold lp-pill-xl" href="' + esc(ORB_FUNNEL.community) + '" target="_blank" rel="noopener" onclick="lpEvent(\'community_join\',null,\'whop_top\',\'lower\')">Join the free community →</a>' : "")
-    + '<button class="lp-pill ' + (ORB_FUNNEL.community ? "lp-pill-ghost" : "lp-pill-gold lp-pill-xl") + '" onclick="lpBuyMasterclass(\'result_lower_top\')">The $10 Scholarship Masterclass</button>';
+  else { var cm = ORB_FUNNEL.whatsappGroup || ORB_FUNNEL.community;
+    acts = (cm ? '<a class="lp-pill lp-pill-gold lp-pill-xl" href="' + esc(cm) + '" target="_blank" rel="noopener" onclick="lpEvent(\'community_join\',null,\'' + (ORB_FUNNEL.whatsappGroup ? "wa_group_top" : "whop_top") + '\',\'lower\')">'
+      + (ORB_FUNNEL.whatsappGroup ? "Join the free WhatsApp community →" : "Join the free community →") + "</a>" : "")
+    + '<button class="lp-pill ' + (cm ? "lp-pill-ghost" : "lp-pill-gold lp-pill-xl") + '" onclick="lpBuyMasterclass(\'result_lower_top\')">The $10 Scholarship Masterclass</button>'; }
   box.innerHTML = '<div class="lpq-res lpf-res lpr-' + res.pathway + '">'
     + '<div class="lpf-top"><div class="lpf-top-v">' + lpfVideo(P, res.pathway) + "</div>"
     + '<div class="lpf-top-a">'
@@ -32268,7 +32323,8 @@ var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().
 var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
 if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
 a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
-function s(){a.classList.toggle("off",/^#portal=/.test(location.hash||""))}s();addEventListener("hashchange",s);})();</script>
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
 <!--/orb-wa-->
 </body>
 </html>

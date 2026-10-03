@@ -137,6 +137,7 @@ var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().
 var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
 if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
 a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
-function s(){a.classList.toggle("off",/^#portal=/.test(location.hash||""))}s();addEventListener("hashchange",s);})();</script>
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
 <!--/orb-wa-->
 </body></html>
