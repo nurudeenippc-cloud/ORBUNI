@@ -34,6 +34,8 @@ upload, as in `site/HOW-TO-USE.txt`.
   with photos and "Turkey" addresses, subjects on /universities/, student-room photos.
 - r25 (3 Oct 2026): real Istanbul residence room photos lead every housing page.
 - r26 (3 Oct 2026): subject photo tiles; slim number strip on subject pages.
+- r27 (3 Oct 2026): WhatsApp inbox in the staff portal (Overview → WhatsApp). The
+  backend (Twilio number, AI agent, templates, follow-ups) is in `supabase/`.
 
 ## Subject pages
 

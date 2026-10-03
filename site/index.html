@@ -13342,6 +13342,7 @@ var A_NAV_ALL = [
       bell still opens the same list as a dropdown, and aGo("alerts") still
       works for anything that routes there directly (a push, a deep link). */
    { id:"chat",   ic:NAVI.message, l:"Spaces" },
+   { id:"wa",     ic:NAVI.reply,   l:"WhatsApp" },
    { id:"chall",  ic:NAVI.trophy,  l:"Challenges" }]},
  { g:"Students", items:[
    { id:"students", ic:NAVI.users, l:"Students" },
@@ -13374,7 +13375,7 @@ var A_NAV_ALL = [
    { id:"team",     ic:NAVI.sliders, l:"Team & alerts" },
    { id:"settings", ic:NAVI.settings, l:"Settings" }]}
 ];
-var A_TITLE = { today:"Today", alerts:"Notifications", chat:"Spaces", chall:"Challenges", students:"Students",
+var A_TITLE = { today:"Today", alerts:"Notifications", chat:"Spaces", wa:"WhatsApp inbox", chall:"Challenges", students:"Students",
   create:"Create a student",
   apps:"Applications", docs:"Documents to check", partners:"Partner requests", enq:"Enquiries",
   jobs:"Careers", ops:"Operations", marketing:"Marketing engine", reach:"Reach", ads:"Ads", leads:"Leads",
@@ -13546,9 +13547,258 @@ window.aGo = function(v){
   ({ today:aToday, alerts:aAlerts, chat:aChat, chall:aChallenges, students:aStudents, create:aCreateStudent, apps:aApps, docs:aDocs,
      partners:aPartners, enq:aEnq, jobs:aJobs, ops:aOps, marketing:aMarketing, leads:aLeads,
      projects:aProjects, housing:aHousingQueue, content:aContent, schol:aSchol, arts:aArts,
-     reach:aReach,
+     reach:aReach, wa:aWhatsApp,
      team:aTeam, finance:aFinance, earn:aEarnings, settings:aSettings }[v] || aToday)();
 };
+
+
+/* ---------- WhatsApp inbox (Twilio number +1 443 448 1577) ----------
+   Every student WhatsApp chat in one place. The AI agent (wa-webhook) answers
+   on its own; anything sensitive is handed over and shows here under
+   "Needs you" with the reason. A person can reply within WhatsApp's 24-hour
+   window, or send an approved template after it. All sending goes through the
+   wa-send edge function — the browser never sees the Twilio keys. */
+var WA = { tab:"needs", cur:null, contacts:[], msgs:[], tpls:[], live:null, people:{} };
+function waName(c){
+  var p = c && WA.people[c.profile_id];
+  var n = p ? ((p.first_name||"") + " " + (p.last_name||"")).trim() : "";
+  return n || (c && c.wa_name) || (c && c.phone) || "Unknown";
+}
+function waWindowLeft(c){
+  if(!c || !c.last_inbound_at) return 0;
+  return Math.max(0, new Date(c.last_inbound_at).getTime() + 864e5 - Date.now());
+}
+function waCss(){
+  if($("wa-css")) return;
+  var s = document.createElement("style"); s.id = "wa-css";
+  s.textContent = ""
+    + ".wa-wrap{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:14px;min-height:calc(100vh - 210px)}"
+    + ".wa-list{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:calc(100vh - 210px)}"
+    + ".wa-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:var(--p1);cursor:pointer;text-align:left;width:100%;color:inherit;font:inherit}"
+    + ".wa-item.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}"
+    + ".wa-item .t{flex:1;min-width:0}.wa-item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+    + ".wa-item .pv{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}"
+    + ".wa-item .m{font-size:11px;color:var(--faint);text-align:right;white-space:nowrap}"
+    + ".wa-dot{display:inline-block;min-width:18px;padding:1px 6px;border-radius:9px;background:var(--mint);color:#062;font-size:11px;font-weight:700;text-align:center;margin-top:4px}"
+    + ".wa-flag{display:inline-block;padding:1px 7px;border-radius:9px;background:rgba(255,122,107,.16);color:var(--red);font-size:10.5px;font-weight:700;margin-left:6px;vertical-align:1px}"
+    + ".wa-chat{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;background:var(--p1);min-height:420px;max-height:calc(100vh - 210px)}"
+    + ".wa-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}"
+    + ".wa-head h3{margin:0;font-size:15.5px}.wa-head .s{font-size:12px;color:var(--faint)}"
+    + ".wa-msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}"
+    + ".wa-b{max-width:78%;padding:8px 11px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}"
+    + ".wa-b.in{align-self:flex-start;background:var(--p2);border-top-left-radius:4px}"
+    + ".wa-b.out{align-self:flex-end;background:rgba(62,213,152,.16);border-top-right-radius:4px}"
+    + ".wa-b .who{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}"
+    + ".wa-b .meta{display:block;font-size:10.5px;color:var(--faint);margin-top:3px;text-align:right}"
+    + ".wa-b .err{color:var(--red)}"
+    + ".wa-note{margin:10px 14px 0;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.45}"
+    + ".wa-note.red{background:rgba(255,122,107,.12);color:var(--red)}.wa-note.gold{background:rgba(242,181,68,.13);color:var(--gold)}"
+    + ".wa-comp{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:flex-end}"
+    + ".wa-comp textarea{flex:1;min-height:44px;max-height:160px;resize:vertical;border-radius:12px;padding:10px 12px;font:inherit}"
+    + ".wa-back{display:none}"
+    + "@media(max-width:820px){.wa-wrap{grid-template-columns:1fr}.wa-wrap.has-cur .wa-list{display:none}.wa-wrap:not(.has-cur) .wa-chat{display:none}.wa-back{display:inline-flex}"
+    + ".wa-chat,.wa-list{max-height:none}.wa-chat{min-height:calc(100vh - 190px)}}";
+  document.head.appendChild(s);
+}
+
+async function aWhatsApp(){
+  waCss();
+  var box = $("a-live"); if(!box) return;
+  var cr = await sb.from("wa_contacts").select("*").order("last_message_at", { ascending:false, nullsFirst:false }).limit(300);
+  if(cr.error){ box.innerHTML = '<div class="panel"><div class="err">' + esc(friendly(cr.error)) + "</div></div>"; return; }
+  WA.contacts = cr.data || [];
+  var ids = WA.contacts.map(function(c){ return c.profile_id; }).filter(Boolean);
+  if(ids.length){
+    var pr = await sb.from("profiles").select("id,first_name,last_name,email").in("id", ids);
+    (pr.data || []).forEach(function(p){ WA.people[p.id] = p; });
+  }
+  var tr = await sb.from("wa_templates").select("*").order("key");
+  WA.tpls = tr.data || [];
+  waPaint();
+  waLive();
+  if(WA.cur) waOpen(WA.cur, true);
+}
+
+function waPaint(){
+  var box = $("a-live"); if(!box) return;
+  var all = WA.contacts;
+  var needs = all.filter(function(c){ return c.needs_human; });
+  var aiOn = all.filter(function(c){ return c.ai_on && !c.needs_human; });
+  var unread = all.reduce(function(n, c){ return n + (c.unread || 0); }, 0);
+  if(WA.tab === "needs" && !needs.length && all.length) WA.tab = "all";
+  var rows = WA.tab === "needs" ? needs : WA.tab === "ai" ? aiOn : all;
+  function tab(v, label, n){
+    return '<button class="btn btn-s ' + (WA.tab === v ? "btn-p" : "btn-o") + '" onclick="waTab(\'' + v + '\')">' + esc(label)
+      + (n != null ? ' <span style="opacity:.7">' + n + "</span>" : "") + "</button>";
+  }
+  var cur = WA.cur && all.find(function(c){ return c.id === WA.cur; });
+  box.innerHTML = '<div class="grid g4" style="margin-bottom:14px">'
+    + kpi("Needs you", needs.length, needs.length ? "the AI handed these over" : "nothing waiting")
+    + kpi("Unread", unread, "messages from students")
+    + kpi("AI answering", aiOn.length, "chats on autopilot")
+    + kpi("All chats", all.length, "on +1 443 448 1577")
+    + "</div>"
+    + '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center">'
+    + tab("needs", "Needs you", needs.length) + tab("all", "All", all.length) + tab("ai", "AI answering", aiOn.length)
+    + '<span style="flex:1"></span><button class="btn btn-o btn-s" onclick="waNew()">+ Message a student</button></div>'
+    + '<div class="wa-wrap' + (cur ? " has-cur" : "") + '">'
+    + '<div class="wa-list">' + (rows.length ? rows.map(waItem).join("")
+        : emptyBox("💬", WA.tab === "needs" ? "Nobody is waiting for you." : "No chats yet.",
+            "When a student writes to +1 443 448 1577 the chat appears here. The AI answers by itself and hands over anything sensitive.")) + "</div>"
+    + '<div class="wa-chat" id="wa-chat">' + (cur ? "" : '<div style="margin:auto;padding:30px;color:var(--faint);text-align:center">Pick a chat on the left.</div>') + "</div>"
+    + "</div>";
+  if(cur) waPaintChat();
+}
+function waItem(c){
+  return '<button class="wa-item' + (WA.cur === c.id ? " on" : "") + '" onclick="waOpen(\'' + jsq(c.id) + '\')">'
+    + '<div class="t"><b>' + esc(waName(c)) + (c.needs_human ? '<span class="wa-flag">NEEDS YOU</span>' : "")
+    + (c.opted_out ? '<span class="wa-flag">STOPPED</span>' : "") + "</b>"
+    + '<div class="pv">' + esc(c.last_preview || "") + "</div></div>"
+    + '<div class="m">' + (c.last_message_at ? esc(ago(c.last_message_at)) : "")
+    + (c.unread ? '<br><span class="wa-dot">' + c.unread + "</span>" : "")
+    + (!c.ai_on ? '<br><span style="font-size:10.5px">AI off</span>' : "") + "</div></button>";
+}
+window.waTab = function(t){ WA.tab = t; waPaint(); };
+
+window.waOpen = async function(id, quiet){
+  WA.cur = id;
+  var r = await sb.from("wa_messages").select("*").eq("contact_id", id).order("created_at", { ascending:true }).limit(500);
+  WA.msgs = r.data || [];
+  var c = WA.contacts.find(function(x){ return x.id === id; });
+  if(c && c.unread){
+    c.unread = 0;
+    sb.functions.invoke("wa-send", { body:{ action:"read", contact_id:id } });
+  }
+  if(quiet) waPaintChat(); else waPaint();
+};
+window.waClose = function(){ WA.cur = null; waPaint(); };
+
+function waPaintChat(){
+  var el = $("wa-chat"); if(!el) return;
+  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(!c) return;
+  var p = WA.people[c.profile_id];
+  var left = waWindowLeft(c);
+  var hrs = Math.floor(left / 36e5), mins = Math.floor((left % 36e5) / 6e4);
+  var who = { student:"", ai:"AI assistant", staff:"Team", system:"Automatic", template:"Template" };
+  var drafts = el.querySelector("textarea"); var keep = drafts ? drafts.value : "";
+  el.innerHTML = '<div class="wa-head">'
+    + '<button class="btn btn-o btn-s wa-back" onclick="waClose()">← Chats</button>'
+    + '<div style="flex:1;min-width:0"><h3>' + esc(waName(c)) + "</h3>"
+    + '<div class="s">' + esc(c.phone) + (c.wa_name && p ? " · WhatsApp name: " + esc(c.wa_name) : "")
+    + (p ? ' · <a href="#" onclick="aStudent(\'' + jsq(p.id) + '\');return false">open student file</a>' : c.lead_id ? " · matched to a lead" : " · new enquiry") + "</div></div>"
+    + '<label style="display:flex;gap:6px;align-items:center;font-size:12.5px;cursor:pointer"><input type="checkbox" ' + (c.ai_on ? "checked" : "")
+    + ' onchange="waAi(this.checked)"> AI answers</label>'
+    + (c.needs_human ? '<button class="btn btn-p btn-s" onclick="waResolve()">Done — hand back to AI</button>' : "")
+    + "</div>"
+    + (c.needs_human ? '<div class="wa-note red"><b>Handed to you</b>' + (c.handoff_at ? " " + esc(ago(c.handoff_at)) : "") + ": " + esc(String(c.handoff_reason || "the AI asked for a person").replace(/[.\s]+$/, ""))
+        + ". The AI stays quiet on this chat until you press “Done”.</div>" : "")
+    + (c.opted_out ? '<div class="wa-note red">This student sent STOP. Nothing can be sent until they reply START.</div>' : "")
+    + '<div class="wa-msgs" id="wa-msgs">'
+    + (WA.msgs.length ? WA.msgs.map(function(m){
+        var tick = m.direction === "out" ? ({ read:"✓✓ read", delivered:"✓✓", sent:"✓", queued:"…", accepted:"…", failed:"failed", undelivered:"not delivered" }[m.status] || m.status || "") : "";
+        var media = (m.media || []).map(function(x){ return " [" + esc((x.type || "file").split("/")[0]) + "]"; }).join("");
+        return '<div class="wa-b ' + m.direction + '">'
+          + (who[m.author] ? '<span class="who">' + who[m.author] + "</span>" : "")
+          + esc(m.body || "") + media
+          + '<span class="meta">' + esc(ago(m.created_at)) + (tick ? " · " + esc(tick) : "") + "</span>"
+          + (m.error ? '<span class="meta err">' + esc(m.error) + "</span>" : "")
+          + "</div>";
+      }).join("") : '<div style="margin:auto;color:var(--faint)">No messages yet.</div>')
+    + "</div>"
+    + (left > 0 && !c.opted_out
+        ? '<div class="wa-comp"><textarea id="wa-text" placeholder="Reply as the Orbuni team…  (free reply window: ' + hrs + "h " + mins + 'm left)"'
+          + ' onkeydown="if(event.key===\'Enter\'&&(event.ctrlKey||event.metaKey)){waSend()}">' + esc(keep) + "</textarea>"
+          + '<button class="btn btn-p" id="wa-sendbtn" onclick="waSend()">Send</button></div>'
+        : !c.opted_out ? '<div class="wa-note gold" style="margin-bottom:12px">More than 24 hours since their last message, so WhatsApp only allows an approved template. '
+          + waTplPicker(c.id) + "</div>" : "");
+  var ms = $("wa-msgs"); if(ms) ms.scrollTop = ms.scrollHeight;
+}
+
+function waTplPicker(contactId, phoneInputId){
+  var ok = WA.tpls.filter(function(t){ return t.approval === "approved"; });
+  if(!ok.length) return "<br>No templates are approved by Meta yet — they usually take a few minutes to a day after submission.";
+  return '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">'
+    + '<select id="wa-tpl">' + ok.map(function(t){ return '<option value="' + esc(t.key) + '">' + esc(t.key.replace(/_/g, " ")) + "</option>"; }).join("") + "</select>"
+    + '<button class="btn btn-p btn-s" onclick="waSendTpl(\'' + jsq(contactId || "") + '\',\'' + jsq(phoneInputId || "") + '\')">Send template</button></div>'
+    + '<div class="s" style="margin-top:6px;font-size:12px;color:var(--faint)">The student\'s first name is filled in automatically.</div>';
+}
+
+window.waSend = async function(){
+  var t = $("wa-text"); var text = t ? t.value.trim() : ""; if(!text) return;
+  var btn = $("wa-sendbtn"); if(btn){ btn.disabled = true; btn.textContent = "Sending…"; }
+  var r = await sb.functions.invoke("wa-send", { body:{ action:"reply", contact_id:WA.cur, body:text } });
+  if(btn){ btn.disabled = false; btn.textContent = "Send"; }
+  var err = r.error ? await waErr(r.error) : (r.data && r.data.error);
+  if(err){ toast(err, true); return; }
+  if(t) t.value = "";
+  waOpen(WA.cur, true);
+};
+window.waSendTpl = async function(contactId, phoneInputId){
+  var key = ($("wa-tpl") || {}).value; if(!key) return;
+  var body = { action:"template", key:key, vars:{} };
+  var c = contactId && WA.contacts.find(function(x){ return x.id === contactId; });
+  if(c){ body.contact_id = c.id; body.vars["1"] = (waName(c).split(" ")[0] || "there"); }
+  else {
+    body.phone = (($(phoneInputId) || {}).value || "").trim();
+    body.name = (($("wa-new-name") || {}).value || "").trim();
+    body.vars["1"] = (body.name.split(" ")[0] || "there");
+  }
+  var r = await sb.functions.invoke("wa-send", { body:body });
+  var err = r.error ? await waErr(r.error) : (r.data && r.data.error);
+  if(err){ toast(err, true); return; }
+  toast("Sent.");
+  if(r.data && r.data.contact_id) WA.cur = r.data.contact_id;
+  aWhatsApp();
+};
+window.waAi = async function(on){
+  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(c) c.ai_on = on;
+  await sb.functions.invoke("wa-send", { body:{ action:"ai", contact_id:WA.cur, on:on } });
+  toast(on ? "The AI will answer this chat." : "AI is off for this chat — only the team replies.");
+};
+window.waResolve = async function(){
+  await sb.functions.invoke("wa-send", { body:{ action:"resolve", contact_id:WA.cur } });
+  var c = WA.contacts.find(function(x){ return x.id === WA.cur; }); if(c){ c.needs_human = false; c.handoff_reason = null; }
+  toast("Handed back to the AI.");
+  waPaint();
+};
+window.waNew = function(){
+  WA.cur = null; waPaint();
+  var el = $("wa-chat"); if(!el) return;
+  $("a-live").querySelector(".wa-wrap").classList.add("has-cur");
+  el.innerHTML = '<div class="wa-head"><button class="btn btn-o btn-s wa-back" onclick="waClose()">← Chats</button><h3>Message a student</h3></div>'
+    + '<div style="padding:14px;display:flex;flex-direction:column;gap:10px;max-width:460px">'
+    + '<label style="font-size:13px">WhatsApp number (with country code)<input id="wa-new-phone" placeholder="+234 801 234 5678" style="width:100%;margin-top:4px"></label>'
+    + '<label style="font-size:13px">First name<input id="wa-new-name" placeholder="Aisha" style="width:100%;margin-top:4px"></label>'
+    + '<div style="font-size:13px;color:var(--dim)">WhatsApp lets a business start a chat only with an approved template. Once they reply, you (and the AI) can write freely for 24 hours.</div>'
+    + waTplPicker("", "wa-new-phone") + "</div>";
+};
+async function waErr(e){
+  try{ var j = await e.context.json(); return j.error || e.message; }catch(x){ return (e && e.message) || "Something went wrong"; }
+}
+
+function waLive(){
+  if(WA.live) return;
+  try{
+    WA.live = sb.channel("orb-wa")
+      .on("postgres_changes", { event:"*", schema:"public", table:"wa_contacts" }, function(p){
+        if(window.AV !== "wa") return;
+        var n = p.new; if(!n || !n.id) return;
+        var i = WA.contacts.findIndex(function(c){ return c.id === n.id; });
+        if(i >= 0) WA.contacts[i] = n; else WA.contacts.unshift(n);
+        WA.contacts.sort(function(a, b){ return new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0); });
+        if(n.id === WA.cur && n.unread){ n.unread = 0; sb.functions.invoke("wa-send", { body:{ action:"read", contact_id:n.id } }); }
+        var typing = $("wa-text") && document.activeElement === $("wa-text");
+        if(!typing) waPaint();
+      })
+      .on("postgres_changes", { event:"*", schema:"public", table:"wa_messages" }, function(p){
+        if(window.AV !== "wa") return;
+        var m = p.new; if(!m || m.contact_id !== WA.cur) return;
+        var i = WA.msgs.findIndex(function(x){ return x.id === m.id; });
+        if(i >= 0) WA.msgs[i] = m; else WA.msgs.push(m);
+        waPaintChat();
+      }).subscribe();
+  }catch(e){}
+}
 
 var NI = { student_signup:"🎓", application_submitted:"📋", document_uploaded:"📄",
   documents_missing:"⚠️", status_change:"🔁", student_assigned:"👤",
