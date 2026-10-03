@@ -6,9 +6,10 @@
 //   { action:"resolve",  contact_id }                       done with the handover → AI may answer again
 //   { action:"read",     contact_id }                       clear the unread count
 //   { action:"media",    contact_id, path, type, caption }  send a file the browser uploaded to wa-media/out/…
+//   { action:"typing",   contact_id }                       show "typing…" to the student while a team member writes
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { sb, json, CORS, e164, sendAndLog, signedUrl, SUPABASE_URL, ANON_KEY } from "./wa.ts";
+import { sb, json, CORS, e164, sendAndLog, signedUrl, twilioTyping, SUPABASE_URL, ANON_KEY } from "./wa.ts";
 
 const DAY = 24 * 3600 * 1000;
 
@@ -36,7 +37,17 @@ Deno.serve(async (req: Request) => {
     if (!contact) return json(404, { error: "chat not found" });
   }
 
-  if (["read", "ai", "resolve", "reply", "media"].includes(action) && !contact) return json(400, { error: "pick a chat first" });
+  if (["read", "ai", "resolve", "reply", "media", "typing"].includes(action) && !contact) return json(400, { error: "pick a chat first" });
+
+  if (action === "typing") {
+    // WhatsApp shows "typing…" against the student's latest message, for up to 25 seconds or until we reply
+    const last = contact.last_inbound_at ? Date.parse(contact.last_inbound_at) : 0;
+    if (contact.opted_out || Date.now() - last > DAY) return json(200, { ok: false });
+    const { data: m } = await db.from("wa_messages").select("twilio_sid").eq("contact_id", contact.id).eq("direction", "in")
+      .not("twilio_sid", "is", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (m?.twilio_sid) await twilioTyping(m.twilio_sid);
+    return json(200, { ok: !!m?.twilio_sid });
+  }
 
   if (action === "read") {
     await db.from("wa_contacts").update({ unread: 0 }).eq("id", contact.id);

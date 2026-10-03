@@ -14132,7 +14132,7 @@ function waPaintFoot(draft){
       + '<div class="row"><button class="wa2-ic" onclick="waQRToggle()" title="Saved replies">' + WA_ICON.bolt + "</button>"
       + '<button class="wa2-ic" onclick="$(\'wa2-file\').click()" title="Send a photo or PDF">' + WA_ICON.clip + "</button>"
       + '<input type="file" id="wa2-file" accept="image/jpeg,image/png,application/pdf" style="display:none" onchange="waPickFile(this)">'
-      + '<textarea id="wa2-text" rows="1" placeholder="Type a message" oninput="waGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();waSend()}">' + esc(keep) + "</textarea>"
+      + '<textarea id="wa2-text" rows="1" placeholder="Type a message" oninput="waGrow(this);if(this.value.trim())waTypingPing()" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey&&!event.isComposing){event.preventDefault();waSend()}">' + esc(keep) + "</textarea>"
       + '<button class="wa2-send" id="wa2-sendbtn" onclick="waSend()" title="Send">' + WA_ICON.send + "</button></div>"
       + '<div class="wa2-hint">Enter sends · Shift+Enter new line · free-reply window closes in ' + waLeftText(left) + "</div></div>";
     var t = $("wa2-text"); if(t) waGrow(t);
@@ -14142,6 +14142,14 @@ function waPaintFoot(draft){
   }
 }
 window.waGrow = function(t){ t.style.height = "auto"; t.style.height = Math.min(150, t.scrollHeight + 2) + "px"; };
+/* while a team member writes, the student sees "typing…" (sent at most every 20 seconds, only for a real keystroke) */
+var WA_TYPING = { id:null, at:0 };
+function waTypingPing(){
+  var c = waCur(); if(!c || !c.last_inbound_at || Date.now() - Date.parse(c.last_inbound_at) > 864e5) return;
+  if(WA_TYPING.id === c.id && Date.now() - WA_TYPING.at < 20000) return;
+  WA_TYPING = { id:c.id, at:Date.now() };
+  waCall({ action:"typing", contact_id:c.id }).catch(function(){});
+}
 function waTplPicker(contactId, phoneInputId, selId){
   var ok = WA.tpls.filter(function(t){ return t.approval === "approved"; });
   if(!ok.length){
@@ -29582,14 +29590,6 @@ var PR_TAB = null, PR = null;
 var PR_CHECKS = [["search", "Searched the agency name online"], ["site", "Found a real website or business address"], ["call", "Called the phone number they gave"], ["godfrey", "Asked Godfrey if anything looked odd"]];
 function prChecks(id){ try{ return JSON.parse(localStorage.getItem("orb-prc-" + id) || "{}"); }catch(e){ return {}; } }
 window.prCheck = function(id, k, el){ var c = prChecks(id); if(el.checked) c[k] = 1; else delete c[k]; try{ localStorage.setItem("orb-prc-" + id, JSON.stringify(c)); }catch(e){} prPaint(); };
-/* a real photograph of where the agency works, the way Careers shows each role */
-var AGY_PH = [["nigeria|lagos|abuja|kano", "photo-1765475467677-579353b25ce0"], ["ghana|accra|kumasi", "photo-1599393921693-857c47cf53c8"],
-  ["kenya|nairobi", "photo-1741991110666-88115e724741"], ["turk|istanbul|ankara", "photo-1531168301421-0f2e507f2d2d"]];
-function agyPhoto(p, w){
-  var c = String((p && (p.country || "")) || "").toLowerCase(), id = "photo-1568992688065-536aad8a12f6";
-  for(var i = 0; i < AGY_PH.length; i++) if(new RegExp(AGY_PH[i][0]).test(c)){ id = AGY_PH[i][1]; break; }
-  return "https://images.unsplash.com/" + id + "?auto=format&fit=crop&fm=jpg&q=70&w=" + (w || 800);
-}
 function prInit(name){ var w = String(name || "?").trim().split(/\s+/); return esc(initials(w[0], w[1])); }
 function prWa(phone){ var d = String(phone || "").replace(/[^\d]/g, ""); return d.length > 6 ? "https://wa.me/" + d : ""; }
 aPartners = async function(){
@@ -29598,13 +29598,15 @@ aPartners = async function(){
   box.innerHTML = '<div style="padding:30px;color:var(--faint)"><span class="spin"></span> Loading…</div>';
   var res = await Promise.all([
     sb.from("partners").select("*").order("created_at", { ascending:false }),
-    sb.from("profiles").select("partner_id,role").not("partner_id", "is", null),
+    sb.from("profiles").select("partner_id,role,photo_path").not("partner_id", "is", null),
     sb.from("finance_transactions").select("partner_id,amount,status").eq("kind", "commission_payout").not("partner_id", "is", null)
   ]);
-  var rows = res[0].data || [], login = {}, studs = {}, owed = {};
-  (res[1].data || []).forEach(function(x){ if(x.role === "partner") login[x.partner_id] = true; else if(x.role === "student") studs[x.partner_id] = (studs[x.partner_id] || 0) + 1; });
+  var rows = res[0].data || [], login = {}, studs = {}, owed = {}, face = {};
+  (res[1].data || []).forEach(function(x){
+    if(x.role === "partner"){ login[x.partner_id] = true; if(x.photo_path && !face[x.partner_id]) face[x.partner_id] = x.photo_path; }
+    else if(x.role === "student") studs[x.partner_id] = (studs[x.partner_id] || 0) + 1; });
   (res[2].data || []).forEach(function(t){ if(t.status !== "paid" && t.status !== "void") owed[t.partner_id] = (owed[t.partner_id] || 0) + Number(t.amount || 0); });
-  PR = { rows: rows, login: login, studs: studs, owed: owed };
+  PR = { rows: rows, login: login, studs: studs, owed: owed, face: face };
   var n = function(s){ return rows.filter(function(p){ return !s || p.status === s; }).length; };
   if(!PR_TAB) PR_TAB = n("pending") ? "pending" : "approved";
   var owedAll = Object.keys(owed).reduce(function(a, k){ return a + owed[k]; }, 0);
@@ -29635,9 +29637,10 @@ function prPaint(){
     var st = p.status === "approved" ? ["Approved", "ok"] : p.status === "rejected" ? ["Declined", "bad"] : ["Waiting", "warn"];
     var s = PR.studs[p.id] || 0, ow = PR.owed[p.id] || 0, wa = prWa(p.phone);
     var h = '<article class="agy-card' + (p.status === "pending" ? " is-new" : "") + '">'
-      + '<div class="agy-ph"><img src="' + esc(agyPhoto(p)) + '" alt="" loading="lazy" decoding="async"><span class="agy-pill ' + st[1] + '">' + st[0] + "</span>"
+      + '<div class="agy-ph' + (PR.face[p.id] ? "" : " none") + '">' + (PR.face[p.id] ? '<div class="agy-ph-img" data-face="' + esc(PR.face[p.id]) + '"></div>' : '<span class="agy-mono">' + prInit(p.agency_name) + "</span>")
+      + '<span class="agy-pill ' + st[1] + '">' + st[0] + "</span>"
       + (p.country ? '<span class="agy-where">' + r6Ic("pin") + " " + esc(p.country) + "</span>" : "") + "</div>"
-      + '<div class="agy-in"><div class="agy-top"><span class="agy-av">' + prInit(p.agency_name) + "</span><div><b>" + esc(p.agency_name || "Unnamed agency") + "</b><small>"
+      + '<div class="agy-in"><div class="agy-top"><span class="agy-av"' + (PR.face[p.id] ? ' data-face="' + esc(PR.face[p.id]) + '"' : "") + ">" + prInit(p.agency_name) + "</span><div><b>" + esc(p.agency_name || "Unnamed agency") + "</b><small>"
       + esc(p.contact_name || "No contact name") + "</small></div></div>"
       + '<div class="agy-meta"><span>' + r6Ic("users") + " " + plural(s, "student") + "</span>"
       + (p.commission_rate != null ? "<span>" + r6Ic("wallet") + " " + esc(String(Number(p.commission_rate))) + "% commission</span>" : "")
@@ -29666,6 +29669,7 @@ function prPaint(){
     }
     return h + "</div></article>";
   }).join("") + "</div>";
+  try{ paintFaces(body); }catch(e){}
 }
 window.aPartnerOpen = async function(id){
   pushHist("admin", AV); updateBackButton("admin");
@@ -29681,9 +29685,9 @@ window.aPartnerOpen = async function(id){
     sb.from("finance_transactions").select("*").eq("partner_id", id).order("occurred_on", { ascending:false }),
     sb.from("partner_documents").select("*").eq("partner_id", id).order("created_at", { ascending:false }),
     sb.from("channels").select("id").eq("partner_id", id).eq("kind", "partner").maybeSingle(),
-    sb.from("profiles").select("id").eq("partner_id", id).eq("role", "partner").limit(1)
+    sb.from("profiles").select("id,photo_path").eq("partner_id", id).eq("role", "partner").order("photo_path", { ascending:true, nullsFirst:false }).limit(1)
   ]);
-  var students = res[0].data || [], txs = res[1].data || [], docs = res[2].data || [], channelId = res[3].data && res[3].data.id, hasLogin = (res[4].data || []).length > 0;
+  var students = res[0].data || [], txs = res[1].data || [], docs = res[2].data || [], channelId = res[3].data && res[3].data.id, hasLogin = (res[4].data || []).length > 0, face = hasLogin ? res[4].data[0].photo_path : null;
   PDOC_LIST = docs;
   var apps = [];
   if(students.length){ var a = await sb.from("applications").select("id,profile_id").in("profile_id", students.map(function(x){ return x.id; })); apps = a.data || []; }
@@ -29694,7 +29698,7 @@ window.aPartnerOpen = async function(id){
   var wa = prWa(p.phone);
   box.innerHTML = '<div class="o6 agy">'
     + '<button class="agy-back" onclick="aGo(\'partners\')">' + r6Ic("undo") + " All partner agencies</button>"
-    + '<section class="o6-hero agy-hero" style="--agy-ph:url(\'' + agyPhoto(p, 1600) + '\')"><div class="agy-hero-l"><span class="agy-av xl">' + prInit(p.agency_name) + "</span><div>"
+    + '<section class="o6-hero agy-hero">' + (face ? '<div class="agy-hero-bg" data-face="' + esc(face) + '"></div>' : "") + '<div class="agy-hero-l"><span class="agy-av xl"' + (face ? ' data-face="' + esc(face) + '"' : "") + ">" + prInit(p.agency_name) + "</span><div>"
     + '<span class="o6-eye">Partner agency · <span class="o6-st ' + st[1] + '">' + st[0] + "</span></span><h2>" + esc(p.agency_name || "Unnamed agency") + "</h2>"
     + "<p>" + esc([p.contact_name, p.country, "joined " + ago(p.created_at)].filter(Boolean).join(" · ")) + "</p>"
     + '<div class="agy-contact light">' + (p.email ? '<a href="mailto:' + esc(p.email) + '">' + r6Ic("mail") + "<span>" + esc(p.email) + "</span></a>" : "")
@@ -29732,6 +29736,7 @@ window.aPartnerOpen = async function(id){
             + '<span class="o6-st ' + (t.status === "paid" ? "ok" : t.status === "void" ? "" : "warn") + '">' + esc(t.status === "paid" ? "Paid" : t.status === "void" ? "Cancelled" : "Owed") + "</span></div>";
         }).join("") + "</div></section>" : "")
     + "</div>";
+  try{ paintFaces(box); }catch(e){}
 };
 function prCss(){
   if($("agy-css")) return;
@@ -29752,7 +29757,13 @@ function prCss(){
     "#portal .agy-where svg{width:13px;height:13px}",
     "#portal .agy-in .agy-top{padding-top:12px;position:relative;z-index:2;align-items:flex-start}",
     "#portal .agy-in .agy-av{box-shadow:0 0 0 4px var(--p1);width:52px;height:52px;flex-basis:52px;border-radius:16px;font-size:17px;margin-top:-38px}",
-    "#portal .agy-hero{background-image:linear-gradient(100deg,rgba(10,16,32,.94) 30%,rgba(10,16,32,.55)),var(--agy-ph);background-size:cover;background-position:center}",
+    "#portal .agy-ph-img,#portal .agy-hero-bg{position:absolute;inset:0;overflow:hidden;font-size:0;color:transparent}",
+    "#portal .agy-ph-img img,#portal .agy-hero-bg img{width:100%;height:100%;object-fit:cover;display:block}",
+    "#portal .agy-ph.none{background:radial-gradient(90% 120% at 0% 0%,color-mix(in srgb,var(--gold) 30%,transparent),transparent 60%),radial-gradient(80% 120% at 100% 100%,color-mix(in srgb,var(--violet) 35%,transparent),transparent 60%),linear-gradient(135deg,#1c2a4a,#0e1626)}",
+    "#portal .agy-mono{position:absolute;right:16px;top:50%;transform:translateY(-50%);font:800 64px/1 var(--disp);letter-spacing:-.04em;color:rgba(255,255,255,.12)}",
+    "#portal .agy-av{overflow:hidden}#portal .agy-av img{width:100%;height:100%;object-fit:cover;display:block}",
+    "#portal .agy-hero-bg{z-index:0;opacity:.55}#portal .agy-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(10,16,32,.95) 35%,rgba(10,16,32,.5))}",
+    "#portal .agy-hero>*:not(.agy-hero-bg){position:relative;z-index:1}",
     "#portal .agy-card.is-new{border-color:color-mix(in srgb,var(--gold) 38%,var(--line));background:radial-gradient(120% 80% at 100% 0%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 60%),var(--p1)}",
     "#portal .agy-top{display:flex;align-items:center;gap:12px;min-width:0}",
     "#portal .agy-top>div{flex:1;min-width:0}",
