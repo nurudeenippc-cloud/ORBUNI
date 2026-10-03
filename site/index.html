@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Orbuni — Find Your University Abroad</title>
+<title>Study in Turkey with Orbuni: universities, fees &amp; scholarships</title>
 <meta name="description" content="Orbuni is an education consultancy. Search real programmes, see the published fee and the scholarship you can get, and apply with a named counsellor beside you.">
 <link rel="canonical" href="https://myorbuni.com/">
 <meta name="theme-color" content="#070C16">
@@ -24,12 +24,13 @@
 <meta name="twitter:title" content="Orbuni — study abroad without guessing the price">
 <meta name="twitter:description" content="Real programmes, published fees, the scholarship you qualify for, and a named counsellor beside you.">
 <meta name="twitter:image" content="https://myorbuni.com/share.png">
-<!-- Favicon: inline so it works before a domain exists -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070C16'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%23F2B544' stroke-width='5'/%3E%3Cellipse cx='32' cy='32' rx='17' ry='7' fill='none' stroke='%23F2B544' stroke-width='3' opacity='.75' transform='rotate(-28 32 32)'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070C16'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%23F2B544' stroke-width='5'/%3E%3C/svg%3E">
+<!-- Favicon: a real file, so Google can show it next to search results -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@500;600;700;800;900&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<!-- Fonts load without holding up the first paint (text shows in the fallback font for a moment) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@500;600;700;800;900&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@500;600;700;800;900&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@500&display=swap"></noscript>
 <!-- Structured data: what Google shows in the Knowledge Panel / rich results -->
 <script type="application/ld+json">
 {
@@ -10541,7 +10542,8 @@ function added(btn){
   var y=document.getElementById('yr'); if(y) y.textContent=new Date().getFullYear();
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Supabase client, pinned and served from our own domain (was the floating @2 from jsdelivr) -->
+<script src="/vendor/supabase-js-2.117.2.js"></script>
 <script id="orb-live-js">
 /* ============================================================
    ORBUNI LIVE LAYER
