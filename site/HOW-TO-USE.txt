@@ -29,7 +29,19 @@ this note is no longer needed — that code path was cleaned up this round,
 see below.)
 
 
-WHAT CHANGED THIS ROUND (r22, 3 Oct 2026)
+WHAT CHANGED THIS ROUND (r23, 3 Oct 2026)
+------------------------------------------
+  - Menu back to how it was: Universities and Find your programme only
+    (the Scholarships / Housing / Guides links added in r21 are removed).
+  - University pages: 47 now show the university's own campus film
+    (from its YouTube channel) in a new "Campus video" section.
+  - Housing pages: each of the 35 pages has its own mix of three example
+    room photos (from Unsplash, loaded from Unsplash) instead of the same
+    three everywhere. They stay labelled as example rooms; residence names
+    and real photos are still only shared by your counsellor.
+  Rebuilt with tools/enrich_media.py in the GitHub repo.
+
+PREVIOUS ROUND (r22, 3 Oct 2026)
 ------------------------------------------
   - Hero photo slideshow: the slow zoom now grows from the top-right corner,
     where each university's logo sits, so the logo (e.g. "Antalya Bilim

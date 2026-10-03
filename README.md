@@ -28,6 +28,8 @@ upload, as in `site/HOW-TO-USE.txt`.
   fixes. See `site/HOW-TO-USE.txt`.
 - r22 (3 Oct 2026): hero logo no longer cut off by the zoom; new still picture
   for the Programmes demo clip.
+- r23 (3 Oct 2026): menu back to two links; campus videos on university pages;
+  a different example-photo mix on each housing page (`tools/enrich_media.py`).
 
 ## Subject pages
 
