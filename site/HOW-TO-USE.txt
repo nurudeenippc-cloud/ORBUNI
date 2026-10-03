@@ -29,7 +29,18 @@ this note is no longer needed — that code path was cleaned up this round,
 see below.)
 
 
-WHAT CHANGED THIS ROUND (r21, 3 Oct 2026)
+WHAT CHANGED THIS ROUND (r22, 3 Oct 2026)
+------------------------------------------
+  - Hero photo slideshow: the slow zoom now grows from the top-right corner,
+    where each university's logo sits, so the logo (e.g. "Antalya Bilim
+    University") is never cut off, on desktop or phone.
+  - "See it for yourself" > Programmes: the still picture shown before the
+    clip plays was a copy of the home page itself (with the old "Find your
+    program" menu). It is now a frame from the same clip showing the
+    programme finder with real results. Its address has a new ?v= tag so
+    returning visitors get the new picture.
+
+PREVIOUS ROUND (r21, 3 Oct 2026)
 ------------------------------------------
   - New: "Study by subject" pages (/study/ and 19 subject pages such as
     /study/medicine-in-turkiye/). Each lists every partner university in

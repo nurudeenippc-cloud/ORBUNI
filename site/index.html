@@ -4891,10 +4891,12 @@ stroke='%23F2B544' stroke-width='2' stroke-linecap='round' stroke-linejoin='roun
 @media (prefers-reduced-motion:no-preference){
 
   /* the hero photograph drifts instead of sitting there */
-  .hs.on img{animation:orbDrift 22s ease-in-out infinite alternate;will-change:transform}
+  /* zooms from the top-right corner, where each university's logo sits in the photo,
+     so the logo stays whole while the rest of the picture drifts */
+  .hs.on img{animation:orbDrift 22s ease-in-out infinite alternate;will-change:transform;transform-origin:100% 0}
   @keyframes orbDrift{
     from{transform:scale(1.02)}
-    to  {transform:scale(1.11) translate3d(-1.6%,-1.1%,0)}
+    to  {transform:scale(1.11)}
   }
 
   /* THE AGREEMENT
@@ -7237,7 +7239,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       </div>
       <div class="fvid rv rev">
         <div class="fvid-media" style="--fac:var(--violet)">
-          <video class="fvid-v" muted loop playsinline preload="metadata" poster="video/scholarship-poster.jpg?v=20260918b">
+          <video class="fvid-v" muted loop playsinline preload="metadata" poster="video/scholarship-poster.jpg?v=20261003">
             <source src="video/scholarship.mp4?v=20260918b" type="video/mp4">
           </video>
         </div>

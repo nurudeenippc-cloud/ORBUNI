@@ -26,6 +26,8 @@ upload, as in `site/HOW-TO-USE.txt`.
 - r20 (1 Oct 2026): the bundle uploaded to Netlify before this repo existed.
 - r21 (3 Oct 2026): study-by-subject pages, menu and phone fixes, spelling
   fixes. See `site/HOW-TO-USE.txt`.
+- r22 (3 Oct 2026): hero logo no longer cut off by the zoom; new still picture
+  for the Programmes demo clip.
 
 ## Subject pages
 
