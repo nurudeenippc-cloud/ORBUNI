@@ -9861,11 +9861,29 @@ function goSlide(t,i){
   dots.forEach((dt,k)=>dt.classList.toggle("on",k===IDX[t]));
 }
 function slide(t,dir){ goSlide(t, IDX[t]+dir); }
-/* Team photos used to auto-advance every 4.2s on their own — distracting on
-   a page people are trying to actually read, especially several of them
-   changing out of sync with each other at once. Browsing extra photos of
-   someone is still there (the ‹ › arrows and dots), it's just no longer
-   something that happens to you without asking. */
+/* r46: team photos change by themselves again, but calmly: every 5 seconds,
+   staggered so the cards never flip together, only while the card is on
+   screen and not under the mouse, and a card stops for good once someone
+   uses its arrows or dots. Nothing moves for people who asked for less motion. */
+(function teamAuto(){
+  var reduce=false; try{ reduce=matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  if(reduce) return;
+  var held={}, hover={}, seen={}, next={};
+  document.addEventListener("click",function(e){ var sh=e.target.closest&&e.target.closest(".shot"); if(sh&&(e.target.closest(".dots")||e.target.closest("button"))){ var all=[].slice.call(document.querySelectorAll(".shot")); held[all.indexOf(sh)]=1; } },true);
+  document.addEventListener("pointerover",function(e){ var sh=e.target.closest&&e.target.closest(".shot"); if(sh){ var all=[].slice.call(document.querySelectorAll(".shot")); hover[all.indexOf(sh)]=1; } },true);
+  document.addEventListener("pointerout",function(e){ var sh=e.target.closest&&e.target.closest(".shot"); if(sh){ var all=[].slice.call(document.querySelectorAll(".shot")); hover[all.indexOf(sh)]=0; } },true);
+  setInterval(function(){
+    var pg=document.getElementById("pg-team"); if(!pg||!pg.classList.contains("on")||document.hidden) return;
+    var now=Date.now();
+    document.querySelectorAll(".shot").forEach(function(box,t){
+      if(held[t]||hover[t]) return;
+      if(box.querySelectorAll(".sl").length<2) return;
+      var r=box.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight){ seen[t]=0; return; }
+      if(!seen[t]){ seen[t]=1; next[t]=now+3500+t*1300; return; }
+      if(now>=next[t]){ next[t]=now+5000; slide(t,1); }
+    });
+  },400);
+})();
 
 /* careers — each role is its own detail page (like a university page), not
    a card that just scrolls you to one shared form. The roles LIST never
@@ -15648,9 +15666,8 @@ function dashStats(stats){
   }).join("") + "</div>";
 }
 
-/* The announcement carousel. Slides advance only when someone asks —
-   no timer. An auto-rotating banner steals attention from the page it
-   is sitting on, and there is nothing here urgent enough to earn that. */
+/* The announcement carousel. Since r46 the slides advance by themselves
+   (see dbAuto below); a person picking a slide stops that. */
 var DBANNER_I = 0;
 function dashBanner(slides){
   if(!slides || !slides.length) return "";
@@ -15687,6 +15704,39 @@ window.dashBannerGo = function(i){
 window.dashBannerHide = function(btn){
   var wrap = btn.closest(".dbanner-wrap"); if(wrap) wrap.remove();
 };
+/* r46: the slides now move on by themselves (every 6 seconds), with a
+   filling dot so it's clear when the next one comes. They pause while a
+   finger or mouse is on them or the tab is hidden, stop for good once
+   someone picks a slide, and never move for people who asked for less
+   motion. */
+(function dbAuto(){
+  var MS = 6000, last = Date.now(), stopped = null, hover = false;
+  var st = document.createElement("style");
+  st.textContent = '.dbanner-dots button.on{position:relative;overflow:hidden}'
+    + '.dbanner-wrap.auto .dbanner-dots button.on::after{content:"";position:absolute;inset:0;transform-origin:left;background:rgba(255,255,255,.55);animation:dbfill ' + MS + 'ms linear forwards}'
+    + '.dbanner-wrap.auto.hold .dbanner-dots button.on::after{animation-play-state:paused}@keyframes dbfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}'
+    + '.dbanner-slide{transition:opacity .45s ease}';
+  document.head.appendChild(st);
+  var reduce = false; try{ reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  if(reduce) return;
+  document.addEventListener("click", function(e){ var b = e.target.closest && e.target.closest(".dbanner-dots button"); if(b){ stopped = b.closest(".dbanner-wrap"); if(stopped) stopped.classList.remove("auto"); } }, true);
+  ["pointerenter", "pointerover", "touchstart", "focusin"].forEach(function(ev){ document.addEventListener(ev, function(e){ if(e.target.closest && e.target.closest(".dbanner-wrap")) hover = true; }, true); });
+  ["pointerleave", "pointerout", "touchend", "focusout"].forEach(function(ev){ document.addEventListener(ev, function(e){ if(e.target.closest && e.target.closest(".dbanner-wrap")){ hover = false; last = Date.now(); } }, true); });
+  setInterval(function(){
+    var wrap = document.querySelector("#portal .dbanner-wrap");
+    if(!wrap || wrap === stopped) return;
+    var n = wrap.querySelectorAll(".dbanner-slide").length; if(n < 2) return;
+    if(!wrap.classList.contains("auto")){ wrap.classList.add("auto"); last = Date.now(); }
+    var hold = hover || document.hidden || !wrap.offsetParent;
+    wrap.classList.toggle("hold", hold);
+    if(hold){ last = Date.now() - Math.min(Date.now() - last, MS - 400); return; }
+    if(Date.now() - last >= MS){
+      last = Date.now();
+      var cur = 0; wrap.querySelectorAll(".dbanner-slide").forEach(function(el, k){ if(el.classList.contains("on")) cur = k; });
+      dashBannerGo((cur + 1) % n);
+    }
+  }, 250);
+})();
 
 /* "Next thing to do" — each step {label, sub, icon, done, go}.
    A done step keeps its place in the row rather than disappearing, so
@@ -32812,6 +32862,17 @@ window.orbuniSend = async function(){
   m.think = false; m.live = false; m.text = String(m.text || "").trim();
   if(err) m.text = m.text ? m.text + "\n\n" + err : err;
   else if(!done && !m.text) m.text = "Orbuni didn't finish — try again.";
+  /* the same draft made twice in one answer (say, a corrected email): keep only the newest one */
+  (function(){
+    var seen = {}, keep = [];
+    for(var j = props.length - 1; j >= 0; j--){
+      var p0 = props[j] || {};
+      var key = [p0.action, p0.to_email || p0.lead_id || p0.profile_id || p0.project_id || p0.tool_id || p0.application_id || "", p0.action === "send_email" ? p0.subject : p0.action === "add_task" ? p0.title : ""].join("|");
+      if(p0.action === "record") key += "|" + j;   // two finance entries can both be real
+      if(seen[key]) continue; seen[key] = 1; keep.unshift(p0);
+    }
+    props = keep;
+  })();
   props.forEach(function(p, i){
     var draftId = p.ai_action_id || ("local-" + Date.now() + "-" + i);
     ASK.drafts[draftId] = { proposal:p, ai_action_id:p.ai_action_id || null };
@@ -33662,6 +33723,127 @@ function olSync(){
 }
 setInterval(olSync, 700);
 document.addEventListener("keydown", function(e){ if(e.key === "Escape" && OL.open) olToggle(false); });
+
+/* ============================================================
+   r46 · THE ORBUNI BUTTON GOES WHERE YOU PUT IT
+   ------------------------------------------------------------
+   Drag the round button anywhere; it settles on the nearest side and
+   is still there next time on this device. Two ways to keep Orbuni
+   outside the browser tab:
+   • "Keep Orbuni on top" — a small window that floats over every other
+     app, even with the browser minimised (Chrome / Edge on a computer:
+     Document Picture-in-Picture).
+   • "Install Orbuni" — the app on a phone's home screen or a laptop's
+     dock (the site is already an installable app). Phones do not allow
+     any website to float over other apps; installing is the closest.
+   ============================================================ */
+OL_IC.pin = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><rect x="11" y="10" width="8" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M8 21h8"/></svg>';
+OL_IC.install = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
+var OLP = { key:"orb-ol-pos", prompt:null, pip:null };
+window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); OLP.prompt = e; });
+function olpStandalone(){ try{ return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }catch(e){ return false; } }
+function olpIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent || ""); }
+function olpGet(){ try{ return JSON.parse(localStorage.getItem(OLP.key) || "null"); }catch(e){ return null; } }
+function olpApply(){
+  var root = $("ol-root"); if(!root) return;
+  var p = olpGet();
+  if(!p){ root.style.left = root.style.right = root.style.top = root.style.bottom = ""; root.classList.remove("ol-left", "ol-down"); return; }
+  var h = innerHeight, y = Math.max(80, Math.min(h - 80, p.y * h));
+  root.style.top = Math.round(y - 27) + "px"; root.style.bottom = "auto";
+  if(p.side === "left"){ root.style.left = "14px"; root.style.right = "auto"; root.classList.add("ol-left"); }
+  else { root.style.right = "14px"; root.style.left = "auto"; root.classList.remove("ol-left"); }
+  root.classList.toggle("ol-down", y < h * 0.45);   // near the top: the menu opens downwards
+}
+(function olpWire(){
+  var st = document.createElement("style");
+  st.textContent = '#ol-root .ol-btn{touch-action:none}#ol-root.ol-dragging,#ol-root.ol-dragging .ol-btn{transition:none!important}'
+    + '#ol-root.ol-dragging .ol-btn{transform:scale(1.1);box-shadow:0 18px 40px rgba(0,0,0,.45),0 0 0 6px rgba(242,196,109,.25);cursor:grabbing}'
+    + '#ol-root.ol-left .ol-menu{right:auto;left:0;align-items:flex-start}#ol-root.ol-left .ol-hi{text-align:left}'
+    + '#ol-root.ol-left .ol-it{flex-direction:row-reverse}#ol-root.ol-left .ol-t{align-items:flex-start}'
+    + '#ol-root.ol-down .ol-menu{bottom:auto;top:66px}';
+  document.head.appendChild(st);
+  var _ensure = olEnsure;
+  olEnsure = function(){ var had = !!$("ol-root"); var r = _ensure.apply(this, arguments); if(!had) olpApply(); return r; };
+  var drag = null;
+  document.addEventListener("pointerdown", function(e){
+    var b = e.target && e.target.closest && e.target.closest("#ol-btn"); if(!b || OL.open) return;
+    var r = $("ol-root").getBoundingClientRect();
+    drag = { x0:e.clientX, y0:e.clientY, dx:e.clientX - r.left, dy:e.clientY - r.top, moved:false };
+  }, true);
+  document.addEventListener("pointermove", function(e){
+    if(!drag) return;
+    if(!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8) return;
+    var root = $("ol-root"); drag.moved = true; root.classList.add("ol-dragging");
+    root.style.left = Math.max(4, Math.min(innerWidth - 58, e.clientX - drag.dx)) + "px";
+    root.style.top = Math.max(4, Math.min(innerHeight - 58, e.clientY - drag.dy)) + "px";
+    root.style.right = "auto"; root.style.bottom = "auto";
+    if(e.cancelable) e.preventDefault();
+  }, { passive:false, capture:true });
+  function end(){
+    if(!drag) return; var d = drag; drag = null; if(!d.moved) return;
+    var root = $("ol-root"); root.classList.remove("ol-dragging");
+    var r = root.getBoundingClientRect();
+    try{ localStorage.setItem(OLP.key, JSON.stringify({ side: (r.left + r.width / 2) < innerWidth / 2 ? "left" : "right", y: (r.top + r.height / 2) / innerHeight })); }catch(x){}
+    olpApply();
+    // the click that ends a drag must not open the menu
+    var stop = function(ev){ ev.stopPropagation(); ev.preventDefault(); window.removeEventListener("click", stop, true); };
+    window.addEventListener("click", stop, true); setTimeout(function(){ window.removeEventListener("click", stop, true); }, 400);
+  }
+  document.addEventListener("pointerup", end, true);
+  document.addEventListener("pointercancel", end, true);
+  window.addEventListener("resize", olpApply);
+  // the menu: the role's own shortcuts, then the two "keep it with me" options
+  var _items = olItems;
+  olItems = function(){
+    var a = _items.apply(this, arguments); if(!a.length) return a;
+    a = a.slice();
+    if(window.documentPictureInPicture && !OLP.pip) a.push({ ic:"pin", l:"Keep Orbuni on top", s:"A mini window over your other apps", go:olpPip });
+    if(!olpStandalone() && (OLP.prompt || olpIOS())) a.push({ ic:"install", l:"Install Orbuni", s: olpIOS() ? "Add to your Home Screen" : "On this phone or laptop", go:olpInstall });
+    return a;
+  };
+  // a one-time hint that the button can be moved
+  var _toggle = window.olToggle;
+  window.olToggle = function(on){
+    var r = _toggle.apply(this, arguments);
+    try{ if(OL.open && !localStorage.getItem("orb-ol-tip")){ localStorage.setItem("orb-ol-tip", "1"); setTimeout(function(){ toast("Tip: press and drag the round Orbuni button to move it anywhere."); }, 600); } }catch(e){}
+    return r;
+  };
+})();
+window.olpInstall = async function(){
+  if(OLP.prompt){
+    try{ OLP.prompt.prompt(); var c = await OLP.prompt.userChoice; if(c && c.outcome === "accepted") toast("Orbuni is installed — find it on your home screen or dock."); }catch(e){}
+    OLP.prompt = null; return;
+  }
+  if(typeof orbCard === "function") orbCard({ ac:"sky", icon: OL_IC.install, eyebrow:"Install Orbuni", title:"Add Orbuni to your Home Screen",
+    sub:"It opens like an app, full screen, one tap from your home screen.",
+    body:'<ol class="vp-wl" style="list-style:decimal;padding-left:20px"><li>In Safari, tap the <b>Share</b> button (the square with an arrow).</li><li>Scroll and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. Orbuni is now an app on your phone.</li></ol>' });
+  else toast("In Safari: tap Share, then Add to Home Screen.");
+};
+window.olpPip = async function(){
+  if(!window.documentPictureInPicture) return;
+  var items = olItems().filter(function(it){ return it.go !== olpPip && it.go !== olpInstall; });
+  try{
+    var w = await documentPictureInPicture.requestWindow({ width: 300, height: 120 + items.length * 58 });
+    OLP.pip = w;
+    var d = w.document;
+    d.title = "Orbuni";
+    d.body.innerHTML = '<style>body{margin:0;font:14px/1.3 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#0b1222;color:#fff}'
+      + '.hd{display:flex;align-items:center;gap:10px;padding:14px 14px 8px}.hd svg{width:30px;height:30px}.hd b{font:600 17px/1 Georgia,serif}'
+      + '.it{display:flex;align-items:center;gap:12px;width:calc(100% - 20px);margin:6px 10px;padding:9px 12px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.05);color:#fff;cursor:pointer;text-align:left;font:inherit}'
+      + '.it:hover{background:rgba(242,196,109,.14);border-color:rgba(242,196,109,.5)}.ic{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;color:#0b1222;background:linear-gradient(145deg,#fbe3a6,#d9a441)}'
+      + '.ic svg{width:18px;height:18px}.it b{display:block;font-weight:600}.it small{color:rgba(255,255,255,.65);font-size:12px}p{margin:8px 14px 12px;color:rgba(255,255,255,.5);font-size:11.5px}</style>'
+      + '<div class="hd">' + OL_MARK + '<b>Orbuni</b></div>'
+      + items.map(function(it, i){ return '<button class="it" data-i="' + i + '"><span class="ic">' + (OL_IC[it.ic] || "") + '</span><span><b>' + esc(it.l) + '</b><small>' + esc(it.s) + '</small></span></button>'; }).join("")
+      + '<p>Stays on top of your other windows. Close it any time.</p>';
+    d.body.addEventListener("click", function(e){
+      var b = e.target.closest && e.target.closest(".it"); if(!b) return;
+      var it = items[+b.getAttribute("data-i")]; if(!it) return;
+      try{ window.focus(); }catch(x){}
+      try{ it.go(); }catch(x){ console.warn(x); }
+    });
+    w.addEventListener("pagehide", function(){ OLP.pip = null; });
+  }catch(e){ OLP.pip = null; toast("This browser can't keep a window on top. Use Install Orbuni instead.", true); }
+};
 
 var OL_CSS = ''
  + '#ol-root{position:fixed;right:22px;bottom:24px;z-index:240;display:none;font-family:var(--body,inherit)}'
