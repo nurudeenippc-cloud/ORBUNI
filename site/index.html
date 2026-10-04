@@ -7517,7 +7517,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="fvid rv">
         <div class="fvid-media" style="--fac:var(--gold)">
           <video class="fvid-v" muted loop playsinline preload="metadata" poster="video/housing-poster.jpg?v=20260918b">
-            <source src="video/housing.mp4?v=20260918b" type="video/mp4">
+            <source src="video/housing.mp4?v=20261005" type="video/mp4">
           </video>
         </div>
         <div class="fvid-tx">
@@ -7529,7 +7529,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="fvid rv rev">
         <div class="fvid-media" style="--fac:var(--violet)">
           <video class="fvid-v" muted loop playsinline preload="metadata" poster="video/scholarship-poster.jpg?v=20261003">
-            <source src="video/scholarship.mp4?v=20260918b" type="video/mp4">
+            <source src="video/scholarship.mp4?v=20261005" type="video/mp4">
           </video>
         </div>
         <div class="fvid-tx">
@@ -33617,22 +33617,34 @@ window.vpRevoke = async function(pid, off){
 };
 
 /* ---- the portal guide videos, at the top of Guides (students and partners) ---- */
+var VG = {
+  student: { src:"/video/guide-student.mp4", quiet:"/video/guide-student-silent.mp4", len:"74 seconds", h:"How to use your portal", p:"Documents, programmes, offers, housing and getting help — narrated by Orbuni." },
+  partner: { src:"/video/guide-partner.mp4", quiet:null, len:"90 seconds", h:"How the partner portal works", p:"Adding students, applications, programme search, scholarships, commission, your plan and your assistant." },
+  team:    { src:"/video/team-guide.mp4", quiet:"/video/team-guide-silent.mp4", len:"82 seconds", h:"The team portal in 82 seconds", p:"Today, leads, the WhatsApp inbox, students, money, Ask Orbuni and the Orbuni button — for new teammates and a quick refresher." }
+};
 function vgCard(kind){
-  var stu = kind === "student";
-  var src = stu ? "/video/guide-student.mp4" : "/video/guide-partner.mp4";
-  return '<div class="vg-card"><div class="vg-txt"><span class="vg-eye">Video guide · ' + (stu ? "74 seconds" : "90 seconds") + "</span>"
-    + "<h3>" + (stu ? "How to use your portal" : "How the partner portal works") + "</h3>"
-    + "<p>" + (stu ? "Documents, programmes, offers, housing and getting help — narrated by Orbuni." : "Adding students, applications, programme search, scholarships, commission, your plan and your assistant.") + "</p>"
-    + (stu ? '<div class="vg-sw" role="group" aria-label="Sound"><button class="on" onclick="vgVoice(this,1)">With voice</button><button onclick="vgVoice(this,0)">Without voice</button></div>' : "")
-    + '</div><video class="vg-v" controls playsinline preload="none" poster="' + src.replace(".mp4", "-poster.jpg") + '" src="' + src + '"></video></div>';
+  var g = VG[kind] || VG.student;
+  return '<div class="vg-card" data-kind="' + kind + '"><div class="vg-txt"><span class="vg-eye">Video guide · ' + g.len + "</span>"
+    + "<h3>" + g.h + "</h3><p>" + g.p + "</p>"
+    + (g.quiet ? '<div class="vg-sw" role="group" aria-label="Sound"><button class="on" onclick="vgVoice(this,1)">With voice</button><button onclick="vgVoice(this,0)">Without voice</button></div>' : "")
+    + '</div><video class="vg-v" controls playsinline preload="none" poster="' + g.src.replace(".mp4", "-poster.jpg") + '" src="' + g.src + '"></video></div>';
 }
 window.vgVoice = function(b, on){
   var c = b.closest(".vg-card"), v = c && c.querySelector("video"); if(!v) return;
+  var g = VG[c.getAttribute("data-kind")] || VG.student;
   c.querySelectorAll(".vg-sw button").forEach(function(x){ x.classList.toggle("on", x === b); });
   var t = v.currentTime, playing = !v.paused;
-  v.src = on ? "/video/guide-student.mp4" : "/video/guide-student-silent.mp4";
+  v.src = on ? g.src : (g.quiet || g.src);
   v.addEventListener("loadedmetadata", function f(){ v.removeEventListener("loadedmetadata", f); try{ v.currentTime = t; }catch(e){} if(playing) v.play(); });
 };
+/* r46: the team tour sits at the bottom of the team's Today screen */
+setInterval(function(){
+  if(typeof AV === "undefined" || AV !== "today") return;
+  var box = document.getElementById("a-live"); if(!box || box.querySelector('.vg-card[data-kind="team"]')) return;
+  if(!(typeof PROF !== "undefined" && PROF && (PROF.role === "admin" || PROF.role === "staff"))) return;
+  if(box.querySelector(".spin")) return;   // still loading
+  box.insertAdjacentHTML("beforeend", vgCard("team"));
+}, 1000);
 (function(){
   var st = document.createElement("style");
   st.textContent = ".vg-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:20px;align-items:center;padding:18px;margin:0 0 20px;border-radius:20px;border:1px solid color-mix(in srgb,var(--gold) 30%,var(--line));background:radial-gradient(120% 140% at 0% 100%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 60%),var(--p1)}"
