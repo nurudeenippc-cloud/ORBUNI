@@ -33637,14 +33637,14 @@ window.vgVoice = function(b, on){
   v.src = on ? g.src : (g.quiet || g.src);
   v.addEventListener("loadedmetadata", function f(){ v.removeEventListener("loadedmetadata", f); try{ v.currentTime = t; }catch(e){} if(playing) v.play(); });
 };
-/* r46: the team tour sits at the bottom of the team's Today screen */
+/* r46: the team tour sits at the top of the team's Guides page */
 setInterval(function(){
-  if(typeof AV === "undefined" || AV !== "today") return;
+  if(typeof AV === "undefined" || AV !== "arts") return;
   var box = document.getElementById("a-live"); if(!box || box.querySelector('.vg-card[data-kind="team"]')) return;
   if(!(typeof PROF !== "undefined" && PROF && (PROF.role === "admin" || PROF.role === "staff"))) return;
   if(box.querySelector(".spin")) return;   // still loading
-  box.insertAdjacentHTML("beforeend", vgCard("team"));
-}, 1000);
+  box.insertAdjacentHTML("afterbegin", vgCard("team"));
+}, 500);
 (function(){
   var st = document.createElement("style");
   st.textContent = ".vg-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:20px;align-items:center;padding:18px;margin:0 0 20px;border-radius:20px;border:1px solid color-mix(in srgb,var(--gold) 30%,var(--line));background:radial-gradient(120% 140% at 0% 100%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 60%),var(--p1)}"

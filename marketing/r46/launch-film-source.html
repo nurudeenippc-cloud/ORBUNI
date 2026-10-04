@@ -13,8 +13,8 @@ html,body{width:var(--W);height:var(--H);overflow:hidden;background:var(--ink);f
 .layer{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
 .full{position:absolute;inset:-6%;background-size:cover;background-position:center}
 .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,22,.55),rgba(7,11,22,.15) 40%,rgba(7,11,22,.85))}
-.grain{position:absolute;inset:0;pointer-events:none;opacity:.09;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='SEED'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
-.vign{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.6))}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.03;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='SEED'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
+.vign{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 60%,rgba(0,0,0,.4))}
 .bars{position:absolute;left:0;right:0;height:0;background:#000;z-index:50}
 .c{position:absolute;left:0;right:0;text-align:center;padding:0 80px}
 .serif{font-family:Fr;font-weight:500;letter-spacing:-.025em}
@@ -63,14 +63,14 @@ var S = document.getElementById('stage');
 var cy = H / 2;
 S.innerHTML =
   // 1. the dream
-  '<div class="layer" id="L1"><div class="full" id="L1bg" style="background-image:url('+A+'hero-4.jpg);filter:grayscale(.85) brightness(.32)"></div><div class="shade"></div>'
+  '<div class="layer" id="L1"><div class="full" id="L1bg" style="background-image:url('+A+'hero-4.jpg);filter:saturate(1.08) contrast(1.05) brightness(.55)"></div><div class="shade"></div>'
   + '<div class="ring" id="L1r" style="width:520px;height:520px;border:1.5px solid rgba(215,166,74,.35)"></div>'
   + '<div class="c" id="L1a" style="top:'+(cy-120)+'px"><div class="sub" style="font-size:34px">Every year, thousands of students</div></div>'
   + '<div class="c" id="L1b" style="top:'+(cy-50)+'px"><div class="big">dream of studying<br><em>abroad.</em></div></div></div>'
   // 2. the problem
-  + '<div class="layer" id="L2"><div class="full" id="L2a" style="background-image:url('+A+'hero-2.jpg);filter:grayscale(1) contrast(1.2) brightness(.45)"></div>'
-  + '<div class="full" id="L2b" style="background-image:url('+A+'hero-6.jpg);filter:grayscale(1) contrast(1.2) brightness(.42);opacity:0"></div>'
-  + '<div class="full" id="L2c" style="background-image:url('+A+'hero-3.jpg);filter:grayscale(1) contrast(1.2) brightness(.42);opacity:0"></div>'
+  + '<div class="layer" id="L2"><div class="full" id="L2a" style="background-image:url('+A+'hero-2.jpg);filter:grayscale(.35) contrast(1.15) brightness(.52)"></div>'
+  + '<div class="full" id="L2b" style="background-image:url('+A+'hero-6.jpg);filter:grayscale(.35) contrast(1.15) brightness(.5);opacity:0"></div>'
+  + '<div class="full" id="L2c" style="background-image:url('+A+'hero-3.jpg);filter:grayscale(.35) contrast(1.15) brightness(.5);opacity:0"></div>'
   + '<div class="shade" style="background:rgba(7,11,22,.35)"></div>'
   + '<div class="c" id="P0" style="top:'+(cy-300)+'px"><div class="eye" style="color:rgba(243,234,217,.6)">Then reality hits</div></div>'
   + '<div class="c" id="P1" style="top:'+(cy-200)+'px"><div class="mid"><span class="strike">Hidden fees.<i id="S1"></i></span></div></div>'
@@ -87,25 +87,25 @@ S.innerHTML =
   + '<div class="layer" id="L4" style="background:radial-gradient(70% 50% at 70% 30%,rgba(29,155,240,.16),transparent 70%),radial-gradient(60% 50% at 10% 90%,rgba(215,166,74,.18),transparent 70%),var(--ink)">'
   + '<div class="laptop" id="LT" style="top:'+(TALL?520:330)+'px"><div class="lid"><div class="cam"></div><div class="scr"><img id="LTi1" src="'+A+'home_d.png"><img id="LTi2" src="'+A+'track_d.png" style="opacity:0"><img id="LTi3" src="'+A+'housing_d.png" style="opacity:0"></div></div><div class="base"></div></div>'
   + '<div class="phone" id="PH" style="top:'+(TALL?820:560)+'px;left:700px"><div class="isl"></div><div class="scr"><img id="PHi1" src="'+A+'start_m.png"><img id="PHi2" src="'+A+'offers_m.png" style="opacity:0"><img id="PHi3" src="'+A+'chat_m.png" style="opacity:0"></div></div>'
-  + '<div class="cap" id="C1" style="top:'+(TALL?180:96)+'px"><b>Real fees. <em>Real scholarships.</em></b><span>The price you see is the price you pay.</span></div>'
-  + '<div class="cap" id="C2" style="top:'+(TALL?180:96)+'px"><b>Your offer, <em>the moment it lands.</em></b><span>Every application, tracked in one place.</span></div>'
-  + '<div class="cap" id="C3" style="top:'+(TALL?180:96)+'px"><b>Answers at <em>2 a.m.</em></b><span>A named counsellor — and an AI on WhatsApp that never sleeps.</span></div>'
-  + '<div class="cap" id="C4" style="top:'+(TALL?180:96)+'px"><b>A room waiting <em>when you land.</em></b><span>Housing and airport pickup, booked from your portal.</span></div></div>'
+  + '<div class="cap" id="C1" style="top:'+(TALL?290:96)+'px"><b>Real fees. <em>Real scholarships.</em></b><span>The price you see is the price you pay.</span></div>'
+  + '<div class="cap" id="C2" style="top:'+(TALL?290:96)+'px"><b>Your offer, <em>the moment it lands.</em></b><span>Every application, tracked in one place.</span></div>'
+  + '<div class="cap" id="C3" style="top:'+(TALL?290:96)+'px"><b>Answers at <em>2 a.m.</em></b><span>A named counsellor — and an AI on WhatsApp that never sleeps.</span></div>'
+  + '<div class="cap" id="C4" style="top:'+(TALL?290:96)+'px"><b>A room waiting <em>when you land.</em></b><span>Housing and airport pickup, booked from your portal.</span></div></div>'
   // 5. founders
   + '<div class="layer" id="L5" style="background:radial-gradient(60% 45% at 50% 20%,rgba(215,166,74,.14),transparent 70%),var(--ink)">'
-  + '<div class="c" id="F0" style="top:'+(TALL?200:92)+'px"><div class="eye">Founded in Istanbul</div><div class="mid" style="margin-top:22px">Built by people who <em>answer the phone.</em></div></div>'
-  + '<div class="archline" id="FA1l" style="left:110px;top:'+(TALL?640:420)+'px;width:400px;height:560px"></div><div class="arch" id="FA1" style="left:90px;top:'+(TALL?620:400)+'px;width:400px;height:560px"><img src="'+A+'nur_g.jpg" style="object-position:50% 10%"></div>'
-  + '<div class="archline" id="FA2l" style="left:610px;top:'+(TALL?700:480)+'px;width:380px;height:560px;border-color:rgba(127,214,255,.5)"></div><div class="arch" id="FA2" style="left:590px;top:'+(TALL?680:460)+'px;width:400px;height:560px"><img src="'+A+'god_g.jpg" style="object-position:52% 40%;transform:scale(2.05);transform-origin:52% 42%"></div>'
+  + '<div class="c" id="F0" style="top:'+(TALL?290:92)+'px"><div class="eye">Founded in Istanbul</div><div class="mid" style="margin-top:22px">Built by people who <em>answer the phone.</em></div></div>'
+  + '<div class="archline" id="FA1l" style="left:110px;top:'+(TALL?640:420)+'px;width:400px;height:560px"></div><div class="arch" id="FA1" style="left:90px;top:'+(TALL?620:400)+'px;width:400px;height:560px"><img src="'+A+'nur_c.jpg" style="object-position:50% 10%"></div>'
+  + '<div class="archline" id="FA2l" style="left:610px;top:'+(TALL?700:480)+'px;width:380px;height:560px;border-color:rgba(127,214,255,.5)"></div><div class="arch" id="FA2" style="left:590px;top:'+(TALL?680:460)+'px;width:400px;height:560px"><img src="'+A+'god_c.jpg" style="object-position:52% 40%;transform:scale(2.05);transform-origin:52% 42%"></div>'
   + '<div class="nm" id="FN1" style="left:90px;width:400px;top:'+(TALL?1200:980)+'px"><b>Nurudeen Abdulkareem</b><span>Founder · MD</span></div>'
   + '<div class="nm" id="FN2" style="left:590px;width:400px;top:'+(TALL?1260:1040)+'px"><b>Godfrey Emmanuel Wudaba</b><span>Co-founder · COO</span></div>'
   + (TALL ? '<div class="c" id="FM" style="top:1420px"><div class="sub">One mission: an honest path to a world-class degree — from the first message to the first day.</div></div>' : '<div id="FM"></div>')
   + '</div>'
   // 6. call to action
-  + '<div class="layer" id="L6"><div class="full" id="L6bg" style="background-image:url('+A+'hero-6.jpg);filter:saturate(.8) brightness(.38)"></div><div class="shade"></div>'
+  + '<div class="layer" id="L6"><div class="full" id="L6bg" style="background-image:url('+A+'hero-6.jpg);filter:saturate(1.12) contrast(1.05) brightness(.55)"></div><div class="shade"></div>'
   + '<div class="c" id="E1" style="top:'+(cy-270)+'px"><div class="big" style="font-size:84px">Your offer letter<br>starts with <em>one message.</em></div></div>'
   + '<div class="c" id="E2" style="top:'+(cy+20)+'px"><span class="btn">Take the free 2-minute assessment →</span></div>'
   + '<div class="c" id="E3" style="top:'+(cy+160)+'px"><div style="font:700 40px/1 In;letter-spacing:.12em">myorbuni.com</div><div class="sub" style="margin-top:16px;font-size:24px">Türkiye · N. Cyprus · applying is free</div></div>'
-  + '<div id="E4" style="position:absolute;left:50%;bottom:'+(TALL?260:110)+'px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;font:800 34px/1 In;letter-spacing:.3em">'+MARK(54).replace(/id="mk-/g,'id="mk2-')+'ORBUNI</div></div>'
+  + '<div id="E4" style="position:absolute;left:50%;bottom:'+(TALL?400:110)+'px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;font:800 34px/1 In;letter-spacing:.3em">'+MARK(54).replace(/id="mk-/g,'id="mk2-')+'ORBUNI</div></div>'
   + '<div class="flash" id="FL"></div><div class="grain" id="GR"></div><div class="vign"></div><div class="bars" id="BT" style="top:0"></div><div class="bars" id="BB" style="bottom:0"></div>';
 
 function $(i){ return document.getElementById(i); }
