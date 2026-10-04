@@ -1,0 +1,187 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Fr;src:url(../fonts/Fraunces-500.ttf);font-weight:500}
+@font-face{font-family:Fr;src:url(../fonts/Fraunces-700.ttf);font-weight:700}
+@font-face{font-family:In;src:url(../fonts/Inter-400.ttf);font-weight:400}
+@font-face{font-family:In;src:url(../fonts/Inter-500.ttf);font-weight:500}
+@font-face{font-family:In;src:url(../fonts/Inter-600.ttf);font-weight:600}
+@font-face{font-family:In;src:url(../fonts/Inter-700.ttf);font-weight:700}
+@font-face{font-family:In;src:url(../fonts/Inter-800.ttf);font-weight:800}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--W:1080px;--H:1350px;--ink:#070b16;--paper:#f3ead9;--gold:#d7a64a;--gold2:#f0cd84;--sky:#7fd6ff}
+html,body{width:var(--W);height:var(--H);overflow:hidden;background:var(--ink);font-family:In;color:var(--paper)}
+#stage{position:relative;width:var(--W);height:var(--H);overflow:hidden;background:var(--ink)}
+.layer{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+.full{position:absolute;inset:-6%;background-size:cover;background-position:center}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,22,.55),rgba(7,11,22,.15) 40%,rgba(7,11,22,.85))}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.09;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='SEED'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
+.vign{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.6))}
+.bars{position:absolute;left:0;right:0;height:0;background:#000;z-index:50}
+.c{position:absolute;left:0;right:0;text-align:center;padding:0 80px}
+.serif{font-family:Fr;font-weight:500;letter-spacing:-.025em}
+.eye{font:700 22px/1 In;letter-spacing:.38em;text-transform:uppercase;color:var(--gold2)}
+.big{font:500 92px/1.02 Fr;letter-spacing:-.03em}
+.big em{font-style:italic;color:var(--gold2)}
+.mid{font:500 64px/1.08 Fr;letter-spacing:-.02em}
+.mid em{font-style:italic;color:var(--gold2)}
+.sub{font:500 30px/1.45 In;color:rgba(243,234,217,.82)}
+.strike{position:relative;display:inline-block}
+.strike i{position:absolute;left:-2%;top:54%;height:7px;background:#e2574c;border-radius:4px;width:0}
+.ring{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%)}
+/* devices */
+.laptop{position:absolute;width:880px;left:100px}
+.lid{position:relative;width:880px;height:568px;border-radius:26px 26px 6px 6px;background:linear-gradient(180deg,#2a2f3a,#14171e);padding:18px 18px 24px;box-shadow:0 50px 120px rgba(0,0,0,.7),inset 0 0 0 1.5px rgba(255,255,255,.08)}
+.lid .scr{position:relative;width:100%;height:100%;border-radius:8px;overflow:hidden;background:#000}
+.lid .cam{position:absolute;top:7px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#0b0d12;box-shadow:0 0 0 1px #3a3f4a}
+.base{position:relative;width:1000px;margin-left:-60px;height:26px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,#c9ccd3,#8b8f98 60%,#5d6068)}
+.base::before{content:"";position:absolute;left:50%;top:0;width:150px;height:9px;margin-left:-75px;border-radius:0 0 10px 10px;background:#7a7e86}
+.scr img{position:absolute;left:0;top:0;width:100%;display:block}
+.phone{position:absolute;width:300px;height:620px;border-radius:52px;background:linear-gradient(145deg,#3a3f4a,#101218);padding:12px;box-shadow:0 50px 110px rgba(0,0,0,.75),inset 0 0 0 1.5px rgba(255,255,255,.1)}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:41px;overflow:hidden;background:#000}
+.phone .isl{position:absolute;top:12px;left:50%;width:92px;height:27px;margin-left:-46px;border-radius:20px;background:#000;z-index:3}
+.cap{position:absolute;left:0;right:0;text-align:center;padding:0 70px}
+.cap b{display:block;font:500 58px/1.1 Fr;letter-spacing:-.02em}
+.cap b em{font-style:italic;color:var(--gold2)}
+.cap span{display:block;margin-top:16px;font:500 26px/1.45 In;color:rgba(243,234,217,.78)}
+.arch{position:absolute;overflow:hidden;border-radius:400px 400px 16px 16px/330px 330px 16px 16px;box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.arch img{width:100%;height:100%;object-fit:cover}
+.archline{position:absolute;border:1.5px solid rgba(215,166,74,.7);border-radius:400px 400px 16px 16px/330px 330px 16px 16px}
+.nm{position:absolute;text-align:center}
+.nm b{display:block;font:700 34px/1.1 Fr}.nm span{display:block;margin-top:8px;font:600 15px/1 In;letter-spacing:.28em;text-transform:uppercase;color:var(--gold2)}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:24px 40px;border-radius:60px;background:linear-gradient(145deg,#fbe3a6,#d9a441);color:#0b1222;font:800 30px/1 In;box-shadow:0 20px 60px rgba(217,164,65,.35)}
+.live{display:inline-flex;align-items:center;gap:12px;padding:14px 24px;border-radius:40px;border:1px solid rgba(215,166,74,.5);background:rgba(215,166,74,.12);font:700 20px/1 In;letter-spacing:.3em;text-transform:uppercase;color:var(--gold2)}
+.live::before{content:"";width:10px;height:10px;border-radius:50%;background:#5ee39a;box-shadow:0 0 0 5px rgba(94,227,154,.2)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:40;mix-blend-mode:screen}
+</style></head><body><div id="stage"></div>
+<script>
+var Q = new URLSearchParams(location.search), H = +(Q.get('h') || 1350), W = 1080, TALL = H > 1500;
+document.documentElement.style.setProperty('--H', H + 'px');
+var A = 'assets/';
+var MARK = function(sz){ return '<svg viewBox="0 0 100 100" width="'+sz+'" height="'+sz+'" style="overflow:visible"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe3a6"/><stop offset=".55" stop-color="#d9a441"/><stop offset="1" stop-color="#8a6420"/></linearGradient></defs>'
+  + '<circle id="mk-ring" cx="50" cy="50" r="30" fill="none" stroke="url(#lg)" stroke-width="11" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 50 50)"/>'
+  + '<g id="mk-orb"><circle cx="50" cy="11" r="8.5" fill="#7fd6ff"/></g></svg>'; };
+var S = document.getElementById('stage');
+var cy = H / 2;
+S.innerHTML =
+  // 1. the dream
+  '<div class="layer" id="L1"><div class="full" id="L1bg" style="background-image:url('+A+'hero-4.jpg);filter:grayscale(.85) brightness(.32)"></div><div class="shade"></div>'
+  + '<div class="ring" id="L1r" style="width:520px;height:520px;border:1.5px solid rgba(215,166,74,.35)"></div>'
+  + '<div class="c" id="L1a" style="top:'+(cy-120)+'px"><div class="sub" style="font-size:34px">Every year, thousands of students</div></div>'
+  + '<div class="c" id="L1b" style="top:'+(cy-50)+'px"><div class="big">dream of studying<br><em>abroad.</em></div></div></div>'
+  // 2. the problem
+  + '<div class="layer" id="L2"><div class="full" id="L2a" style="background-image:url('+A+'hero-2.jpg);filter:grayscale(1) contrast(1.2) brightness(.45)"></div>'
+  + '<div class="full" id="L2b" style="background-image:url('+A+'hero-6.jpg);filter:grayscale(1) contrast(1.2) brightness(.42);opacity:0"></div>'
+  + '<div class="full" id="L2c" style="background-image:url('+A+'hero-3.jpg);filter:grayscale(1) contrast(1.2) brightness(.42);opacity:0"></div>'
+  + '<div class="shade" style="background:rgba(7,11,22,.35)"></div>'
+  + '<div class="c" id="P0" style="top:'+(cy-300)+'px"><div class="eye" style="color:rgba(243,234,217,.6)">Then reality hits</div></div>'
+  + '<div class="c" id="P1" style="top:'+(cy-200)+'px"><div class="mid"><span class="strike">Hidden fees.<i id="S1"></i></span></div></div>'
+  + '<div class="c" id="P2" style="top:'+(cy-60)+'px"><div class="mid"><span class="strike">Fake agents.<i id="S2"></i></span></div></div>'
+  + '<div class="c" id="P3" style="top:'+(cy+80)+'px"><div class="mid"><span class="strike">Months of silence.<i id="S3"></i></span></div></div></div>'
+  // 3. the reveal
+  + '<div class="layer" id="L3" style="background:radial-gradient(60% 45% at 50% 46%,rgba(215,166,74,.18),transparent 70%),var(--ink)">'
+  + '<div class="ring" id="L3r1" style="width:640px;height:640px;top:'+(cy-60)+'px;border:1.5px solid rgba(215,166,74,.28)"></div><div class="ring" id="L3r2" style="width:880px;height:880px;top:'+(cy-60)+'px;border:1px solid rgba(127,214,255,.16)"></div>'
+  + '<div id="L3m" style="position:absolute;left:50%;top:'+(cy-240)+'px;width:240px;margin-left:-120px">'+MARK(240)+'</div>'
+  + '<div class="c" id="L3t" style="top:'+(cy+40)+'px"><div style="font:800 96px/1 In;letter-spacing:.34em;padding-left:.34em">ORBUNI</div></div>'
+  + '<div class="c" id="L3s" style="top:'+(cy+170)+'px"><div class="sub">Study abroad. <span style="color:var(--paper)">Honestly.</span></div></div>'
+  + '<div class="c" id="L3l" style="top:'+(cy+250)+'px"><span class="live">Orbuni v1 · now live</span></div></div>'
+  // 4. the product
+  + '<div class="layer" id="L4" style="background:radial-gradient(70% 50% at 70% 30%,rgba(29,155,240,.16),transparent 70%),radial-gradient(60% 50% at 10% 90%,rgba(215,166,74,.18),transparent 70%),var(--ink)">'
+  + '<div class="laptop" id="LT" style="top:'+(TALL?520:330)+'px"><div class="lid"><div class="cam"></div><div class="scr"><img id="LTi1" src="'+A+'home_d.png"><img id="LTi2" src="'+A+'track_d.png" style="opacity:0"><img id="LTi3" src="'+A+'housing_d.png" style="opacity:0"></div></div><div class="base"></div></div>'
+  + '<div class="phone" id="PH" style="top:'+(TALL?820:560)+'px;left:700px"><div class="isl"></div><div class="scr"><img id="PHi1" src="'+A+'start_m.png"><img id="PHi2" src="'+A+'offers_m.png" style="opacity:0"><img id="PHi3" src="'+A+'chat_m.png" style="opacity:0"></div></div>'
+  + '<div class="cap" id="C1" style="top:'+(TALL?180:96)+'px"><b>Real fees. <em>Real scholarships.</em></b><span>The price you see is the price you pay.</span></div>'
+  + '<div class="cap" id="C2" style="top:'+(TALL?180:96)+'px"><b>Your offer, <em>the moment it lands.</em></b><span>Every application, tracked in one place.</span></div>'
+  + '<div class="cap" id="C3" style="top:'+(TALL?180:96)+'px"><b>Answers at <em>2 a.m.</em></b><span>A named counsellor — and an AI on WhatsApp that never sleeps.</span></div>'
+  + '<div class="cap" id="C4" style="top:'+(TALL?180:96)+'px"><b>A room waiting <em>when you land.</em></b><span>Housing and airport pickup, booked from your portal.</span></div></div>'
+  // 5. founders
+  + '<div class="layer" id="L5" style="background:radial-gradient(60% 45% at 50% 20%,rgba(215,166,74,.14),transparent 70%),var(--ink)">'
+  + '<div class="c" id="F0" style="top:'+(TALL?200:92)+'px"><div class="eye">Founded in Istanbul</div><div class="mid" style="margin-top:22px">Built by people who <em>answer the phone.</em></div></div>'
+  + '<div class="archline" id="FA1l" style="left:110px;top:'+(TALL?640:420)+'px;width:400px;height:560px"></div><div class="arch" id="FA1" style="left:90px;top:'+(TALL?620:400)+'px;width:400px;height:560px"><img src="'+A+'nur_g.jpg" style="object-position:50% 10%"></div>'
+  + '<div class="archline" id="FA2l" style="left:610px;top:'+(TALL?700:480)+'px;width:380px;height:560px;border-color:rgba(127,214,255,.5)"></div><div class="arch" id="FA2" style="left:590px;top:'+(TALL?680:460)+'px;width:400px;height:560px"><img src="'+A+'god_g.jpg" style="object-position:52% 40%;transform:scale(2.05);transform-origin:52% 42%"></div>'
+  + '<div class="nm" id="FN1" style="left:90px;width:400px;top:'+(TALL?1200:980)+'px"><b>Nurudeen Abdulkareem</b><span>Founder · MD</span></div>'
+  + '<div class="nm" id="FN2" style="left:590px;width:400px;top:'+(TALL?1260:1040)+'px"><b>Godfrey Emmanuel Wudaba</b><span>Co-founder · COO</span></div>'
+  + (TALL ? '<div class="c" id="FM" style="top:1420px"><div class="sub">One mission: an honest path to a world-class degree — from the first message to the first day.</div></div>' : '<div id="FM"></div>')
+  + '</div>'
+  // 6. call to action
+  + '<div class="layer" id="L6"><div class="full" id="L6bg" style="background-image:url('+A+'hero-6.jpg);filter:saturate(.8) brightness(.38)"></div><div class="shade"></div>'
+  + '<div class="c" id="E1" style="top:'+(cy-270)+'px"><div class="big" style="font-size:84px">Your offer letter<br>starts with <em>one message.</em></div></div>'
+  + '<div class="c" id="E2" style="top:'+(cy+20)+'px"><span class="btn">Take the free 2-minute assessment →</span></div>'
+  + '<div class="c" id="E3" style="top:'+(cy+160)+'px"><div style="font:700 40px/1 In;letter-spacing:.12em">myorbuni.com</div><div class="sub" style="margin-top:16px;font-size:24px">Türkiye · N. Cyprus · applying is free</div></div>'
+  + '<div id="E4" style="position:absolute;left:50%;bottom:'+(TALL?260:110)+'px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;font:800 34px/1 In;letter-spacing:.3em">'+MARK(54).replace(/id="mk-/g,'id="mk2-')+'ORBUNI</div></div>'
+  + '<div class="flash" id="FL"></div><div class="grain" id="GR"></div><div class="vign"></div><div class="bars" id="BT" style="top:0"></div><div class="bars" id="BB" style="bottom:0"></div>';
+
+function $(i){ return document.getElementById(i); }
+function cl(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+function ease(x){ x = cl(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; }
+function out(x){ x = cl(x); return 1 - Math.pow(1 - x, 3); }
+function win(t, a, b, fi, fo){ return Math.min(out((t - a) / (fi || .5)), 1 - ease((t - (b - (fo || .5))) / (fo || .5))) * (t >= a && t <= b ? 1 : 0); }
+function set(id, o, tr){ var e = $(id); if(!e) return; if(o != null) e.style.opacity = o; if(tr != null) e.style.transform = tr; }
+function rise(id, t, a, b, d){ var o = win(t, a, b, .6, .45); set(id, o, 'translateY(' + ((1 - out((t - a) / .8)) * (d || 40)) + 'px)'); }
+
+window.render = function(t){
+  // scene windows
+  set('L1', win(t, 0, 4.7, .9, .5));
+  set('L1bg', null, 'scale(' + (1.08 + t * .012) + ')');
+  set('L1r', win(t, .3, 4.7, 1.2, .5), 'translate(-50%,-50%) scale(' + (0.8 + t * .05) + ')');
+  rise('L1a', t, .7, 4.7); rise('L1b', t, 1.6, 4.7, 60);
+
+  set('L2', win(t, 4.5, 10.15, .25, .2));
+  var k = t - 4.5;
+  set('L2a', k < 1.9 ? 1 : 0, 'scale(' + (1.05 + k * .03) + ') translateX(' + (-k * 6) + 'px)');
+  set('L2b', k >= 1.9 && k < 3.7 ? 1 : 0, 'scale(' + (1.12 - (k - 1.9) * .025) + ')');
+  set('L2c', k >= 3.7 ? 1 : 0, 'scale(' + (1.05 + (k - 3.7) * .035) + ')');
+  rise('P0', t, 4.6, 10.1, 20);
+  rise('P1', t, 5.0, 10.1); rise('P2', t, 6.6, 10.1); rise('P3', t, 8.2, 10.1);
+  $('S1').style.width = (out((t - 5.7) / .35) * 104) + '%';
+  $('S2').style.width = (out((t - 7.3) / .35) * 104) + '%';
+  $('S3').style.width = (out((t - 8.9) / .35) * 104) + '%';
+  // shake on the strikes
+  var sh = 0; [5.7, 7.3, 8.9].forEach(function(s){ var d = t - s; if(d > 0 && d < .25) sh = Math.sin(d * 120) * (1 - d / .25) * 6; });
+  $('L2').style.transform = 'translateX(' + sh + 'px)';
+
+  set('L3', win(t, 10.2, 13.3, .1, .45));
+  var r = t - 10.35;
+  var ring = $('mk-ring'); if(ring) ring.setAttribute('stroke-dashoffset', 188.5 * (1 - ease(r / 1.1)));
+  var orb = $('mk-orb'); if(orb) orb.setAttribute('transform', 'rotate(' + (out(r / 1.3) * 360 + Math.max(0, r - 1.3) * 60) + ' 50 50)');
+  set('L3m', cl(r * 3), 'scale(' + (0.86 + out(r / 1.2) * .14) + ')');
+  set('L3r1', cl(r * 2) * .9, 'translate(-50%,-50%) scale(' + (0.6 + out(r / 1.4) * .45) + ')');
+  set('L3r2', cl((r - .2) * 2) * .7, 'translate(-50%,-50%) scale(' + (0.5 + out((r - .2) / 1.6) * .55) + ')');
+  var tt = $('L3t').firstChild; tt.style.letterSpacing = (0.9 - out((r - .5) / 1.2) * .56) + 'em'; tt.style.paddingLeft = (0.9 - out((r - .5) / 1.2) * .56) + 'em';
+  rise('L3t', t, 10.85, 13.3, 20); rise('L3s', t, 11.6, 13.3, 20); rise('L3l', t, 12.1, 13.3, 20);
+
+  set('L4', win(t, 13.15, 25.3, .5, .45));
+  var p = t - 13.15;
+  set('LT', null, 'translateY(' + ((1 - out(p / 1.1)) * 140) + 'px) perspective(1600px) rotateX(' + ((1 - out(p / 1.4)) * 14) + 'deg)');
+  set('PH', null, 'translateY(' + ((1 - out((p - .35) / 1.1)) * 260) + 'px) rotate(' + (-4 + out(p / 2) * 4) + 'deg)');
+  // laptop screens and scrolling
+  var s1 = cl((p - 2.6) / .4), s2 = cl((p - 8.6) / .4);
+  set('LTi1', 1 - s1, 'translateY(' + (-Math.min(p, 2.6) * 22) + 'px)');
+  set('LTi2', s1 * (1 - s2), 'translateY(' + (-Math.max(0, p - 3.2) * 10) + 'px)');
+  set('LTi3', s2, 'translateY(' + (-Math.max(0, p - 9) * 14) + 'px)');
+  var q1 = cl((p - 3.1) / .4), q2 = cl((p - 6.1) / .4);
+  set('PHi1', 1 - q1, 'translateY(' + (-Math.min(p, 3.1) * 30) + 'px)');
+  set('PHi2', q1 * (1 - q2)); set('PHi3', q2);
+  rise('C1', t, 13.6, 16.3, 24); rise('C2', t, 16.25, 19.2, 24); rise('C3', t, 19.15, 22.3, 24); rise('C4', t, 22.25, 25.2, 24);
+
+  set('L5', win(t, 25.15, 30.7, .5, .45));
+  var f = t - 25.15;
+  rise('F0', t, 25.3, 30.7, 24);
+  set('FA1', out((f - .4) / .9), 'translateY(' + ((1 - out((f - .4) / 1)) * 120) + 'px)');
+  set('FA2', out((f - .8) / .9), 'translateY(' + ((1 - out((f - .8) / 1)) * 120) + 'px)');
+  set('FA1l', out((f - .9) / .8) * .9); set('FA2l', out((f - 1.3) / .8) * .9);
+  rise('FN1', t, 26.6, 30.7, 16); rise('FN2', t, 27.0, 30.7, 16); rise('FM', t, 27.6, 30.7, 16);
+
+  set('L6', t >= 30.55 ? cl((t - 30.55) / .5) : 0);
+  set('L6bg', null, 'scale(' + (1.04 + Math.max(0, t - 30.5) * .02) + ')');
+  rise('E1', t, 30.9, 99, 30); rise('E2', t, 32.0, 99, 20); rise('E3', t, 32.6, 99, 20);
+  var r2 = t - 33.3, ring2 = $('mk2-ring'); if(ring2) ring2.setAttribute('stroke-dashoffset', 188.5 * (1 - ease(r2 / .9)));
+  var orb2 = $('mk2-orb'); if(orb2) orb2.setAttribute('transform', 'rotate(' + (out(r2 / 1.2) * 360) + ' 50 50)');
+  set('E4', cl(r2 * 2));
+
+  // white flash on the reveal, letterbox bars in the problem scene, fade out at the very end
+  set('FL', Math.max(0, 1 - Math.abs(t - 10.3) / .18) * .85);
+  var bars = (t > 4.5 && t < 10.2) ? out((t - 4.5) / .5) * (1 - out((t - 9.9) / .3)) : 0;
+  $('BT').style.height = $('BB').style.height = (bars * (TALL ? 170 : 90)) + 'px';
+  S.style.opacity = 1 - cl((t - 35.4) / .6);
+  $('GR').style.backgroundPosition = ((t * 997) % 220) + 'px ' + ((t * 613) % 220) + 'px';
+};
+window.render(0);
+</script></body></html>
