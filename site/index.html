@@ -6054,7 +6054,14 @@ dialog[open]{margin:auto}
   min-width:206px;padding:6px;border-radius:14px;background:var(--p1);
   border:1px solid var(--line2);box-shadow:0 22px 50px rgba(0,0,0,.5)}
 #portal .memenu.open{display:block}
+@media(max-width:600px){#portal .memenu{position:fixed;top:68px;left:12px;right:12px;min-width:0;max-width:none}#portal .memenu-theme{flex-wrap:wrap}}
 #portal .memenu-who{padding:9px 11px 10px;border-bottom:1px solid var(--line);margin-bottom:5px}
+#portal .whochip{display:none;align-items:center;gap:7px;max-width:260px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;font-size:12.5px;line-height:1.2;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--faint)}
+#portal .whochip b{color:var(--txt);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+#portal .whochip i{width:7px;height:7px;border-radius:50%;background:#3ED598;flex:none;box-shadow:0 0 0 3px rgba(62,213,152,.18)}
+@media(min-width:760px){#portal .whochip.on{display:inline-flex}}
+#portal .memenu-who em{display:block;font-style:normal;font-size:11.5px;color:var(--faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+#portal .memenu-sec{padding:7px 11px 8px;font-size:11px;line-height:1.45;color:var(--faint);border-top:1px solid var(--line);margin-top:5px}
 #portal .memenu-who b{display:block;font-size:13.5px;line-height:1.3}
 #portal .memenu-who span{display:block;font-size:11.5px;color:var(--faint);margin-top:2px}
 #portal .memenu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
@@ -8364,7 +8371,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <header class="app">
       <button class="burger2" id="s-burger" aria-label="Open the portal menu" onclick="toggleAside('sb-s')"><i></i><i></i><i></i></button>
       <div><div class="sub" id="s-crumb">Orbuni Portal</div><h1 id="s-title">My application</h1></div>
-      <div class="hr"><div class="icb" onclick="bellClick('s', event)" title="Notifications">🔔<i class="dot" id="s-dot"></i><div class="ndrop" id="s-ndrop" onclick="event.stopPropagation()"></div></div><div class="icb" onclick="sGo('help')" title="Talk to my counsellor">💬</div><div class="mewrap"><div class="av sm hdr-av" id="s-av-h" onclick="meMenu('s', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="s-memenu" onclick="event.stopPropagation()"></div></div></div>
+      <div class="hr"><div class="icb" onclick="bellClick('s', event)" title="Notifications">🔔<i class="dot" id="s-dot"></i><div class="ndrop" id="s-ndrop" onclick="event.stopPropagation()"></div></div><div class="icb" onclick="sGo('help')" title="Talk to my counsellor">💬</div><div class="whochip" id="s-whochip" onclick="meMenu('s', event)" title="Your account"></div><div class="mewrap"><div class="av sm hdr-av" id="s-av-h" onclick="meMenu('s', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="s-memenu" onclick="event.stopPropagation()"></div></div></div>
     </header>
     <div class="body" id="s-body"></div>
     <!-- Universities applied / Documents / Settings rise as a card over My
@@ -8390,7 +8397,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <header class="app">
       <button class="burger2" id="p-burger" aria-label="Open the portal menu" onclick="toggleAside('sb-p')"><i></i><i></i><i></i></button>
       <div><div class="sub" id="p-crumb">Orbuni Portal</div><h1 id="p-title">Dashboard</h1></div>
-      <div class="hr"><div class="icb" onclick="bellClick('p', event)" title="Notifications">🔔<i class="dot" id="p-dot"></i><div class="ndrop" id="p-ndrop" onclick="event.stopPropagation()"></div></div><div class="mewrap"><div class="av sm hdr-av" id="p-av-h" onclick="meMenu('p', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="p-memenu" onclick="event.stopPropagation()"></div></div></div>
+      <div class="hr"><div class="icb" onclick="bellClick('p', event)" title="Notifications">🔔<i class="dot" id="p-dot"></i><div class="ndrop" id="p-ndrop" onclick="event.stopPropagation()"></div></div><div class="whochip" id="p-whochip" onclick="meMenu('p', event)" title="Your account"></div><div class="mewrap"><div class="av sm hdr-av" id="p-av-h" onclick="meMenu('p', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="p-memenu" onclick="event.stopPropagation()"></div></div></div>
     </header>
     <div class="body" id="p-body"></div>
     <!-- My students / Applications / Settings rise as a card over
@@ -8422,7 +8429,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <!-- Tapping your own face opens a small menu rather than jumping
              straight to Settings. Signing out was buried three taps deep
              inside Settings, which is not where anyone looks for it. -->
-        <div class="mewrap"><div class="av sm hdr-av" id="a-av-h" onclick="meMenu('a', event)"
+        <div class="whochip" id="a-whochip" onclick="meMenu('a', event)" title="Your account"></div><div class="mewrap"><div class="av sm hdr-av" id="a-av-h" onclick="meMenu('a', event)"
              title="You" role="button" aria-haspopup="menu">··</div>
           <div class="memenu" id="a-memenu" onclick="event.stopPropagation()"></div></div>
       </div>
@@ -10891,6 +10898,44 @@ function toast(msg, bad){
 }
 window.orbToast = toast;
 
+/* ---------- anti-bot check (Cloudflare Turnstile) ----------
+   Put the public Site key from Cloudflare here. While it is empty nothing changes.
+   Once it is set, sign-up, sign-in and password resets carry a one-time token, and
+   Supabase (Authentication → Attack Protection, with the Secret key) rejects bots.
+   Most people never see anything; a suspicious visitor gets a small checkbox. */
+var ORB_TURNSTILE_KEY = "";
+var TS_ID = null, TS_WAIT = null;
+function tsLoad(){
+  return new Promise(function(ok, no){
+    if(window.turnstile) return ok();
+    var s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    s.async = true; s.onload = function(){ ok(); }; s.onerror = function(){ no(new Error("The security check could not load. Check your connection and try again.")); };
+    document.head.appendChild(s);
+  });
+}
+async function orbCaptcha(){
+  if(!ORB_TURNSTILE_KEY) return undefined;
+  await tsLoad();
+  var box = document.getElementById("orb-ts");
+  if(!box){
+    box = document.createElement("div"); box.id = "orb-ts";
+    box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999";
+    document.body.appendChild(box);
+  }
+  return await new Promise(function(ok, no){
+    TS_WAIT = { ok: ok, no: no };
+    var opts = { sitekey: ORB_TURNSTILE_KEY, appearance: "interaction-only", execution: "execute",
+      callback: function(tok){ var w = TS_WAIT; TS_WAIT = null; if(w) w.ok(tok); },
+      "error-callback": function(){ var w = TS_WAIT; TS_WAIT = null; if(w) w.no(new Error("The security check failed. Please try again.")); },
+      "expired-callback": function(){ try{ turnstile.reset(TS_ID); }catch(e){} } };
+    try{
+      if(TS_ID === null) TS_ID = turnstile.render(box, opts); else turnstile.reset(TS_ID);
+      turnstile.execute(TS_ID);
+    }catch(e){ TS_WAIT = null; no(e); }
+  });
+}
+
 /* ---------- wait for the Supabase library ---------- */
 function boot(){
   if(!window.supabase || !window.supabase.createClient){ return setTimeout(boot, 60); }
@@ -11181,7 +11226,7 @@ window.enter = async function(kind, ev){
     try{
       var res = await sb.auth.signUp({
         email: em.value.trim(), password: p1.value,
-        options:{ data:{
+        options:{ captchaToken: await orbCaptcha(), data:{
           first_name: first, last_name: last,
           phone: tel ? tel.value.trim() : null,
           whatsapp: tel ? tel.value.trim() : null,
@@ -11220,7 +11265,7 @@ window.enter = async function(kind, ev){
 
     busy(btn, true, "Signing you in…");
     try{
-      var r2 = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value });
+      var r2 = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value, options: { captchaToken: await orbCaptcha() } });
       if(r2.error) throw r2.error;
       ME = r2.data.user; await loadProfile();
       // The account type chosen on the previous screen used to be decorative:
@@ -11309,12 +11354,32 @@ async function orbIdleExpired(){
   document.addEventListener("visibilitychange", function(){ if(!document.hidden) orbIdleExpired(); });
 })();
 
+// "Signed in as …" in the portal header (wide screens; on phones the photo menu shows it).
+function orbWhoChip(){
+  var who = PROF ? (((PROF.first_name || "") + " " + (PROF.last_name || "")).trim() || PROF.email || "") : "";
+  var role = PROF ? (PROF.is_owner ? "Owner" : PROF.role === "admin" ? "Admin" : PROF.role === "staff" ? "Team" : PROF.role === "partner" ? "Partner" : "Student") : "";
+  ["s", "p", "a"].forEach(function(r){
+    var c = $(r + "-whochip"); if(!c) return;
+    if(!who){ c.classList.remove("on"); c.innerHTML = ""; return; }
+    c.innerHTML = "<i></i><span>Signed in as <b>" + esc(who) + "</b> · " + esc(role) + "</span>";
+    c.classList.add("on");
+  });
+}
+// Ends every session of this account (other phones and laptops too), then this one.
+window.orbSignOutEverywhere = async function(){
+  if(!confirm("Sign out of Orbuni on every phone and computer where this account is signed in?")) return;
+  try{ await sb.auth.signOut({ scope: "global" }); }catch(e){}
+  await window.logout();
+  toast("Signed out on all devices.");
+};
+
 async function routeByRole(opts){
   opts = opts || {};
   if(!PROF) await loadProfile();
   // a fresh sign-in starts the clock; coming back to a remembered session checks it
   if(opts.greet) orbMarkActive();
   else if(await orbIdleExpired()) return;
+  try{ orbWhoChip(); }catch(e){}
 
   // An account provisioned with a temporary password cannot go anywhere
   // until that password has been replaced. No greeting until that is done.
@@ -11354,8 +11419,10 @@ function lineupDone(r){
 }
 
 window.logout = async function(){
-  try{ await sb.auth.signOut(); }catch(e){}
+  // this device only; "Sign out on all devices" ends the others
+  try{ await sb.auth.signOut({ scope: "local" }); }catch(e){}
   ME = null; PROF = null; READY = null;
+  try{ orbWhoChip(); }catch(e){}
   luVisible(false);
   document.querySelectorAll("#portal .shell").forEach(function(s){ s.classList.remove("on"); });
   $("auth").style.display = "grid";
@@ -18061,7 +18128,7 @@ window.orbForgot = async function(ev){
     return;
   }
   try{
-    var r = await sb.auth.resetPasswordForEmail(addr, { redirectTo: location.origin + "/?reset=1" });
+    var r = await sb.auth.resetPasswordForEmail(addr, { redirectTo: location.origin + "/?reset=1", captchaToken: await orbCaptcha() });
     if(r.error) throw r.error;
     toast("Check your inbox — we sent a reset link to " + addr + ".");
   }catch(e){ authErr(friendly(e)); }
@@ -18248,12 +18315,16 @@ window.meMenu = function(role, ev){
   var label = role === "s" ? "My profile" : "Settings";
   var who = PROF ? (((PROF.first_name || "") + " " + (PROF.last_name || "")).trim() || PROF.email || "") : "";
   var sub = PROF ? (PROF.job_title || (PROF.is_owner ? "Owner" : PROF.role === "partner" ? "Partner" : PROF.role === "student" ? "Student" : "Team")) : "";
+  var mail = (ME && ME.email) || (PROF && PROF.email) || "";
   m.innerHTML = (who
-      ? '<div class="memenu-who"><b>' + esc(who) + "</b><span>" + esc(sub) + "</span></div>"
+      ? '<div class="memenu-who"><b>' + esc(who) + "</b><span>" + esc(sub) + "</span>" + (mail ? "<em>" + esc(mail) + "</em>" : "") + "</div>"
       : "")
     + '<button onclick="meMenuClose();' + goProfile + '">' + NAVI.user + esc(label) + "</button>"
     + '<div class="memenu-theme"><span>Appearance</span>' + (typeof th7MiniHtml === "function" ? th7MiniHtml() : "") + "</div>"
-    + '<button class="danger" onclick="meMenuClose();logout()">' + NAVI.settings + "Sign out</button>";
+    + '<button class="danger" onclick="meMenuClose();logout()">' + NAVI.settings + "Sign out</button>"
+    + '<button class="danger" onclick="meMenuClose();orbSignOutEverywhere()">' + NAVI.settings + "Sign out on all devices</button>"
+    + '<div class="memenu-sec">For your safety you are signed out automatically after '
+    + ((PROF && (PROF.role === "admin" || PROF.role === "staff")) ? "30 minutes" : "7 days") + " without activity.</div>";
   try{ th7Paint(); }catch(e){}
   m.classList.add("open");
   ME_MENU_OPEN = role;
@@ -20321,7 +20392,7 @@ window.chSendInvite = async function(ev){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)){ $("iv-out").innerHTML = '<div class="err">That is not a complete email address.</div>'; return; }
   busy(btn, true, "Sending…");
   try{
-    var r = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + "/?reset=1" });
+    var r = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + "/?reset=1", captchaToken: await orbCaptcha() });
     if(r.error) throw r.error;
     $("iv-out").innerHTML = '<div class="ok">Invitation sent to ' + esc(e) + "."
       + " They will not appear in the team until they set their password and sign in once.</div>";
