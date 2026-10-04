@@ -27722,9 +27722,10 @@ var OC_LOOK = {
     meta:["Door to door", "2 parts possible", "30–40% refund rule"],
     perks:[["layers","Everything in Plus","butter"], ["globe","A visa agent in your country","sky"],
            ["mapPin","Escort to registration","mint"], ["fileText","Residence permit support","lilac"]] },
-  extra: { tag:"Extra service", t1:"", t2:"", art:"mint", meta:[], perks:[] }
+  extra: { tag:"Extra service", t1:"", t2:"", art:"mint", meta:[], perks:[] },
+  partner: { tag:"Partner plan · monthly", t1:"", t2:"", art:"sky", meta:[], perks:[] }
 };
-function ocLookKey(){ return OC.kind === "extra" ? "extra" : (OC.kind === "course" ? OC.product : (OC.tier || OC.product)); }
+function ocLookKey(){ return OC.kind === "partner" ? "partner" : OC.kind === "extra" ? "extra" : (OC.kind === "course" ? OC.product : (OC.tier || OC.product)); }
 function ocLook(){ return OC_LOOK[ocLookKey()] || OC_LOOK.standard; }
 function ocDoc(){
   if(OC.kind === "service") return ORB_AGREEMENT;
@@ -27767,10 +27768,11 @@ function ocArt(kind){
 }
 function ocHtml(){
   var L = ocLook();
-  var t1 = OC.kind === "extra" ? "" : L.t1, t2 = OC.kind === "extra" ? (OC.title || "Extra service") : L.t2;
+  var own = OC.kind === "extra" || OC.kind === "partner";
+  var t1 = own ? "" : L.t1, t2 = own ? (OC.title || "Extra service") : L.t2;
   if(OC.previewPlan) t2 += " · preview";
   var price = OC.parts === 2 ? ocMoney(Math.round(OC.amount * 50) / 100) + "<small> now</small>" : ocMoney(OC.amount);
-  var meta = (OC.kind === "extra" ? (OC.meta || []) : L.meta).map(function(m){ return "<span>" + esc(m) + "</span>"; }).join("");
+  var meta = (own ? (OC.meta || []) : L.meta).map(function(m){ return "<span>" + esc(m) + "</span>"; }).join("");
   return '<div class="wsx-scrim" id="wsx-scrim" onclick="orbCheckoutClose()"></div>'
     + '<div class="wsx" id="wsx" role="dialog" aria-modal="true" aria-labelledby="wsx-title">'
     + '<div class="wsx-cover' + (OC.parts === 2 ? " split" : "") + '" id="wsx-cover">' + ocArt(L.art)
@@ -27803,7 +27805,7 @@ window.orbCheckout = function(opts){
   });
   document.addEventListener("keydown", ocEsc);
   wcoLoad();
-  if(OC.previewPlan) ocStep2(); else ocStep1();
+  if(OC.previewPlan || OC.skipTerms) ocStep2(); else ocStep1();
 };
 function ocEsc(e){ if(e.key === "Escape") orbCheckoutClose(); }
 window.orbCheckoutClose = function(){
@@ -27888,7 +27890,7 @@ function ocSkeleton(){
     + '<p id="wsx-load-t">Opening the secure checkout…</p></div>';
 }
 function ocTrust(){
-  var refund = OC.kind === "service" ? "Refund rule in writing" : OC.kind === "extra" ? "Full refund up to 48h before" : "7-day refund";
+  var refund = OC.kind === "partner" ? "Cancel any month" : OC.kind === "service" ? "Refund rule in writing" : OC.kind === "extra" ? "Full refund up to 48h before" : "7-day refund";
   return '<div class="wsx-trust"><span>' + ocIc("checkCircle") + " Secure, by Whop</span><span>" + ocIc("wallet") + " Card, transfer, local methods</span><span>" + ocIc("award") + " " + refund + "</span></div>";
 }
 async function ocStep2(){
@@ -27897,12 +27899,13 @@ async function ocStep2(){
   body.innerHTML = '<div class="wsx-embed" id="wsx-embed">' + ocSkeleton() + "</div>" + ocTrust() + '<p class="wsx-fine" id="wsx-fine"></p>';
   var plan = "", session = "", fallbackUrl = "", note = "";
   var signed = !!(typeof ME !== "undefined" && ME && ME.id);
-  var ret = location.origin + location.pathname + "?whop=paid&pkg=" + encodeURIComponent(OC.tier || OC.product || OC.kind) + (location.hash || "");
+  var ret = location.origin + location.pathname + "?whop=paid&pkg=" + encodeURIComponent(OC.pkgKey || OC.tier || OC.product || OC.kind) + (location.hash || "");
   try{
     if(OC.previewPlan){
       plan = OC.previewPlan;
     } else if(signed){
-      var body2 = OC.kind === "service" ? { order_id: OC.order.id, return_url: ret }
+      var body2 = OC.kind === "partner" ? { partner_tier: OC.tier, return_url: ret }
+                : OC.kind === "service" ? { order_id: OC.order.id, return_url: ret }
                 : OC.kind === "extra" ? { booking_id: OC.booking.id, return_url: ret }
                 : { product: OC.product, return_url: ret };
       var r = await sb.functions.invoke("whop-checkout", { body: body2 });
@@ -28023,19 +28026,21 @@ window.orbWhopComplete = async function(planId, receiptId){
 async function ocDone(receiptId){
   OC.step = 3; ocSteps(3);
   wcoClear();
-  var service = OC.kind === "service", extra = OC.kind === "extra";
+  var service = OC.kind === "service", extra = OC.kind === "extra", partner = OC.kind === "partner";
   var signed = !!(typeof ME !== "undefined" && ME && ME.id);
-  var nextBtn = service ? '<button class="wsx-go" onclick="orbCheckoutClose()">Back to my application</button>'
+  var nextBtn = partner ? '<button class="wsx-go" onclick="orbCheckoutClose()">See my partner plan <span aria-hidden="true">→</span></button>'
+    : service ? '<button class="wsx-go" onclick="orbCheckoutClose()">Back to my application</button>'
     : extra ? '<button class="wsx-go" onclick="orbCheckoutClose()">See my booking</button>'
     : signed ? '<button class="wsx-go" onclick="orbCheckoutClose();orbOpenCourse(\'' + jsq(OC.product) + '\')">Start the course <span aria-hidden="true">→</span></button>'
     : '<button class="wsx-go" onclick="orbCheckoutClose();openPortal(\'student-up\')">Create my free account to read it here</button>'
       + '<p class="wsx-fine">Use the same email you paid with (' + esc(OC.email || "") + ") — the course unlocks automatically.</p>";
-  var msg = service ? (OC.parts === 2 ? "Your first part is paid. Whop takes the second part automatically in 30 days, then stops." : "Your service fee is paid.")
+  var msg = partner ? "Your " + esc(OC.title || "partner plan") + " is paid. Your blue tick and perks switch on by themselves within a minute or two, and your receipt is in your email."
+    : service ? (OC.parts === 2 ? "Your first part is paid. Whop takes the second part automatically in 30 days, then stops." : "Your service fee is paid.")
       + " Your counsellor sees it straight away, and this page now shows your receipt."
     : extra ? (OC.amount ? "Paid. " : "") + "Your booking is with the team — you will see who is coming for you, with their phone number, at least 24 hours before."
     : "The course is yours for life. Your receipt is in your email.";
   document.getElementById("wsx-body").innerHTML = '<div class="wsx-done"><div class="ok">' + ocIc("checkCircle") + "</div>"
-    + "<h3>" + (service ? "Payment received — thank you" : extra ? "You are booked" : "You're in") + "</h3><p>" + msg + "</p></div>" + nextBtn;
+    + "<h3>" + (partner ? "You're verified — welcome" : service ? "Payment received — thank you" : extra ? "You are booked" : "You're in") + "</h3><p>" + msg + "</p></div>" + nextBtn;
   try{ if(signed && receiptId !== undefined) await sb.functions.invoke("whop-sync", { body:{ from:"embed", receipt: receiptId || null } }); }catch(e){}
 }
 /* old name, still called from a few places */
@@ -33377,14 +33382,22 @@ function vpCardHtml(){
 window.vpTab = function(id){ VP.tab = id; var c = $("vp-card"); if(c) c.outerHTML = vpCardHtml(); };
 window.vpCopy = function(){ try{ navigator.clipboard.writeText("VERIFIED30").then(function(){ toast("Code copied — VERIFIED30"); }); }catch(e){ toast("Your code: VERIFIED30"); } };
 window.vpBuy = async function(tier, btn){
-  var t = vpTier(tier), url = "https://whop.com/checkout/" + t.plan + "/";
+  var t = vpTier(tier);
+  try{ lpEvent && lpEvent("checkout_open", null, "partner_" + tier); }catch(e){}
+  /* pays inside the portal (Whop's window on our page); nobody is sent away */
+  if(typeof window.orbCheckout === "function"){
+    orbCheckout({ kind:"partner", tier: tier, pkgKey: "partner_" + tier, skipTerms: true, title: t.name + " partner plan",
+      amount: t.price, meta: ["$" + t.price + " a month", "Blue tick", "Cancel any month"],
+      onDone: function(){ try{ vpWelcome(tier); }catch(e){} } });
+    return;
+  }
   if(btn){ btn.disabled = true; btn.textContent = "Opening checkout…"; }
+  var url = "https://whop.com/checkout/" + t.plan + "/";
   try{
     var r = await sb.functions.invoke("whop-checkout", { body: { partner_tier: tier, return_url: location.origin + "/?whop=paid&pkg=partner_" + tier + "#portal=partner:settings" } });
     if(r.data && r.data.url) url = r.data.url;
     else if(r.data && r.data.session) url = "https://whop.com/checkout/" + r.data.session + "/";
   }catch(e){}
-  try{ lpEvent && lpEvent("checkout_open", null, "partner_" + tier); }catch(e){}
   location.href = url;
 };
 window.vpWelcome = async function(tier){
@@ -33763,6 +33776,49 @@ var OL_CSS = ''
     aFinance.__r46 = true;
   }
   wrapFin(); window.addEventListener("load", function(){ setTimeout(wrapFin, 0); });
+})();
+
+/* ============================================================
+   r46 · "Did you mean …@gmail.com?"
+   ------------------------------------------------------------
+   Leads typed gmail.con and every follow-up bounced. Each email box
+   now checks the address when you leave it and offers the fix in one
+   tap. It only suggests — it never changes what was typed by itself.
+   ============================================================ */
+(function r46MailFix(){
+  var DOM = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "live.com", "ymail.com", "aol.com", "protonmail.com", "yahoo.co.uk", "hotmail.co.uk", "myorbuni.com"];
+  var FIX = { "gmail.con":"gmail.com", "gmail.co":"gmail.com", "gmail.cm":"gmail.com", "gmail.om":"gmail.com", "gmial.com":"gmail.com", "gmal.com":"gmail.com", "gmai.com":"gmail.com", "gamil.com":"gmail.com", "gnail.com":"gmail.com", "gmail.comm":"gmail.com", "gmaill.com":"gmail.com", "g.mail.com":"gmail.com",
+    "yaho.com":"yahoo.com", "yahoo.con":"yahoo.com", "yhoo.com":"yahoo.com", "yahooo.com":"yahoo.com", "hotmial.com":"hotmail.com", "hotmail.con":"hotmail.com", "hotmal.com":"hotmail.com", "homail.com":"hotmail.com",
+    "outlok.com":"outlook.com", "outlook.con":"outlook.com", "outloo.com":"outlook.com", "icloud.con":"icloud.com", "iclod.com":"icloud.com" };
+  function lev(a, b){ var m = a.length, n = b.length, d = []; for(var i = 0; i <= m; i++){ d[i] = [i]; } for(var j = 1; j <= n; j++) d[0][j] = j;
+    for(i = 1; i <= m; i++) for(j = 1; j <= n; j++) d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)); return d[m][n]; }
+  function suggest(v){
+    var m = String(v || "").trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+)$/); if(!m) return null;
+    var d = m[2]; if(DOM.indexOf(d) > -1) return null;
+    var fix = FIX[d];
+    if(!fix){ if(/\.(con|cpm|cmo|vom|xom)$/.test(d)) fix = d.replace(/\.[a-z]+$/, ".com");
+      else { var best = null, bd = 9; DOM.forEach(function(x){ var k = lev(d, x); if(k < bd){ bd = k; best = x; } }); if(bd > 0 && bd <= 2 && d.length > 5) fix = best; } }
+    return fix ? m[1] + "@" + fix : null;
+  }
+  window.orbMailSuggest = suggest;
+  var st = document.createElement("style");
+  st.textContent = '.r46-mh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 2px;font-size:13px;line-height:1.4;color:var(--dim,#667)}'
+    + '.r46-mh b{color:var(--txt,inherit)}.r46-mh button,#portal .r46-mh button{border:0!important;border-radius:20px!important;padding:5px 12px!important;font-weight:700!important;font-size:12.5px!important;line-height:1.2!important;cursor:pointer;background:#d9a441!important;color:#0b1222!important;width:auto!important;min-height:0!important;box-shadow:none!important}';
+  document.head.appendChild(st);
+  function isMail(el){ return el && el.tagName === "INPUT" && (el.type === "email" || /e-?mail/i.test(el.name + " " + el.id + " " + (el.getAttribute("autocomplete") || "") + " " + (el.placeholder || ""))); }
+  function hintFor(el){ var n = el.nextElementSibling; return n && n.classList && n.classList.contains("r46-mh") ? n : null; }
+  document.addEventListener("focusout", function(e){
+    var el = e.target; if(!isMail(el)) return;
+    var h = hintFor(el), s = suggest(el.value);
+    if(!s){ if(h) h.remove(); return; }
+    if(!h){ h = document.createElement("div"); h.className = "r46-mh"; h.setAttribute("role", "status"); el.insertAdjacentElement("afterend", h); }
+    h.innerHTML = "Did you mean <b></b>?";
+    h.querySelector("b").textContent = s;
+    var btn = document.createElement("button"); btn.type = "button"; btn.textContent = "Use it"; h.appendChild(btn);
+    btn.onmousedown = function(ev){ ev.preventDefault(); };
+    btn.onclick = function(){ el.value = s; el.dispatchEvent(new Event("input", { bubbles:true })); el.dispatchEvent(new Event("change", { bubbles:true })); h.remove(); };
+  }, true);
+  document.addEventListener("input", function(e){ var el = e.target; if(isMail(el)){ var h = hintFor(el); if(h && !suggest(el.value)) h.remove(); } }, true);
 })();
 
 /* ============================================================
