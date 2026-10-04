@@ -10125,6 +10125,7 @@ var PORTAL_RETURN=null;
 function bgInert(on){
   Array.prototype.forEach.call(document.body.children,function(el){
     if(el.id==='portal') return;
+    if(el.id==='orb-ts') return;
     if(el.tagName==='DIALOG') return;
     if(on){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); }
     else  { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
@@ -10919,22 +10920,30 @@ function tsLoad(){
 async function orbCaptcha(){
   if(!ORB_TURNSTILE_KEY) return undefined;
   try{
-    return await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 25000); })]);
-  }catch(e){ console.warn("turnstile", e); return undefined; }
+    var tok = await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 25000); })]);
+    if(!tok){ window.orbTsErr = "timeout"; try{ toast("Security check timed out. Please try again.", true); }catch(_){} }
+    return tok;
+  }catch(e){
+    window.orbTsErr = window.orbTsErr || String((e && e.message) || e);
+    console.warn("turnstile", e);
+    try{ toast("Security check problem (" + window.orbTsErr + "). Please send this to Orbuni.", true); }catch(_){}
+    return undefined;
+  }
 }
 async function orbCaptchaRun(){
   await tsLoad();
   var box = document.getElementById("orb-ts");
   if(!box){
     box = document.createElement("div"); box.id = "orb-ts";
-    box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999";
+    box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483000";
     document.body.appendChild(box);
   }
+  box.removeAttribute("inert"); box.removeAttribute("aria-hidden");
   return await new Promise(function(ok, no){
     TS_WAIT = { ok: ok, no: no };
     var opts = { sitekey: ORB_TURNSTILE_KEY, appearance: "interaction-only", execution: "execute",
       callback: function(tok){ var w = TS_WAIT; TS_WAIT = null; if(w) w.ok(tok); },
-      "error-callback": function(){ var w = TS_WAIT; TS_WAIT = null; if(w) w.no(new Error("The security check failed. Please try again.")); },
+      "error-callback": function(code){ window.orbTsErr = String(code || "unknown"); var w = TS_WAIT; TS_WAIT = null; if(w) w.no(new Error("security check error " + window.orbTsErr)); return true; },
       "expired-callback": function(){ try{ turnstile.reset(TS_ID); }catch(e){} } };
     try{
       if(TS_ID === null) TS_ID = turnstile.render(box, opts); else turnstile.reset(TS_ID);
