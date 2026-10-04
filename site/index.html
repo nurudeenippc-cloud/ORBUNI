@@ -10903,7 +10903,7 @@ window.orbToast = toast;
    Once it is set, sign-up, sign-in and password resets carry a one-time token, and
    Supabase (Authentication → Attack Protection, with the Secret key) rejects bots.
    Most people never see anything; a suspicious visitor gets a small checkbox. */
-var ORB_TURNSTILE_KEY = "";
+var ORB_TURNSTILE_KEY = "0x4AAAAAAFNbmzAXnqscu6Df";
 var TS_ID = null, TS_WAIT = null;
 function tsLoad(){
   return new Promise(function(ok, no){
@@ -10914,8 +10914,15 @@ function tsLoad(){
     document.head.appendChild(s);
   });
 }
+// Never blocks by itself: if the check can't load or takes over 25 s, the request goes
+// ahead without a token and Supabase decides (it only insists once CAPTCHA is switched on).
 async function orbCaptcha(){
   if(!ORB_TURNSTILE_KEY) return undefined;
+  try{
+    return await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 25000); })]);
+  }catch(e){ console.warn("turnstile", e); return undefined; }
+}
+async function orbCaptchaRun(){
   await tsLoad();
   var box = document.getElementById("orb-ts");
   if(!box){
