@@ -5669,6 +5669,23 @@ dialog[open]{margin:auto}
 #ask-send{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--gold);
   background:var(--gold);color:#1a1204;font-size:16px;cursor:pointer;display:grid;place-items:center}
 #ask-send:disabled{opacity:.5;cursor:default}
+#ask-mic{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--p2);color:var(--dim);cursor:pointer;display:grid;place-items:center;position:relative}
+#ask-mic svg{width:19px;height:19px}
+#ask-mic:hover{color:var(--txt);border-color:var(--line2)}
+#ask-mic.on{color:#1a1204;background:var(--gold);border-color:var(--gold)}
+#ask-mic.on::after{content:"";position:absolute;inset:-5px;border-radius:15px;border:2px solid var(--gold);animation:orbMicPulse 1.2s ease-out infinite}
+#ask-mic.talk{color:var(--gold);border-color:var(--gold)}
+@keyframes orbMicPulse{from{opacity:.8;transform:scale(.92)}to{opacity:0;transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){#ask-mic.on::after{animation:none}}
+#askuni-panel .ask-siri{display:inline-flex;align-items:center;gap:5px;width:auto;height:auto;min-height:0;box-shadow:none;margin-top:9px;border:1px solid var(--line);background:transparent;color:var(--dim);font-family:inherit;font-size:11.5px;font-weight:600;line-height:1;padding:6px 10px;border-radius:100px;cursor:pointer}
+#askuni-panel .ask-siri:hover{color:var(--txt);border-color:var(--gold)}
+.vk-key{font-family:var(--mono);font-size:12px;word-break:break-all;background:var(--p2);border:1px dashed var(--gold);border-radius:10px;padding:10px 12px;margin:8px 0;color:var(--txt);user-select:all}
+.vk-steps{margin:8px 0 4px;padding-left:20px;line-height:1.6;font-size:13.5px}
+.vk-steps li{margin-bottom:6px}
+.vk-steps code{font-family:var(--mono);font-size:11.5px;background:var(--p2);padding:1px 5px;border-radius:5px;word-break:break-all}
+.vk-row{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.vk-row small{color:var(--dim);display:block}
+.ai-items{margin:6px 0 2px;padding-left:18px;font-size:13px;line-height:1.5}
 .ask-fab{position:fixed;right:22px;bottom:26px;z-index:120;display:inline-flex;align-items:center;gap:8px;
   padding:12px 18px 12px 14px;border-radius:100px;border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));
   background:var(--p1);color:var(--txt);font:700 13px/1 var(--disp);cursor:pointer;
@@ -8564,11 +8581,13 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div class="eye">Orbuni</div>
     <h3 id="ask-title">Assistant</h3>
     <div class="s" id="ask-sub">Tell it what to do — it always asks before anything is saved.</div>
+    <button type="button" class="ask-siri" onclick="orbSiriSetup()">🎙 Use with “Hey Siri”</button>
   </div>
   <div id="ask-thread"></div>
   <div id="ask-attach-chip"></div>
   <div id="ask-compose">
-    <label id="ask-attach-btn" title="Attach an image (receipt, screenshot, photo)" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 auto;border-radius:8px;cursor:pointer;color:var(--dim);font-size:16px">📎<input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none" onchange="askAttach(this)"></label>
+    <label id="ask-attach-btn" title="Attach a photo or PDF (receipt, passport, transcript, screenshot)" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 auto;border-radius:8px;cursor:pointer;color:var(--dim);font-size:16px">📎<input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,application/pdf,.pdf" style="display:none" onchange="askAttach(this)"></label>
+    <button id="ask-mic" type="button" onclick="orbMic()" aria-label="Speak to Orbuni" title="Speak — Orbuni answers out loud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
     <textarea id="ask-input" rows="1" placeholder="Ask Orbuni…" onkeydown="askKey(event)"></textarea>
     <button id="ask-send" onclick="orbuniSend()" aria-label="Send">➤</button>
   </div>
@@ -31897,7 +31916,7 @@ function orbAiMd(t){
 function orbAiSteps(steps){
   if(!steps || !steps.length) return "";
   var seen = {}, order = [];
-  steps.forEach(function(s){ if(/^drafted:/.test(s.label)) return; if(!seen[s.label]){ seen[s.label] = 0; order.push(s.label); } seen[s.label]++; });
+  steps.forEach(function(s){ if(/^(drafted|couldn't draft):/.test(s.label)) return; if(!seen[s.label]){ seen[s.label] = 0; order.push(s.label); } seen[s.label]++; });
   if(!order.length) return "";
   return '<div class="ai-steps">' + NAVI.sparkle + "<span>Checked " + order.map(function(l){ return esc(l) + (seen[l] > 1 ? " ×" + seen[l] : ""); }).join(" · ") + "</span></div>";
 }
@@ -32030,7 +32049,8 @@ window.orbuniSend = async function(){
   try{
     r = await sb.functions.invoke("orbuni-assistant", { body: {
       section: section, message: text || "(see attached file)", history: apiHistory,
-      attachment: pending ? { path: pending.path, mime: pending.mime } : null,
+      attachment: pending ? { path: pending.path, mime: pending.mime, name: pending.name } : null,
+      voice: !!ASK.voiceTurn,
     } });
   }catch(e){ r = { error: e }; }
   var ix = thread.findIndex(function(m){ return m.think; }); if(ix > -1) thread.splice(ix, 1);
@@ -32038,10 +32058,13 @@ window.orbuniSend = async function(){
 
   var data = r.data;
   var err = r.error ? (await edgeErr(r) || (data && data.error) || friendly(r.error)) : (data && data.error);
+  var spoke = !!ASK.voiceTurn; ASK.voiceTurn = false;
   if(err){
     thread.push({ role: "assistant", text: err });
+    if(spoke) orbSpeak(err);
   } else {
     if(data.reply) thread.push({ role: "assistant", text: data.reply, steps: data.steps || [] });
+    if(spoke && data.reply) orbSpeak(data.reply + ((data.proposals || []).length ? " The draft is on screen, waiting for your OK." : ""));
     var list = data.proposals && data.proposals.length ? data.proposals : (data.proposal ? [Object.assign({ ai_action_id: data.ai_action_id }, data.proposal)] : []);
     list.forEach(function(p, i){
       var draftId = p.ai_action_id || ("local-" + Date.now() + "-" + i);
@@ -32052,6 +32075,274 @@ window.orbuniSend = async function(){
   if(btn) btn.disabled = false;
   askRenderThread();
 };
+
+/* ============================================================
+   4 Oct 2026 · The assistant can do the application work, and talk.
+   ------------------------------------------------------------
+   · Three more kinds of draft, each with its own card and Approve:
+       – Apply: adds up to 3 programme choices to a student
+         (the database still refuses a 4th, same as for the student).
+       – File a document: the photo or PDF attached in the chat is copied
+         into the student's documents as "uploaded, not checked yet".
+       – Send to AskUni: Approve only opens the usual AskUni check card;
+         a person still presses Send there. Nothing goes to AskUni from
+         the AI on its own.
+   · The clip now takes PDFs as well as photos (Orbuni can read both).
+   · Voice: the mic button listens, sends what you said, and Orbuni reads
+     its answer out loud. Tap the mic while it talks to stop it.
+   · "Hey Siri": a personal voice key for an iPhone Shortcut (questions
+     only — no drafts). The key is shown once and can be switched off.
+   · myorbuni.com/#ask (or the "Ask Orbuni" shortcut of the installed app)
+     opens the assistant as soon as the portal is ready.
+   ============================================================ */
+window.askAttach = async function(inp){
+  var f = inp.files && inp.files[0]; if(!f) return;
+  inp.value = "";
+  var isPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+  if(!/^image\//.test(f.type) && !isPdf){ toast("Attach a photo or a PDF.", true); return; }
+  if(f.size > 10 * 1024 * 1024){ toast("That file is over 10 MB — try a smaller one.", true); return; }
+  toast("Uploading…");
+  var ext = (f.name.split(".").pop() || (isPdf ? "pdf" : "jpg")).toLowerCase().replace(/[^a-z0-9]/g, "") || (isPdf ? "pdf" : "jpg");
+  var path = "orbuni/" + (ASK.section || "misc") + "/" + Date.now() + "-" + Math.floor(performance.now()) + "." + ext;
+  var mime = isPdf ? "application/pdf" : f.type;
+  var up = await sb.storage.from("chat").upload(path, f, { contentType: mime });
+  if(up.error){ toast(friendly(up.error), true); return; }
+  ASK.pendingAttachment = { path: path, mime: mime, name: f.name.slice(0, 120) };
+  askRenderAttachChip();
+  toast("Attached — say what to do with it, e.g. “file this as Abubakar's passport”.");
+};
+
+Object.assign(ORB_AI_KIND, { add_application:"Apply", add_document:"File a document", askuni_send:"Send to AskUni" });
+var ORB_AI_NEW = ["add_application", "add_document", "askuni_send"];
+var ORB_AI3_card = askProposalHtml;
+askProposalHtml = function(m){
+  var p = m.proposal || {};
+  if(ORB_AI_NEW.indexOf(p.action) < 0) return ORB_AI3_card(m);
+  var done = m.status && m.status !== "proposed";
+  var rows = [], extra = "", go = "Approve", doneWord = "Approved";
+  if(p.action === "add_application"){
+    rows = [["Student", p.student_name], ["Choices now", String(p.held || 0) + " of 3"]];
+    extra = '<ol class="ai-items">' + (p.items || []).map(function(it){ return "<li>" + esc(it.label) + "</li>"; }).join("") + "</ol>"
+      + ((p.skipped || []).length ? '<div class="row"><span class="f">Skipped</span><span>' + esc(p.skipped.join(", ")) + "</span></div>" : "");
+    go = (p.items || []).length > 1 ? "Add these choices" : "Add this choice"; doneWord = "Added";
+  } else if(p.action === "add_document"){
+    rows = [["Student", p.student_name], ["Document", (typeof DOC_LABEL !== "undefined" && DOC_LABEL[p.kind]) || String(p.kind || "").replace(/_/g, " ")], ["File", p.original_name], ["Note", p.note || ""]];
+    extra = '<div class="row"><span class="f"></span><span><a href="#" onclick="orbAiPeek(\'' + jsq(p.chat_path) + '\');return false">Open the file to check it</a></span></div>';
+    go = "File it"; doneWord = "Filed";
+  } else {
+    rows = [["Student", p.student_name], ["Application", p.programme], ["AskUni", p.already_sent ? "Sent before — this sends again" : "Not sent yet"]];
+    extra = '<div class="row"><span class="f"></span><span>Approve opens the AskUni check. You press Send there.</span></div>';
+    go = "Open Send to AskUni"; doneWord = "Opened";
+  }
+  return '<div class="ask-card' + (done ? " done" : "") + '" data-draft="' + esc(m.draftId) + '">'
+    + '<div class="k">' + (done ? (m.status === "approved" ? doneWord : "Rejected") + " · " : "Draft — needs your OK · ") + esc(ORB_AI_KIND[p.action] || "") + "</div>"
+    + rows.filter(function(r){ return r[1]; }).map(function(r){ return '<div class="row"><span class="f">' + esc(r[0]) + '</span><span>' + esc(String(r[1])) + "</span></div>"; }).join("")
+    + extra
+    + (done ? "" : '<div class="acts"><button class="btn btn-p btn-s" onclick="askApprove(\'' + esc(m.draftId) + '\', event)">' + esc(go) + "</button>"
+        + '<button class="btn btn-o btn-s" onclick="askReject(\'' + esc(m.draftId) + '\')">Reject</button></div>')
+    + "</div>";
+};
+window.orbAiPeek = async function(path){
+  var r = await sb.storage.from("chat").createSignedUrl(path, 300);
+  if(r.error || !r.data){ toast(friendly(r.error || "Couldn't open the file."), true); return; }
+  window.open(r.data.signedUrl, "_blank", "noopener");
+};
+
+var ORB_AI3_approve = window.askApprove;
+window.askApprove = async function(draftId, ev){
+  var d = ASK.drafts[draftId]; if(!d) return;
+  var p = d.proposal || {};
+  if(ORB_AI_NEW.indexOf(p.action) < 0) return ORB_AI3_approve(draftId, ev);
+  var btn = ev && ev.target ? ev.target : null;
+  var table = null, rid = null, err = null, note = "";
+  if(btn) busy(btn, true, p.action === "askuni_send" ? "Opening…" : "Saving…");
+  try{
+    if(p.action === "add_application"){
+      var made = 0;
+      for(var i = 0; i < (p.items || []).length; i++){
+        var it = p.items[i];
+        var r = await sb.from("applications").insert({ profile_id: p.profile_id, programme_id: it.programme_id, choice_rank: it.choice_rank }).select("id").single();
+        if(r.error){ err = friendly(r.error); break; }
+        made++; table = "applications"; rid = r.data.id;
+      }
+      if(made && err){ note = made + " added, then: " + err; err = null; }
+      else note = made === 1 ? "Choice added — " + p.student_name + " can see it now." : made + " choices added — " + p.student_name + " can see them now.";
+    } else if(p.action === "add_document"){
+      var dl = await sb.storage.from("chat").download(p.chat_path);
+      if(dl.error || !dl.data) throw (dl.error || new Error("The attached file is gone — attach it again."));
+      var ext = (String(p.original_name || "").split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "") || (p.mime === "application/pdf" ? "pdf" : "jpg");
+      var path = p.profile_id + "/" + p.kind + "-" + Date.now() + "." + ext;
+      var up = await sb.storage.from("documents").upload(path, dl.data, { contentType: p.mime || dl.data.type || undefined });
+      if(up.error) throw up.error;
+      var ins = await sb.from("documents").insert({ profile_id: p.profile_id, kind: p.kind, storage_path: path, original_name: p.original_name || null,
+        size_bytes: dl.data.size || null, status: "uploaded", uploaded_by: ME.id, note: p.note || null }).select("id").single();
+      if(ins.error) throw ins.error;
+      table = "documents"; rid = ins.data.id;
+      note = ((typeof DOC_LABEL !== "undefined" && DOC_LABEL[p.kind]) || p.kind) + " filed for " + p.student_name + " — marked “not checked yet”.";
+    } else {
+      table = "applications"; rid = p.application_id;
+    }
+  }catch(e){ err = friendly(e); }
+  if(btn) busy(btn, false);
+  if(err){ toast(err, true); return; }
+  if(d.ai_action_id){
+    await sb.from("ai_actions").update({ status: "approved", reviewed_by: ME.id, reviewed_at: new Date().toISOString(), result_table: table, result_id: rid }).eq("id", d.ai_action_id);
+  }
+  (ASK.history[ASK.section] || []).forEach(function(m){ if(m.kind === "proposal" && m.draftId === draftId) m.status = "approved"; });
+  askRenderThread();
+  if(p.action === "askuni_send"){
+    askClose();
+    if(typeof window.askuniSend === "function") window.askuniSend(p.application_id);
+    return;
+  }
+  toast(note);
+};
+
+/* ---------- voice: listen, send, answer out loud ---------- */
+var ORB_SR = null, ORB_SR_ON = false;
+function orbMicPaint(talking){
+  var b = $("ask-mic"); if(!b) return;
+  var speaking = false; try{ speaking = !!(window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)); }catch(e){}
+  b.classList.toggle("on", ORB_SR_ON);
+  b.classList.toggle("talk", !ORB_SR_ON && (!!talking || speaking));
+  b.setAttribute("aria-label", ORB_SR_ON ? "Stop listening" : speaking ? "Stop talking" : "Speak to Orbuni");
+}
+function orbVoice(){
+  var vs = []; try{ vs = speechSynthesis.getVoices() || []; }catch(e){}
+  var want = ["Samantha", "Karen", "Daniel", "Google UK English Female", "Microsoft Aria", "Microsoft Jenny", "Microsoft Sonia", "Google US English"];
+  for(var i = 0; i < want.length; i++){ var v = vs.find(function(x){ return x.name.indexOf(want[i]) > -1; }); if(v) return v; }
+  return vs.find(function(x){ return /^en(-|_)/i.test(x.lang); }) || null;
+}
+function orbSpeak(t){
+  try{
+    if(!window.speechSynthesis) return;
+    var clean = String(t || "").replace(/\*\*/g, "").replace(/^\s*(?:[-•*]|\d+\.)\s+/gm, "").replace(/https?:\/\/\S+/g, "").replace(/[#_`>|]/g, "").trim();
+    if(!clean) return;
+    speechSynthesis.cancel();
+    // one sentence per utterance: Chrome on Windows goes quiet on long ones
+    var parts = clean.match(/[^.!?\n]+[.!?]*/g) || [clean];
+    var v = orbVoice();
+    parts.forEach(function(s, i){
+      s = s.trim(); if(!s) return;
+      var u = new SpeechSynthesisUtterance(s);
+      if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "en-GB";
+      u.rate = 1.03;
+      if(i === parts.length - 1) u.onend = function(){ orbMicPaint(); };
+      speechSynthesis.speak(u);
+    });
+    orbMicPaint(true);
+    setTimeout(orbMicPaint, 1500);
+  }catch(e){}
+}
+try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = function(){}; }catch(e){}
+window.orbMic = function(){
+  try{ if(window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)){ speechSynthesis.cancel(); orbMicPaint(); return; } }catch(e){}
+  if(ORB_SR_ON){ try{ ORB_SR.stop(); }catch(e){} return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var input = $("ask-input"); if(!input) return;
+  if(!SR){ toast("This browser can't listen. Tap the text box and use your keyboard's microphone — Orbuni will still answer.", true); input.focus(); return; }
+  var thread = ASK.history[ASK.section] || [];
+  if(thread.some(function(m){ return m.think; })){ toast("Orbuni is still answering — one moment."); return; }
+  // iPhone only lets a page talk if speech starts inside a tap: "unlock" it now
+  try{ var u0 = new SpeechSynthesisUtterance(" "); u0.volume = 0; speechSynthesis.speak(u0); }catch(e){}
+  var rec = new SR(); ORB_SR = rec;
+  rec.lang = navigator.language || "en-US"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  var base = input.value.trim(), heard = "";
+  rec.onresult = function(ev){
+    var fin = "", tmp = "";
+    for(var i = 0; i < ev.results.length; i++){ var t = ev.results[i][0].transcript; if(ev.results[i].isFinal) fin += t; else tmp += t; }
+    heard = (fin + tmp).trim();
+    input.value = (base ? base + " " : "") + heard;
+  };
+  rec.onerror = function(ev){
+    if(ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Allow the microphone for myorbuni.com (in the browser's settings), then tap the mic again.", true);
+    else if(ev.error === "no-speech") toast("I didn't hear anything — tap the mic and speak.");
+    else if(ev.error !== "aborted") toast("Couldn't hear that (" + ev.error + ") — try again.", true);
+  };
+  rec.onend = function(){
+    ORB_SR_ON = false; orbMicPaint();
+    if(heard && input.value.trim()){ ASK.voiceTurn = true; orbuniSend(); }
+  };
+  try{ rec.start(); ORB_SR_ON = true; orbMicPaint(); }
+  catch(e){ ORB_SR_ON = false; orbMicPaint(); toast("The microphone didn't start — try again.", true); }
+};
+(function(){
+  var close0 = window.askClose;
+  window.askClose = function(){
+    try{ if(ORB_SR_ON && ORB_SR) ORB_SR.abort(); }catch(e){}
+    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+    ORB_SR_ON = false; orbMicPaint();
+    return close0.apply(this, arguments);
+  };
+})();
+
+/* ---------- "Hey Siri, Orbuni": a personal key for an iPhone Shortcut ---------- */
+var ORB_VK = null;
+window.orbSiriSetup = async function(){
+  try{ askClose(); }catch(e){}
+  var r = await sb.from("ai_voice_keys").select("id,label,created_at,last_used_at").is("revoked_at", null).order("created_at", { ascending: false });
+  var keys = r.data || [];
+  orbCard({ ac:"gold", icon:"🎙", eyebrow:"Voice", title:"Ask Orbuni with “Hey Siri”",
+    sub:"Hands-free updates on your iPhone. Orbuni answers out loud. On a laptop, just press the mic in the assistant.",
+    body:'<p style="margin:0 0 8px;font-size:13.5px;line-height:1.55">Siri can only <b>ask</b> — it looks things up and tells you. Anything that changes a record still happens here, with Approve.</p>'
+      + (keys.length ? '<div style="margin:6px 0 10px">' + keys.map(function(k){
+          return '<div class="vk-row"><div><b>' + esc(k.label) + '</b><small>Made ' + esc(niceDate(k.created_at)) + (k.last_used_at ? " · last used " + esc(niceDate(k.last_used_at)) : " · not used yet") + "</small></div>"
+            + '<button class="btn btn-o btn-s" onclick="orbSiriOff(\'' + jsq(k.id) + '\')">Switch off</button></div>';
+        }).join("") + "</div>" : "")
+      + '<div id="vk-new"></div>',
+    actions:[ { label: keys.length ? "Make a new key" : "Make my Siri key", kind:"p", go:"orbSiriKey()" }, { label:"Close", kind:"o", go:"orbSiriClose()" } ] });
+};
+window.orbSiriClose = function(){ ORB_VK = null; orbCardClose(); };
+window.orbSiriOff = async function(id){
+  var r = await sb.from("ai_voice_keys").update({ revoked_at: new Date().toISOString() }).eq("id", id);
+  toast(r.error ? friendly(r.error) : "Switched off. That Shortcut stops working now.", !!r.error);
+  orbSiriSetup();
+};
+window.orbSiriKey = async function(){
+  var label = /iPhone/.test(navigator.userAgent) ? "iPhone" : /iPad/.test(navigator.userAgent) ? "iPad" : "iPhone";
+  var r = await sb.rpc("create_voice_key", { p_label: label });
+  if(r.error || !r.data){ toast(friendly(r.error || "Couldn't make a key."), true); return; }
+  ORB_VK = String(r.data);
+  var url = SB_URL + "/functions/v1/orbuni-assistant";
+  var box = $("vk-new"); if(!box) return;
+  box.innerHTML = '<p style="margin:10px 0 2px;font-size:13.5px"><b>Your key</b> — shown only this once. Keep it private, like a password.</p>'
+    + '<div class="vk-key" id="vk-key">' + esc(ORB_VK) + "</div>"
+    + '<button class="btn btn-o btn-s" onclick="orbSiriCopy(\'key\')">Copy key</button> <button class="btn btn-o btn-s" onclick="orbSiriCopy(\'url\')">Copy web address</button>'
+    + '<ol class="vk-steps">'
+    + "<li>On the iPhone open the <b>Shortcuts</b> app → <b>+</b>. Name it <b>Orbuni</b> (that's what you'll say to Siri).</li>"
+    + "<li>Add <b>Dictate Text</b>. Set <i>Stop Listening</i> to <b>After Pause</b>.</li>"
+    + "<li>Add <b>Get Contents of URL</b>. Paste the web address: <code>" + esc(url) + "</code></li>"
+    + "<li>Tap the arrow on it: <b>Method</b> = POST. <b>Headers</b> → Add: key <code>x-orb-voice-key</code>, value = your key. <b>Request Body</b> = JSON → Add field: Text, key <code>message</code>, value = <b>Dictated Text</b>.</li>"
+    + "<li>Add <b>Get Dictionary Value</b>: Get <b>Value</b> for key <code>reply</code> in <b>Contents of URL</b>.</li>"
+    + "<li>Add <b>Speak Text</b> → <b>Dictionary Value</b>. Done.</li>"
+    + "<li>Say <b>“Hey Siri, Orbuni”</b>, then ask: “What's the update today?”, “Which students are missing documents?”, “How much came in this week?”</li>"
+    + "</ol>"
+    + '<p style="margin:4px 0 0;font-size:12.5px;color:var(--dim)">Up to 60 questions an hour. Lost the phone? Come back here and press Switch off.</p>';
+  toast("Key made — copy it into the Shortcut now.");
+};
+window.orbSiriCopy = function(which){
+  var t = which === "key" ? ORB_VK : SB_URL + "/functions/v1/orbuni-assistant";
+  if(!t) return;
+  try{ navigator.clipboard.writeText(t).then(function(){ toast("Copied."); }, function(){ toast("Press and hold to copy it.", true); }); }
+  catch(e){ toast("Press and hold to copy it.", true); }
+};
+
+/* ---------- myorbuni.com/#ask opens the assistant once the staff portal is up ---------- */
+(function(){
+  var want = /^#ask\b/.test(location.hash) || /[?&]ask=1\b/.test(location.search);
+  if(!want) return;
+  var tries = 0;
+  var t = setInterval(function(){
+    tries++;
+    if(tries > 120){ clearInterval(t); return; }
+    if(typeof PROF === "undefined" || !PROF || (PROF.role !== "staff" && PROF.role !== "admin")) return;
+    if(!$("askuni-panel") || typeof window.askOpen !== "function") return;
+    clearInterval(t);
+    try{ history.replaceState(null, "", location.pathname); }catch(e){}
+    window.askOpen("general");
+    toast("Press the mic and ask — Orbuni answers out loud.");
+  }, 500);
+})();
 
 /* ============================================================
    Marketing → Follow-up emails. Who is being followed up after an
