@@ -809,7 +809,7 @@ footer::before{
     url('photos/home/footer-student.jpg') center 20%/cover no-repeat;
 }
 
-.fg{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.05fr;gap:26px;align-items:start}
+.fg{display:grid;grid-template-columns:1.4fr 1fr 1fr .9fr .9fr;gap:26px;align-items:start}
 .fg .soc{display:flex;flex-direction:column;gap:2px}
 .fg .soc a{display:flex;align-items:center;gap:9px;padding:5px 0}
 .fg .soc svg{flex:none;opacity:.85}
@@ -822,8 +822,8 @@ footer::before{
 .fg .brandline b{font-family:var(--disp);font-size:19px;letter-spacing:-.03em;color:var(--txt)}
 .fbot{border-top:1px solid var(--line);margin-top:26px;padding-top:16px;display:flex;
   justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--faint)}
-@media(max-width:900px){.fg{grid-template-columns:1fr 1fr;gap:24px}}
-@media(max-width:600px){.fg{grid-template-columns:1fr;gap:22px}}
+@media(max-width:900px){.fg{grid-template-columns:1fr 1fr 1fr;gap:24px}.fg>div:first-child{grid-column:1/-1}}
+@media(max-width:600px){.fg{grid-template-columns:1fr 1fr;gap:22px 18px}.fg>div:first-child,.fg>div:last-child{grid-column:1/-1}}
 
 /* ---- footer: cream card over a campus photo ---- */
 footer .wrap{
@@ -7313,6 +7313,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 </style>
 </head>
 <body>
+<script id="orb-route-boot">/* open the page the address asks for straight away, so the home page never flashes first */try{var h=(location.hash||"").slice(1),b=/^uni-\d+$/.test(h)?"unis":/^job-\d+$/.test(h)?"careers":h;if(["start", "unis", "progs", "schol", "fairs", "arts", "team", "careers", "about", "terms", "privacy", "agreement"].indexOf(b)>-1){document.documentElement.setAttribute("data-boot-page",b);if(b==="start")document.body.classList.add("on-start");}}catch(e){}</script>
+<style id="orb-route-boot-css">@media(max-width:600px){body>footer .fg{display:grid!important;grid-template-columns:1fr 1fr!important;gap:22px 18px!important}body>footer .fg>div:first-child{grid-column:1/-1}}html[data-boot-page] #pg-home.page{display:none!important}html[data-boot-page="start"] #pg-start.page{display:block!important;animation:none}html[data-boot-page="unis"] #pg-unis.page{display:block!important;animation:none}html[data-boot-page="progs"] #pg-progs.page{display:block!important;animation:none}html[data-boot-page="schol"] #pg-schol.page{display:block!important;animation:none}html[data-boot-page="fairs"] #pg-fairs.page{display:block!important;animation:none}html[data-boot-page="arts"] #pg-arts.page{display:block!important;animation:none}html[data-boot-page="team"] #pg-team.page{display:block!important;animation:none}html[data-boot-page="careers"] #pg-careers.page{display:block!important;animation:none}html[data-boot-page="about"] #pg-about.page{display:block!important;animation:none}html[data-boot-page="terms"] #pg-terms.page{display:block!important;animation:none}html[data-boot-page="privacy"] #pg-privacy.page{display:block!important;animation:none}html[data-boot-page="agreement"] #pg-agreement.page{display:block!important;animation:none}</style>
 
 <div class="tick">🎓 <b>2026/27 intake open</b> — free counsellor review on every programme you shortlist</div>
 
@@ -8810,33 +8812,29 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         tuition paid direct to the university.</p>
     </div>
     <div>
-      <h4>The site</h4>
-      <a onclick="go('progs')">Find a programme</a>
-      <a onclick="go('schol')">100% scholarships</a>
-      <a onclick="go('unis')">Universities</a>
-      <a onclick="go('fairs')">Fairs</a>
-      <a href="/universities/">University fees &amp; programmes</a>
-      <a href="/scholarships/">Scholarship discounts</a>
+      <h4>Study</h4>
+      <a href="/study/" onclick="go('progs');return false">Find a programme</a>
+      <a href="/universities/" onclick="go('unis');return false">Universities &amp; fees</a>
+      <a href="/scholarships/" onclick="go('schol');return false">100% scholarships</a>
       <a href="/housing/">Student housing</a>
       <a href="/articles/">Study guides</a>
-      <a href="/study/">Study by subject</a>
-      <a onclick="go('team')">Our team</a>
-      <a onclick="go('careers')">Careers</a>
-      <a onclick="go('about')">About Orbuni</a>
-      <a href="/pricing/">Prices</a>
+      <a onclick="go('fairs')">Fairs</a>
+    </div>
+    <div>
+      <h4>Orbuni</h4>
       <a href="/how-it-works/">How it works</a>
+      <a href="/pricing/">Prices</a>
       <a href="/parents/">For parents</a>
       <a href="/faq/">Questions</a>
-      <a href="/about/">How to verify us</a>
+      <a href="/about/" onclick="go('about');return false">About &amp; verify us</a>
+      <a onclick="go('team')">Our team</a>
+      <a onclick="go('careers')">Careers</a>
     </div>
     <div>
       <h4>Accounts</h4>
       <a onclick="openPortal('student-in')">Student login</a>
       <a onclick="openPortal('partner-in')">Partner login</a>
       <a onclick="openPortal('partner-up')">Become a partner</a>
-      <a onclick="go('privacy')">Privacy</a>
-      <a onclick="go('terms')">Terms of service</a>
-      <a onclick="go('agreement')">Student Service Agreement</a>
     </div>
     <div>
       <h4>Follow</h4>
@@ -8861,7 +8859,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <div class="fbot">
     <span>© 2026 Orbuni Education · Tuition is paid direct to the university, never to us.</span>
     <span><a onclick="go('privacy')" style="display:inline;color:var(--dim)">Privacy policy</a> ·
-      <a onclick="go('terms')" style="display:inline;color:var(--dim)">Terms</a></span>
+      <a onclick="go('terms')" style="display:inline;color:var(--dim)">Terms</a> ·
+      <a onclick="go('agreement')" style="display:inline;color:var(--dim)">Service agreement</a></span>
   </div>
 </div></footer>
 
@@ -9232,6 +9231,7 @@ function campus(i,label,badge,city,country){
 
 /* router + hamburger */
 function go(p,silent){
+  document.documentElement.removeAttribute('data-boot-page');
   if(!silent) setHash(p);
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('on',x.id==='pg-'+p));
   document.querySelectorAll('.nl button[data-p]').forEach(b=>{
@@ -11366,8 +11366,138 @@ function dropDraft(){ try{ localStorage.removeItem(draftKey()); }catch(e){} }
 async function loadProfile(){
   var r = await sb.from("profiles").select("*").eq("id", ME.id).maybeSingle();
   PROF = r.data || null;
+  try{ if(PROF){ localStorage.setItem("orb-idle-role", PROF.role || ""); idleStamp(); } }catch(e){}
   return PROF;
 }
+
+/* ============================================================
+   SIGNED OUT WHEN NOBODY IS THERE
+   ------------------------------------------------------------
+   A portal left open on a shared laptop or a borrowed phone is the
+   easiest way into someone else's file. After a quiet spell the portal
+   asks "Still there?" and, with no answer, signs out. The time of the
+   last activity is kept on the device, so closing the tab and coming
+   back later (or pasting the portal address) also lands on sign-in.
+   The team portal holds the most, so it locks soonest.
+   ============================================================ */
+var IDLE = { warnAt: 0, timer: null, tick: null, box: null };
+function idleLimitMin(role){
+  role = role || (typeof PROF !== "undefined" && PROF && PROF.role) || (function(){ try{ return localStorage.getItem("orb-idle-role") || ""; }catch(e){ return ""; } })();
+  return role === "admin" || role === "staff" ? 20 : 30;
+}
+function idleStamp(){ try{ localStorage.setItem("orb-last-active", String(Date.now())); }catch(e){} }
+function idleLast(){ try{ return +localStorage.getItem("orb-last-active") || 0; }catch(e){ return 0; } }
+function idlePortalOpen(){ var p = document.getElementById("portal"); return !!(p && p.classList.contains("on") && typeof ME !== "undefined" && ME); }
+async function idleSignOut(why){
+  idleHideWarn();
+  try{ localStorage.removeItem("orb-last-active"); }catch(e){}
+  try{ await sb.auth.signOut(); }catch(e){}
+  ME = null; PROF = null;
+  try{ clearView(); }catch(e){}
+  try{ if(typeof closePortal === "function") closePortal(); }catch(e){}
+  try{ toast(why || "You were signed out to keep your account safe. Sign in again to continue.", true); }catch(e){}
+}
+function idleHideWarn(){ if(IDLE.box){ IDLE.box.remove(); IDLE.box = null; } clearInterval(IDLE.tick); }
+function idleShowWarn(){
+  if(IDLE.box) return;
+  var b = document.createElement("div"); b.id = "idle-warn"; b.setAttribute("role", "alertdialog"); b.setAttribute("aria-modal", "true");
+  b.innerHTML = '<div class="iw-card"><div class="iw-ring"><span id="iw-sec">60</span></div>'
+    + '<h3>Still there?</h3><p>For your safety we sign you out when the portal has been quiet for a while.</p>'
+    + '<div class="iw-row"><button class="btn btn-p" id="iw-stay">I\'m here, keep me signed in</button>'
+    + '<button class="btn" id="iw-out">Sign out now</button></div></div>';
+  document.body.appendChild(b); IDLE.box = b;
+  b.querySelector("#iw-stay").onclick = function(){ idleHideWarn(); idleStamp(); };
+  b.querySelector("#iw-out").onclick = function(){ idleSignOut("You are signed out."); };
+  IDLE.tick = setInterval(function(){
+    var left = Math.max(0, Math.round((idleLast() + idleLimitMin() * 60000 - Date.now()) / 1000));
+    var s = document.getElementById("iw-sec"); if(s) s.textContent = left;
+    if(left <= 0) idleSignOut("You were signed out after " + idleLimitMin() + " minutes without activity. Sign in again to continue.");
+    if(left > 60) idleHideWarn();   // another tab was used
+  }, 1000);
+}
+(function idleWatch(){
+  var st = document.createElement("style");
+  st.textContent = '#idle-warn{position:fixed;inset:0;z-index:2147480000;display:grid;place-items:center;padding:16px;background:rgba(5,9,20,.62);backdrop-filter:blur(6px)}'
+    + '#idle-warn .iw-card{max-width:400px;width:100%;background:var(--card,#fff);color:var(--ink,#0b1222);border-radius:22px;padding:26px 22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4)}'
+    + '#idle-warn .iw-ring{width:74px;height:74px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;border:4px solid #d9a441;font:700 24px/1 Inter,system-ui,sans-serif;color:#d9a441}'
+    + '#idle-warn h3{margin:0 0 6px;font:600 22px/1.2 Georgia,serif}#idle-warn p{margin:0 0 18px;font-size:14.5px;line-height:1.5;opacity:.8}'
+    + '#idle-warn .iw-row{display:flex;flex-direction:column;gap:8px}#idle-warn .iw-row .btn{width:100%;justify-content:center}';
+  document.head.appendChild(st);
+  var last = 0;
+  function act(){ var n = Date.now(); if(n - last < 5000) return; last = n; if(!IDLE.box) idleStamp(); }
+  ["pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(function(ev){ window.addEventListener(ev, act, { passive:true, capture:true }); });
+  setInterval(function(){
+    if(!idlePortalOpen()){ idleHideWarn(); return; }
+    if(!idleLast()) idleStamp();
+    var gone = Date.now() - idleLast(), lim = idleLimitMin() * 60000;
+    if(gone >= lim) idleSignOut("You were signed out after " + idleLimitMin() + " minutes without activity. Sign in again to continue.");
+    else if(gone >= lim - 60000) idleShowWarn();
+  }, 5000);
+  // signed out in another tab: close this one too, instead of leaving a portal that only shows errors
+  window.addEventListener("storage", function(e){
+    if(e.key && /^sb-.*-auth-token$/.test(e.key) && !e.newValue && idlePortalOpen()) idleSignOut("You signed out in another tab.");
+  });
+})();
+
+/* Coming back to a session that has been idle too long (tab closed, laptop
+   asleep, or someone pasting a portal address on this device): sign out first. */
+(function idleOnReturn(){
+  var native = window.restore;
+  if(typeof native !== "function") return;
+  window.restore = async function(){
+    try{
+      var r = await sb.auth.getSession();
+      var has = r && r.data && r.data.session;
+      var t = idleLast();
+      if(has && t && Date.now() - t > idleLimitMin() * 60000){
+        try{ localStorage.removeItem("orb-last-active"); }catch(e){}
+        try{ await sb.auth.signOut(); }catch(e){}
+        try{ clearView(); }catch(e){}
+        if(/^#portal=/.test(location.hash || "")) setTimeout(function(){ try{ toast("For your safety you were signed out after a period without activity. Please sign in again.", true); }catch(e){} }, 800);
+        return;
+      }
+      if(has) idleStamp();
+    }catch(e){}
+    return native.apply(this, arguments);
+  };
+})();
+
+/* A sign-in that ended quietly (expired, revoked, signed out elsewhere) used
+   to leave the portal on screen, firing requests as a stranger — each one a
+   red "permission denied". Now the first such answer sends you to sign in. */
+(function sessionEndedWatch(){
+  var nf = window.fetch; if(typeof nf !== "function") return;
+  var busyCheck = false;
+  window.fetch = function(input, init){
+    var p = nf.apply(this, arguments);
+    try{
+      var url = typeof input === "string" ? input : (input && input.url) || "";
+      if(typeof SB_URL === "string" && url.indexOf(SB_URL) === 0 && !/\/auth\/v1\//.test(url)){
+        p.then(function(res){
+          if(res && res.status === 401 && idlePortalOpen() && !busyCheck){
+            busyCheck = true;
+            sb.auth.getSession().then(function(s){
+              busyCheck = false;
+              if(!(s && s.data && s.data.session)) idleSignOut("Your sign-in ended. Please sign in again to continue.");
+            }).catch(function(){ busyCheck = false; });
+          }
+        }).catch(function(){});
+      }
+    }catch(e){}
+    return p;
+  };
+})();
+
+/* Sign-in links put a one-time key in the address. Supabase reads it and
+   removes it; this makes sure it never lingers to be copied and shared. */
+setTimeout(function(){
+  try{
+    if(/(access_token|refresh_token|provider_token)=/.test(location.hash || "")){
+      var keep = /^#portal=/.test(location.hash) ? location.hash : "";
+      sb.auth.getSession().then(function(r){ if(r && r.data && r.data.session) history.replaceState(null, "", location.pathname + keep); });
+    }
+  }catch(e){}
+}, 4000);
 
 /* ============================================================
    AUTH — replaces the demo enter()
@@ -33573,6 +33703,67 @@ var OL_CSS = ''
  + '.vp-st{font-size:12px;font-weight:600}.vp-st.ok{color:#2fae6b}.vp-st.end{color:var(--faint)}.vp-st.off{color:#e2574c}'
  + '#askuni-panel[data-who="partner"] #ask-attach-btn,#askuni-panel[data-who="partner"] #ov-sheet .ov-row.link{display:none!important}#ask-title .vp-tick{width:18px;height:18px}'
  + '@media(max-width:560px){.vp-tabs{grid-template-columns:repeat(2,1fr);padding:14px 16px 0}.vp-hero,.vp-tier{padding-left:16px;padding-right:16px}.vp-now,.vp-on{padding-left:16px;padding-right:16px}.vp-hero h3{font-size:23px}}';
+
+/* ============================================================
+   r46 · EVERY SECTION OPENS AT THE TOP, AND OPENS ONCE
+   ------------------------------------------------------------
+   Each portal keeps its content in its own scrolling box (.body), and
+   switching section only reset the page, not that box — so a section
+   opened wherever the last one had been scrolled to. Now every switch
+   starts at the top, and keeps it there while the section finishes
+   drawing (unless you have started scrolling yourself).
+   Finance is drawn in five layers (ledger, Whop, commissions, the
+   dashboard, then a tidy-up), which showed as old design → new design →
+   jump. It is now built out of sight and shown once, complete.
+   ============================================================ */
+(function r46Nav(){
+  var touched = 0;
+  ["wheel", "touchmove", "keydown"].forEach(function(ev){ window.addEventListener(ev, function(){ touched = Date.now(); }, { passive:true, capture:true }); });
+  function toTop(){
+    ["a-body", "s-body", "p-body", "a-sheet-body", "s-sheet-body", "p-sheet-body"].forEach(function(id){ var e = document.getElementById(id); if(e) e.scrollTop = 0; });
+    try{ window.scrollTo({ top:0, behavior:"instant" }); }catch(e){ window.scrollTo(0, 0); }
+  }
+  function settle(){
+    var start = Date.now(); toTop();
+    [60, 250, 600, 1200].forEach(function(ms){ setTimeout(function(){ if(touched < start && !document.querySelector(".f7-flash, [data-keep-scroll]")) toTop(); }, ms); });
+  }
+  function wrap(name){
+    var f = window[name]; if(typeof f !== "function" || f.__r46) return;
+    var w = function(v){
+      var r = f.apply(this, arguments);
+      // a section opened from a link inside another (a student's file, a sheet) keeps its own scrolling
+      settle();
+      return r;
+    };
+    w.__r46 = true; Object.keys(f).forEach(function(k){ try{ w[k] = f[k]; }catch(e){} });
+    window[name] = w;
+  }
+  function install(){ ["aGo", "sGo", "pGo"].forEach(wrap); }
+  install(); window.addEventListener("load", function(){ setTimeout(install, 0); });
+
+  // finance: build hidden, show once
+  var st = document.createElement("style");
+  st.textContent = '#a-body.r46-build #a-live{visibility:hidden}'
+    + '#a-body.r46-build::before{content:"Loading finance…";display:block;padding:30px 4px;color:var(--faint);font-size:14px}';
+  document.head.appendChild(st);
+  function wrapFin(){
+    if(typeof aFinance !== "function" || aFinance.__r46) return;
+    var f = aFinance;
+    aFinance = async function(){
+      var body = document.getElementById("a-body"), done = false;
+      if(body) body.classList.add("r46-build");
+      var safety = setTimeout(function(){ if(!done && body) body.classList.remove("r46-build"); }, 8000);
+      try{ return await f.apply(this, arguments); }
+      finally{
+        done = true; clearTimeout(safety);
+        try{ if(typeof r13FinTidy === "function") r13FinTidy(); }catch(e){}
+        if(body){ body.classList.remove("r46-build"); body.scrollTop = 0; }
+      }
+    };
+    aFinance.__r46 = true;
+  }
+  wrapFin(); window.addEventListener("load", function(){ setTimeout(wrapFin, 0); });
+})();
 
 /* ============================================================
    Marketing → Follow-up emails. Who is being followed up after an
