@@ -139,6 +139,20 @@ async function answer(contactId: string, messageId: string | null) {
   const { data: c } = await db.from("wa_contacts").select("*").eq("id", contactId).single();
   if (!c || !c.ai_on || c.needs_human || c.opted_out) return;   // a person took over meanwhile
 
+  // Cost guard: someone flooding the number must not run up AI and WhatsApp bills.
+  // After 40 AI replies to one chat in 24 hours, or 400 across all chats in an hour,
+  // the AI pauses and a person takes over.
+  const dayAgo = new Date(Date.now() - 24 * 3600e3).toISOString(), hourAgo = new Date(Date.now() - 3600e3).toISOString();
+  const [{ count: mine }, { count: all }] = await Promise.all([
+    db.from("wa_messages").select("id", { count: "exact", head: true }).eq("contact_id", contactId).eq("author", "ai").gte("created_at", dayAgo),
+    db.from("wa_messages").select("id", { count: "exact", head: true }).eq("author", "ai").gte("created_at", hourAgo),
+  ]);
+  if ((mine ?? 0) >= 40 || (all ?? 0) >= 400) {
+    await handOver(db, c, (mine ?? 0) >= 40 ? "Unusually many messages from this chat in 24 hours; the AI paused to protect costs."
+      : "Unusually many WhatsApp chats this hour; the AI paused to protect costs.", "");
+    return;
+  }
+
   // Only what was said since a person last pressed "Done" — an issue the team already
   // handled must not make the AI hand the chat over again.
   let mq = db.from("wa_messages").select("direction,author,body,created_at").eq("contact_id", contactId);

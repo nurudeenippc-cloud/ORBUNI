@@ -11275,9 +11275,46 @@ function isChatView(v){ return v === "chat" || v === "help"; }
 window.isChatView = isChatView;
 
 /* ---------- your role decides which portal opens ---------- */
+/* ---------- automatic sign-out after inactivity ----------
+   A signed-in session is remembered on the device, so reopening myorbuni.com
+   goes straight back into the portal. On a shared or lost device that is a risk,
+   so team accounts are signed out after 30 minutes without activity, and student
+   and partner accounts after 7 days. The link itself never grants access: every
+   record is protected on the server by the person's own sign-in. */
+var ORB_IDLE_KEY = "orb-last-active";
+function orbIdleLimit(){
+  var r = PROF && PROF.role;
+  return (r === "admin" || r === "staff") ? 30 * 60e3 : 7 * 864e5;
+}
+function orbMarkActive(){ try{ localStorage.setItem(ORB_IDLE_KEY, String(Date.now())); }catch(e){} }
+async function orbIdleExpired(){
+  if(!ME || !PROF) return false;
+  var last = 0; try{ last = +localStorage.getItem(ORB_IDLE_KEY) || 0; }catch(e){}
+  if(!last){ orbMarkActive(); return false; }          // first visit after this update: start the clock
+  if(Date.now() - last <= orbIdleLimit()) return false;
+  try{ localStorage.removeItem(ORB_IDLE_KEY); }catch(e){}
+  await window.logout();
+  toast("For your security you were signed out after a period of inactivity. Please sign in again.");
+  return true;
+}
+(function(){
+  var lastMark = 0;
+  ["pointerdown", "keydown", "touchstart", "scroll"].forEach(function(ev){
+    window.addEventListener(ev, function(){
+      if(!ME || Date.now() - lastMark < 15000) return;
+      lastMark = Date.now(); orbMarkActive();
+    }, { passive: true, capture: true });
+  });
+  setInterval(function(){ orbIdleExpired(); }, 60000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) orbIdleExpired(); });
+})();
+
 async function routeByRole(opts){
   opts = opts || {};
   if(!PROF) await loadProfile();
+  // a fresh sign-in starts the clock; coming back to a remembered session checks it
+  if(opts.greet) orbMarkActive();
+  else if(await orbIdleExpired()) return;
 
   // An account provisioned with a temporary password cannot go anywhere
   // until that password has been replaced. No greeting until that is done.
