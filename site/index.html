@@ -10915,12 +10915,12 @@ function tsLoad(){
     document.head.appendChild(s);
   });
 }
-// Never blocks by itself: if the check can't load or takes over 25 s, the request goes
+// Never blocks by itself: if the check can't load or takes over 2 minutes, the request goes
 // ahead without a token and Supabase decides (it only insists once CAPTCHA is switched on).
 async function orbCaptcha(){
   if(!ORB_TURNSTILE_KEY) return undefined;
   try{
-    var tok = await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 25000); })]);
+    var tok = await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 120000); })]);
     if(!tok){ window.orbTsErr = "timeout"; try{ toast("Security check timed out. Please try again.", true); }catch(_){} }
     return tok;
   }catch(e){
@@ -10932,23 +10932,31 @@ async function orbCaptcha(){
 }
 async function orbCaptchaRun(){
   await tsLoad();
-  var box = document.getElementById("orb-ts");
-  if(!box){
-    box = document.createElement("div"); box.id = "orb-ts";
+  // A fresh box each time, placed inside the form that asked (under its button),
+  // so it never floats over the page; it is removed again once the check passes.
+  if(TS_ID !== null){ try{ turnstile.remove(TS_ID); }catch(e){} TS_ID = null; }
+  var old = document.getElementById("orb-ts"); if(old) old.remove();
+  var box = document.createElement("div"); box.id = "orb-ts";
+  box.style.cssText = "display:flex;justify-content:center;margin:14px 0 4px;min-height:0";
+  var card = document.getElementById("acard");
+  var host = card && card.offsetParent !== null ? card : null;
+  var btn = host ? host.querySelector(".btn-p") : null;
+  if(btn && btn.parentNode) btn.parentNode.insertBefore(box, btn.nextSibling);
+  else{
     box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483000";
     document.body.appendChild(box);
   }
-  box.removeAttribute("inert"); box.removeAttribute("aria-hidden");
+  var done = function(){ setTimeout(function(){ try{ if(TS_ID !== null) turnstile.remove(TS_ID); }catch(e){} TS_ID = null; box.remove(); }, 700); };
   return await new Promise(function(ok, no){
     TS_WAIT = { ok: ok, no: no };
     var opts = { sitekey: ORB_TURNSTILE_KEY, appearance: "interaction-only", execution: "execute",
-      callback: function(tok){ var w = TS_WAIT; TS_WAIT = null; if(w) w.ok(tok); },
-      "error-callback": function(code){ window.orbTsErr = String(code || "unknown"); var w = TS_WAIT; TS_WAIT = null; if(w) w.no(new Error("security check error " + window.orbTsErr)); return true; },
+      callback: function(tok){ var w = TS_WAIT; TS_WAIT = null; done(); if(w) w.ok(tok); },
+      "error-callback": function(code){ window.orbTsErr = String(code || "unknown"); var w = TS_WAIT; TS_WAIT = null; done(); if(w) w.no(new Error("security check error " + window.orbTsErr)); return true; },
       "expired-callback": function(){ try{ turnstile.reset(TS_ID); }catch(e){} } };
     try{
-      if(TS_ID === null) TS_ID = turnstile.render(box, opts); else turnstile.reset(TS_ID);
+      TS_ID = turnstile.render(box, opts);
       turnstile.execute(TS_ID);
-    }catch(e){ TS_WAIT = null; no(e); }
+    }catch(e){ TS_WAIT = null; done(); no(e); }
   });
 }
 
