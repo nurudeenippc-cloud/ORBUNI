@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Orbuni Growth Plan</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+@page{size:A4;margin:0}
+:root{--ink:#0E1626;--ink2:#3B4658;--mute:#6B7486;--line:#E3E7EE;--bg:#FFFFFF;--soft:#F5F7FA;
+--blue:#1F5E93;--blue2:#2B7BC0;--sky:#E6F1FC;--green:#137A50;--mint:#E2F5EB;--amber:#94600D;--sand:#FFF4D6;
+--red:#A4471F;--peach:#FDEBE1;--violet:#5B3FC4;--lav:#EEEAFC;--whop:#FA4616}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff}
+body{font-family:Inter,Arial,sans-serif;color:var(--ink);font-size:9.4pt;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;padding:17mm 16mm 18mm;position:relative;overflow:hidden;page-break-after:always;background:#fff}
+.page:last-child{page-break-after:auto}
+.foot{position:absolute;left:16mm;right:16mm;bottom:8mm;display:flex;justify-content:space-between;font-size:7.2pt;color:var(--mute);border-top:1px solid var(--line);padding-top:2.2mm}
+.foot b{color:var(--ink);font-weight:600}
+.kick{font-size:7.4pt;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--blue);margin-bottom:2.5mm;display:flex;gap:3mm;align-items:center}
+.kick .tag{background:var(--ink);color:#fff;padding:.6mm 2.2mm;border-radius:2mm;letter-spacing:.08em}
+h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:25pt;line-height:1.08;letter-spacing:-.01em;margin-bottom:3mm}
+h2{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:13.5pt;line-height:1.2;margin:5mm 0 2mm}
+h3{font-size:9.8pt;font-weight:700;margin:3.5mm 0 1.2mm}
+p{margin:0 0 2mm}
+.lead{font-size:10.6pt;color:var(--ink2);line-height:1.5;margin-bottom:4mm;max-width:165mm}
+.small{font-size:8.2pt;color:var(--ink2)}
+.mute{color:var(--mute)}
+ul.b{margin:1mm 0 2mm 4.5mm}ul.b li{margin:.6mm 0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3.5mm}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.card{border:1px solid var(--line);border-radius:3mm;padding:3.6mm 4mm;background:#fff}
+.card h3{margin-top:0}
+.card.t-sky{background:var(--sky);border-color:#cfe2f6}.card.t-mint{background:var(--mint);border-color:#c6e8d5}
+.card.t-sand{background:var(--sand);border-color:#f3e2ad}.card.t-peach{background:var(--peach);border-color:#f5d3c0}
+.card.t-lav{background:var(--lav);border-color:#dcd4f7}.card.t-ink{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card.t-ink .small,.card.t-ink .mute{color:#c9d2e0}
+.num{font-family:Fraunces,Georgia,serif;font-size:21pt;font-weight:700;line-height:1}
+.num small{font-size:10pt}
+.stat .lbl{font-size:7.6pt;color:var(--ink2);margin-top:1mm}
+table{width:100%;border-collapse:collapse;font-size:8.2pt}
+th{font-size:7pt;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);text-align:left;padding:1.6mm 2mm;border-bottom:1.4px solid var(--ink);font-weight:700}
+td{padding:1.7mm 2mm;border-bottom:1px solid var(--line);vertical-align:top}
+tr.sec td{background:var(--soft);font-weight:700;font-size:7.6pt;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+.pill{display:inline-block;font-size:6.8pt;font-weight:700;padding:.4mm 1.8mm;border-radius:5mm;letter-spacing:.04em;white-space:nowrap}
+.p-take{background:var(--mint);color:var(--green)}.p-adapt{background:var(--sand);color:var(--amber)}.p-skip{background:var(--peach);color:var(--red)}
+.p-done{background:var(--mint);color:var(--green)}.p-wait{background:var(--sand);color:var(--amber)}.p-todo{background:var(--sky);color:var(--blue)}.p-block{background:var(--peach);color:var(--red)}
+.p-nm{background:var(--lav);color:var(--violet)}.p-gw{background:var(--sky);color:var(--blue)}.p-cl{background:#EEF0F3;color:var(--ink2)}
+.callout{border-left:3px solid var(--blue);background:var(--sky);padding:3mm 4mm;border-radius:0 2.5mm 2.5mm 0;margin:3mm 0;font-size:8.8pt}
+.callout.warn{border-color:var(--amber);background:var(--sand)}.callout.red{border-color:var(--red);background:var(--peach)}.callout.green{border-color:var(--green);background:var(--mint)}
+.flow{display:flex;align-items:stretch;gap:1.5mm;margin:3mm 0}
+.flow .st{flex:1;border:1px solid var(--line);border-radius:2.5mm;padding:2.2mm 2.4mm;font-size:7.6pt;background:#fff}
+.flow .st b{display:block;font-size:8.2pt;margin-bottom:.6mm}
+.flow .ar{align-self:center;color:var(--mute);font-size:10pt}
+.script{border:1px solid var(--line);border-radius:3mm;overflow:hidden;margin-top:2mm}
+.script .row{display:grid;grid-template-columns:17mm 1fr 38mm;border-top:1px solid var(--line)}
+.script .row:first-child{border-top:none}
+.script .tc{font-weight:700;font-size:7.6pt;color:var(--blue);padding:2mm 2mm;background:var(--soft)}
+.script .say{padding:2mm 3mm;font-size:8.6pt;line-height:1.48}
+.script .say .h{font-size:7pt;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--mute);display:block;margin-bottom:.6mm}
+.script .vis{padding:2mm 2.5mm;font-size:7.3pt;color:var(--ink2);background:#FBFCFD;border-left:1px dashed var(--line)}
+.chk{color:var(--red);font-weight:700;font-size:7pt}
+.meta{display:flex;gap:2mm;flex-wrap:wrap;margin:1mm 0 2mm}
+.meta span{font-size:7.4pt;border:1px solid var(--line);border-radius:5mm;padding:.5mm 2.4mm;color:var(--ink2)}
+.toc li{display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:1.3mm 0;font-size:9pt}
+.toc{list-style:none}
+.bar{height:2.4mm;border-radius:2mm;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--blue)}
+/* cover */
+.cover{background:var(--ink);color:#fff;padding:22mm 20mm}
+.cover .brand{font-weight:800;letter-spacing:.32em;font-size:9pt;color:#9fc3ea}
+.cover h1{font-size:40pt;color:#fff;margin-top:52mm;line-height:1.02}
+.cover h1 em{font-style:normal;color:#8fd3b0}
+.cover .sub{font-size:12.5pt;color:#c9d2e0;max-width:150mm;margin-top:6mm;line-height:1.45}
+.cover .row4{position:absolute;left:20mm;right:20mm;bottom:40mm;display:grid;grid-template-columns:repeat(4,1fr);gap:4mm}
+.cover .row4 div{border-top:1px solid #33415a;padding-top:3mm}
+.cover .row4 .num{color:#fff;font-size:20pt}
+.cover .row4 .lbl{font-size:7.8pt;color:#9aa6ba;margin-top:1mm}
+.cover .by{position:absolute;left:20mm;bottom:18mm;font-size:8pt;color:#9aa6ba}
+.cover .orb{position:absolute;right:-40mm;top:-30mm;width:150mm;height:150mm;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2B7BC0 0,#1F5E93 35%,rgba(14,22,38,0) 70%);opacity:.55}
+.cover .orb2{position:absolute;right:30mm;top:70mm;width:40mm;height:40mm;border-radius:50%;background:radial-gradient(circle at 40% 40%,#8fd3b0,rgba(14,22,38,0) 70%);opacity:.5}
+.sect{background:var(--soft)}
+.big-q{font-family:Fraunces,Georgia,serif;font-size:14pt;line-height:1.35;color:var(--ink);border-left:3px solid var(--green);padding-left:4mm;margin:3mm 0}
+.two-col{columns:2;column-gap:6mm}
+.two-col p{break-inside:avoid}
+</style></head><body>
+
+<!-- 1 COVER -->
+<section class="page cover">
+<div class="orb"></div><div class="orb2"></div>
+<div class="brand">ORBUNI · ISTANBUL</div>
+<h1>From built<br>to <em>booked.</em></h1>
+<div class="sub">What we have built, an honest reading of every strategy document and transcript you sent, what we take and what we leave, the webinar funnel with the $10 Masterclass, five video scripts, and the road to $100k.</div>
+<div class="row4">
+<div><div class="num">35</div><div class="lbl">site and portal releases shipped</div></div>
+<div><div class="num">11</div><div class="lbl">automations running every day</div></div>
+<div><div class="num">5</div><div class="lbl">video scripts ready to film</div></div>
+<div><div class="num">$100k</div><div class="lbl">2027 goal: about 73 paid students</div></div>
+</div>
+<div class="by">Prepared for Nurudeen (Managing Director) and Godfrey (COO) · 4 October 2026 · Internal, for team review</div>
+</section>
+
+<!-- 2 SUMMARY -->
+<section class="page">
+<div class="kick"><span class="tag">01</span> The short version</div>
+<h1>The machine is built.<br>Now it needs people walking in.</h1>
+<p class="lead">In about three weeks we built the full path a student meets: website, 2-minute assessment, portal, payments, a WhatsApp assistant and the automatic follow-ups. Very few people have used it yet: 5 leads and 0 paid students so far. From here on, the work is outreach, videos and proof, not more software.</p>
+
+<div class="g3" style="margin-bottom:4mm">
+<div class="card t-mint"><h3>What is done</h3><p class="small">Site with subject and housing pages, the assessment with 3 pathways, student / partner / staff portals, Whop and Paystack checkouts, WhatsApp AI with tap buttons, 11 scheduled automations, the $10 Masterclass and the free community on Whop.</p></div>
+<div class="card t-sand"><h3>What is waiting</h3><p class="small">Meta must approve the 14 WhatsApp templates (all “pending”) and your business verification. Until then no automatic WhatsApp follow-up can go out. The AskUni bot fix waits for GitHub access (paused, as you asked).</p></div>
+<div class="card t-sky"><h3>What comes next</h3><p class="small">Film the main briefing video. Publish 12 short “feeder” videos. Rehearse the webinar on 19 Dec and run it publicly on 6 Feb. Collect 3 consented student stories. No paid ads until the funnel passes the exit gate on 1 Jan.</p></div>
+</div>
+
+<h2>Your verdict on the material, in one line each</h2>
+<table>
+<tr><th style="width:30%">Source</th><th>Verdict</th></tr>
+<tr><td><b>Student Acquisition Engine</b> (21 pages)</td><td><span class="pill p-take">TAKE</span> The best of the set. We have already built most of it: 8 dimensions, 3 pathways, Orbuni owns the data. Keep its “Phase 0 first” advice.</td></tr>
+<tr><td><b>Accelerator Engine</b> guide and blueprint</td><td><span class="pill p-adapt">ADAPT</span> Keep the clear tiers, the off-season idea and the 3-person WhatsApp group. Drop “guaranteed” offers and dorms, auto-declining students under $800, and the old prices.</td></tr>
+<tr><td><b>Student Accelerator</b> operations manual</td><td><span class="pill p-adapt">ADAPT</span> Its strongest idea is <i>“tuition is paid to the university, never to us”</i>, so lead with it. Its “guaranteed 25–75% scholarship”, “offer in 24–48 hours” and “slots capped per region” lines must not be used.</td></tr>
+<tr><td><b>Lead Systems 01 / Operations 03</b></td><td><span class="pill p-take">TAKE</span> Speed-to-lead, a two-step form, Claude-drafted first messages, written procedures (SOPs), reviews after each intake, one cornerstone video.</td></tr>
+<tr><td><b>Recovery strategy</b> (abandoned applications)</td><td><span class="pill p-take">TAKE</span> The right tone: “How can we help?”, not “buy now”. Most of it is already built and only needs Meta's approval to go live.</td></tr>
+<tr><td><b>Iman Gadzhi</b> transcripts</td><td><span class="pill p-take">TAKE</span> A main video that every short video points to, a series of 12 short videos, refreshing old titles and thumbnails, the quiz funnel. <span class="pill p-skip">SKIP</span> Showing off wealth, fake urgency, the SDR posing as the director.</td></tr>
+<tr><td><b>Sabri Suby</b> (Meta and Google)</td><td><span class="pill p-take">TAKE</span> for Phase 2: plenty of image ads, wide targeting with specific wording, the ad headline repeated on the landing page, a small list of high-intent Google keywords, ignoring Google reps.</td></tr>
+<tr><td><b>Davie Fogarty / Alex Hormozi</b></td><td><span class="pill p-take">TAKE</span> Account and tracking set-up order, rules for when to switch an ad off, proof-led ads, good friction versus bad friction.</td></tr>
+</table>
+
+<div class="callout green" style="margin-top:4mm"><b>The single biggest gap in all the documents:</b> proof. None of them plans how to collect real, consented student stories, and every ad, video and webinar depends on them. Ask your next 3 students for written permission now. That is worth more than any tactic in the set.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>2</span></div>
+</section>
+
+<!-- 3 CONTENTS -->
+<section class="page">
+<div class="kick"><span class="tag">00</span> Contents</div>
+<h1>Inside</h1>
+<ul class="toc" style="margin-top:4mm">
+<li><span>01 · The short version</span><span>2</span></li>
+<li><span>02 · What we have built</span><span>4</span></li>
+<li><span>03 · Where we honestly are, and the $100k maths</span><span>5</span></li>
+<li><span>04 · The material reviewed: take, adapt, skip</span><span>6</span></li>
+<li><span>05 · What is missing from every document</span><span>10</span></li>
+<li><span>06 · Prices, tiers and the revenue model</span><span>11</span></li>
+<li><span>07 · Getting more from Whop · Paystack check</span><span>12</span></li>
+<li><span>08 · The follow-up system, audited</span><span>13</span></li>
+<li><span>09 · The webinar funnel with the $10 Masterclass</span><span>14</span></li>
+<li><span>10 · Paid ads playbook for Phase 2 (Meta and Google)</span><span>16</span></li>
+<li><span>11 · The five videos and how we make them</span><span>18</span></li>
+<li><span>12 · Script 1 · The main briefing (12 min)</span><span>19</span></li>
+<li><span>13 · Script 2 · Not ready yet (low intent)</span><span>22</span></li>
+<li><span>14 · Script 3 · Choosing your package (middle intent)</span><span>23</span></li>
+<li><span>15 · Script 4 · Welcome, here is your next week (high intent)</span><span>24</span></li>
+<li><span>16 · Script 5 · Webinar invitation and Masterclass</span><span>25</span></li>
+<li><span>17 · Filming and editing: the checklist</span><span>26</span></li>
+<li><span>18 · The next 13 weeks</span><span>27</span></li>
+<li><span>19 · Technical appendix</span><span>28</span></li>
+</ul>
+<div class="g2" style="margin-top:8mm">
+<div class="card t-lav"><h3>How to read this</h3><p class="small">Pages 2–5 are for both founders, today. Pages 6–17 explain the decisions. Pages 18–26 are working documents for the shoot day. The appendix is for anyone who will maintain the systems.</p></div>
+<div class="card"><h3>Labels used</h3><p class="small"><span class="pill p-nm">NM</span> Nurudeen <span class="pill p-gw">GW</span> Godfrey <span class="pill p-cl">CLAUDE</span> site, Whop and database work.<br><span class="pill p-done">DONE</span> <span class="pill p-wait">WAITING</span> <span class="pill p-todo">TO DO</span> <span class="pill p-block">BLOCKED</span><br><span class="chk">[CHECK]</span> in a script means a fact must be confirmed before filming.</p></div>
+</div>
+<div class="callout warn" style="margin-top:6mm"><b>Builds on the Phase 1 plan of 30 September.</b> That plan (13 weeks, exit gate on 1 January, no ads in Phase 1) still holds. This document adds what has happened since, the new material you sent, the webinar funnel and the scripts.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>3</span></div>
+</section>
+
+<!-- 4 BUILT -->
+<section class="page">
+<div class="kick"><span class="tag">02</span> What we have built</div>
+<h1>Eight systems, live today</h1>
+<p class="lead">Everything below is live, used daily, and owned by Orbuni. None of it depends on a tool we could lose.</p>
+<div class="g2">
+<div class="card"><h3>1 · Website: myorbuni.com</h3><ul class="b small"><li>Home, programmes, study-by-subject pages, housing pages with real Istanbul residence photos, scholarships, articles, campus videos</li><li>Light, dark and system themes; works on phones; data-saver videos</li><li>WhatsApp button on every page; sitemap; Google Search Console verified</li></ul></div>
+<div class="card"><h3>2 · The 2-minute assessment</h3><ul class="b small"><li>Scores 8 dimensions (intent, money, grades, timeline, scholarship need, commitment, fit, documents)</li><li>Three pathways: low intent goes to the free community, middle and high go to booking a call</li><li>Email reminders at 15 min, 1 h and 24 h if left unfinished</li></ul></div>
+<div class="card"><h3>3 · Student portal</h3><ul class="b small"><li>Applications, documents, offers, signed agreement, checkout <b>only after the offer letter</b></li><li>Extra services booked in the portal: airport pickup $150, escort $200</li><li>Automatic document-chase and student emails</li></ul></div>
+<div class="card"><h3>4 · Staff and founder portal</h3><ul class="b small"><li>Leads, projects, Careers pipeline (new → replied → call → task → hired)</li><li>Partner requests with agencies' own photos, commission owed, logins</li><li>Feed with a removable blue tick, chats, The Stack (tool spending: $105.20 + TRY 203.63 so far)</li></ul></div>
+<div class="card"><h3>5 · WhatsApp: “MY ORBUNI”, +1 443 448 1577</h3><ul class="b small"><li>AI assistant answers 24/7 with tap buttons and links, hands over to a person on words like refund, scam or visa refusal</li><li>Staff inbox in the portal (COO access), shows “typing…”, STOP always honoured</li><li>Follow-up engine ready: quiet hours, sends each message only once, low-balance alert</li></ul></div>
+<div class="card"><h3>6 · Payments</h3><ul class="b small"><li>Whop: Standard $800 · Plus $1,650 · Premier 2 × $1,325 · Masterclass $10 · Partner Growth $150 · free Community</li><li>Paystack naira checkout connected (USD converted at the day's rate)</li><li>Stray empty “ORBUNI” product hidden; checkout links checked</li></ul></div>
+<div class="card"><h3>7 · AskUni automation</h3><ul class="b small"><li>Bot logs in and fills AskUni's 4-step “Add Student” wizard, uploads documents, handles students already on AskUni</li><li>One fix (recognising step 04 Apply) is written and waiting for GitHub access. Paused, as you asked.</li></ul></div>
+<div class="card"><h3>8 · Running by itself</h3><ul class="b small"><li>11 scheduled jobs: chase leads, chase documents, email revive, checkout reminders, Whop sync, WhatsApp follow-ups and templates, staff alerts, weekly brief, housekeeping</li><li>AI cost cut with prompt caching; all keys stored only in Supabase and Render</li></ul></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>4</span></div>
+</section>
+
+<!-- 5 HONEST NUMBERS -->
+<section class="page">
+<div class="kick"><span class="tag">03</span> Where we honestly are</div>
+<h1>Good machine, almost no traffic yet</h1>
+<p class="lead">Numbers read from the database on 4 October 2026. Small numbers are normal for a funnel this new. They show where the next hour of work should go.</p>
+<div class="g4">
+<div class="card stat"><div class="num">5</div><div class="lbl">leads (all in the last 30 days)</div></div>
+<div class="card stat"><div class="num">4</div><div class="lbl">finished the assessment</div></div>
+<div class="card stat"><div class="num">9</div><div class="lbl">student accounts · 16 application records (some are tests)</div></div>
+<div class="card stat"><div class="num">0</div><div class="lbl">paid service fees so far</div></div>
+<div class="card stat"><div class="num">2</div><div class="lbl">WhatsApp contacts · 21 messages, 10 by the AI</div></div>
+<div class="card stat"><div class="num">0/14</div><div class="lbl">WhatsApp templates approved by Meta</div></div>
+<div class="card stat"><div class="num">2</div><div class="lbl">partner agencies</div></div>
+<div class="card stat"><div class="num">0</div><div class="lbl">Whop community members</div></div>
+</div>
+
+<h2>The $100k maths, and the real gap</h2>
+<div class="g2">
+<div>
+<p>The Phase 1 plan's base case: <b>about 73 paid students in 2027 at about $1,260 average net fee</b>. Working backwards with today's assumptions:</p>
+<table>
+<tr><th>Step</th><th>Rate (assumed)</th><th>Per month needed</th></tr>
+<tr><td>Finished assessments</td><td>—</td><td><b>~190</b></td></tr>
+<tr><td>Applications started</td><td>15% of finished</td><td>~29</td></tr>
+<tr><td>Offer letters</td><td>65% of applications</td><td>~19</td></tr>
+<tr><td>Paid service fee</td><td>~33% of offers</td><td>~6</td></tr>
+</table>
+<p class="small mute" style="margin-top:2mm">All rates are assumptions until we have 50 real assessments. Recalculate in January.</p>
+</div>
+<div>
+<div class="card t-ink"><h3 style="color:#fff">The gap</h3><p class="small">Today: about 5 people a month. Needed by mid-2027: about 190 a month, roughly <b style="color:#fff">40 times</b> today.</p><p class="small">Fixing the website does not close this gap. Volume comes from: <b style="color:#fff">(1)</b> the 12 feeder videos and the main briefing, <b style="color:#fff">(2)</b> the webinar, <b style="color:#fff">(3)</b> partner agencies, <b style="color:#fff">(4)</b> paid ads in intake windows from Phase 2.</p></div>
+<div class="card t-sand" style="margin-top:3mm"><h3>Checkpoints</h3><p class="small">31 Oct: main video live · 31 Dec: about 40 assessments in the quarter · 31 Jan: about 60 in the month · 30 Jun: about 190 a month and about $52k earned. Missing a checkpoint means fixing, not spending.</p></div>
+</div>
+</div>
+
+<h2>Waiting on things outside our hands</h2>
+<table>
+<tr><th>Item</th><th>Status</th><th>What to do</th></tr>
+<tr><td>Meta Business Verification (your name, extra name Orbuni, Turkish address document)</td><td><span class="pill p-wait">WAITING</span></td><td>Check business.facebook.com → Security Center every 2 days. If asked for more, upload a document that shows the name “Orbuni” and the same address. Once verified, the display name “MY ORBUNI” can show in chats.</td></tr>
+<tr><td>14 WhatsApp templates</td><td><span class="pill p-wait">PENDING</span></td><td>Checked twice an hour automatically. If any is rejected, I reword it and send it again.</td></tr>
+<tr><td>Website release r35 on Netlify</td><td><span class="pill p-todo">YOU</span></td><td>Drag <b>orbuni-site-r35.zip</b> into Netlify → Deploys.</td></tr>
+<tr><td>AskUni bot fix</td><td><span class="pill p-block">PAUSED</span></td><td>Later: reconnect GitHub with write access, and I push it.</td></tr>
+<tr><td>+1 443 number</td><td><span class="pill p-block">NEVER</span></td><td>Never type the WhatsApp code into the WhatsApp phone app. That would disconnect the number from the AI and the inbox.</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>5</span></div>
+</section>
+
+<!-- 6 REVIEW 1 -->
+<section class="page">
+<div class="kick"><span class="tag">04</span> The material reviewed · 1 of 4</div>
+<h1>Take, adapt, skip</h1>
+<p class="lead">Read in full: the five PDFs, the Accelerator blueprint, the recovery strategy, and the transcripts from Iman Gadzhi, Sabri Suby (Meta and Google), Davie Fogarty and Alex Hormozi. Most of it was written to sell coaching or e-commerce. Orbuni sells a <b>trust service paid after the offer letter</b>, so we keep how these systems work and leave out their promises.</p>
+<table>
+<tr><th style="width:23%">Idea</th><th style="width:9%">Verdict</th><th>The Orbuni version</th></tr>
+<tr class="sec"><td colspan="3">Student Acquisition Engine (21 pp)</td></tr>
+<tr><td>Orbuni owns the student record; marketing tools are replaceable</td><td><span class="pill p-take">TAKE</span></td><td>Already true: Supabase is the record; Whop and Twilio plug in.</td></tr>
+<tr><td>8 scoring dimensions, 3 pathways, never wealth alone</td><td><span class="pill p-take">TAKE</span></td><td>Built into the assessment. Still to do: written weights and thresholds, recalibrated after 50 completions.</td></tr>
+<tr><td>VSL library by audience, retargeting videos for objections</td><td><span class="pill p-take">TAKE</span></td><td>Five scripts in this document; objection clips cut from the main shoot.</td></tr>
+<tr><td>“Phase 0” proof before big builds; named build owner and privacy owner</td><td><span class="pill p-take">TAKE</span></td><td>Build owner: Claude, with NM approving. Privacy owner: NM. See page 10.</td></tr>
+<tr><td>Nas.com as the marketing layer</td><td><span class="pill p-skip">SKIP</span></td><td>Whop already covers community, courses, livestreams, bookings and affiliates. A second platform splits the data.</td></tr>
+<tr class="sec"><td colspan="3">Accelerator Engine (master guide and pasted blueprint)</td></tr>
+<tr><td>Three clear tiers that remove price haggling</td><td><span class="pill p-adapt">ADAPT</span></td><td>Keep our live tiers: $800 / $1,650 / 2 × $1,325. Not $800 / $1,600 / $3,000.</td></tr>
+<tr><td>“Guaranteed university offer letter”, “Guaranteed dorm room”</td><td><span class="pill p-skip">SKIP</span></td><td>Only the university decides. Saying “guaranteed” invites refunds, chargebacks and complaints.</td></tr>
+<tr><td>Budget routing: under $800 is auto-declined or sent a PDF</td><td><span class="pill p-skip">SKIP</span></td><td>A low-budget student with strong grades is a good lead. Low intent gets a real video, a checklist and the community.</td></tr>
+<tr><td>Off-season paid consultation, 100% credited to the package</td><td><span class="pill p-adapt">ADAPT</span></td><td>As a Whop 1-on-1 “Profile review” ($25–$49), credited if they sign within 90 days. Not $250–$800.</td></tr>
+<tr><td>3-person WhatsApp group (student or parent + success manager + director)</td><td><span class="pill p-take">TAKE</span></td><td>For high-intent results only. Godfrey creates it by hand within 15 minutes in working hours.</td></tr>
+<tr><td>Two vendors per service; bank transfer for large payments; pre-reserve rooms</td><td><span class="pill p-take">TAKE</span></td><td>Two drivers and two housing contacts before February. Large payments by bank transfer after the Georgia company is set up.</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>6</span></div>
+</section>
+
+<section class="page">
+<div class="kick"><span class="tag">04</span> The material reviewed · 2 of 4</div>
+<table>
+<tr><th style="width:23%">Idea</th><th style="width:9%">Verdict</th><th>The Orbuni version</th></tr>
+<tr class="sec"><td colspan="3">Accelerator Engine (continued)</td></tr>
+<tr><td>University and dorm commissions (“quad revenue”)</td><td><span class="pill p-adapt">ADAPT</span></td><td>Fine if written down and told to the student. Never counted in forecasts until a contract exists.</td></tr>
+<tr><td>“$160,500 from 50 students”, “$3,210 per lead”</td><td><span class="pill p-skip">SKIP</span></td><td>Per <i>successful student</i>, using commissions we do not have. Our model uses scenarios.</td></tr>
+<tr class="sec"><td colspan="3">Student Accelerator operations manual</td></tr>
+<tr><td>“Tuition goes straight to the university; you pay us only a flat fee”</td><td><span class="pill p-take">TAKE</span></td><td>Our strongest message and already true. Lead the briefing and the parent ads with it.</td></tr>
+<tr><td>Speed-to-lead under 5 minutes; voice note from a counsellor</td><td><span class="pill p-take">TAKE</span></td><td>An alert to the team plus Godfrey's voice note. Target: median under 5 min in working hours.</td></tr>
+<tr><td>“Guaranteed 25–75% discount”, “offer in 24–48 h”, “slots capped per region”</td><td><span class="pill p-skip">SKIP</span></td><td>Not provable, and fake scarcity. Say: “discounts are set by each university; we show you the real letters.”</td></tr>
+<tr><td>Score = grades + budget ≥ 70</td><td><span class="pill p-skip">SKIP</span></td><td>Too narrow; ours uses 8 dimensions.</td></tr>
+<tr><td>Long video cut into daily shorts; “comment SCHOLARSHIP” replies</td><td><span class="pill p-take">TAKE</span></td><td>One long video gives 3 shorts. Comment keyword → WhatsApp link (by hand at first).</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>7</span></div>
+</section>
+
+<!-- 7 REVIEW 2 -->
+<section class="page">
+<div class="kick"><span class="tag">04</span> The material reviewed · 3 of 4</div>
+<table>
+<tr><th style="width:23%">Idea</th><th style="width:9%">Verdict</th><th>The Orbuni version</th></tr>
+<tr class="sec"><td colspan="3">Lead Systems 01 · Operations 03 · Recovery strategy</td></tr>
+<tr><td>Two-step form; thank-you page promising a WhatsApp reply within 15 min</td><td><span class="pill p-take">TAKE</span></td><td>Add the promise to the result page, but only for working hours.</td></tr>
+<tr><td>Claude drafts the first message from quiz answers; daily summary of hot leads; objection library</td><td><span class="pill p-take">TAKE</span></td><td>Part of the WhatsApp AI already. Next: a daily “top 5 to call” summary in the weekly brief.</td></tr>
+<tr><td>“Military-grade” recovery, every channel at once</td><td><span class="pill p-adapt">ADAPT</span></td><td>One channel at a time, with consent. Tone: “Is there anything we can help you with?”</td></tr>
+<tr><td>Score boost for “previous education investment”</td><td><span class="pill p-skip">SKIP</span></td><td>A stand-in for wealth. It also pushes away first-generation students.</td></tr>
+<tr><td>14-day nurture: proof, education, objection, door left open</td><td><span class="pill p-take">TAKE</span></td><td>Days 2, 4, 7, 14 on WhatsApp once templates are approved; never a discount.</td></tr>
+<tr><td>Every lead has an owner; response time and recovery rate first</td><td><span class="pill p-take">TAKE</span></td><td>Owner field on each lead; both numbers on the Monday board.</td></tr>
+<tr><td>Top 10 SOPs, review after each intake, one board per student</td><td><span class="pill p-take">TAKE</span></td><td>SOPs written by Claude from your voice notes; first intake review in February.</td></tr>
+<tr class="sec"><td colspan="3">Iman Gadzhi transcripts</td></tr>
+<tr><td>One cornerstone (“flywheel”) video; every short points to it</td><td><span class="pill p-take">TAKE</span></td><td>The 12-minute briefing is the cornerstone. Every feeder ends on its link.</td></tr>
+<tr><td>Separate small channels for separate audiences</td><td><span class="pill p-adapt">ADAPT</span></td><td>Two lanes on one channel: Nurudeen (path, files) and Godfrey (Istanbul life). Parents get their own Facebook posts.</td></tr>
+<tr><td>Refreshing titles and thumbnails on old videos</td><td><span class="pill p-take">TAKE</span></td><td>1 hour a week. YouTube Studio's “Test &amp; compare” tests thumbnails for free.</td></tr>
+<tr><td>Quiz funnel + SDR + “care package”</td><td><span class="pill p-take">TAKE</span></td><td>Assessment + Godfrey + documents checklist as the care package.</td></tr>
+<tr><td>Lifestyle flexing, countdown timers, SDR typing as the director</td><td><span class="pill p-skip">SKIP</span></td><td>Pretending to be someone else breaks trust. Each person writes as themselves.</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>8</span></div>
+</section>
+
+<section class="page">
+<div class="kick"><span class="tag">04</span> The material reviewed · 4 of 4</div>
+<table>
+<tr><th style="width:23%">Idea</th><th style="width:9%">Verdict</th><th>The Orbuni version</th></tr>
+<tr class="sec"><td colspan="3">Sabri Suby · Davie Fogarty · Alex Hormozi</td></tr>
+<tr><td>Image ads in volume, refreshed weekly</td><td><span class="pill p-take">TAKE</span></td><td>Phase 2: 1 hour a week making 5–10 image ads from the best video lines.</td></tr>
+<tr><td>A word in the ad that names the audience (“Nigerian students…”)</td><td><span class="pill p-adapt">ADAPT</span></td><td>Yes, but never “Are you Nigerian?”. Meta bans ads that imply they know a personal attribute. See page 16.</td></tr>
+<tr><td>Wide targeting; the ad's wording does the targeting</td><td><span class="pill p-take">TAKE</span></td><td>One country per ad set; longer copy that describes the student.</td></tr>
+<tr><td>The landing-page headline repeats the winning ad headline</td><td><span class="pill p-take">TAKE</span></td><td>One landing page per main angle (cost, scholarship, parents).</td></tr>
+<tr><td>Retarget non-buyers with a <i>different</i> offer</td><td><span class="pill p-take">TAKE</span></td><td>Did not apply → webinar or $10 Masterclass; did not book → housing video.</td></tr>
+<tr><td>Google “Coliseum” keywords, small and strict; no auto-apply suggestions or PMax</td><td><span class="pill p-take">TAKE</span></td><td>Seven high-intent keywords, daily negative keywords. See page 17.</td></tr>
+<tr><td>“Break their legs” competitor pages</td><td><span class="pill p-adapt">ADAPT</span></td><td>Honest comparison: “DIY vs typical agent vs Orbuni”, with no competitor names.</td></tr>
+<tr><td>Proof-led ads; the closer the proof is to the viewer, the stronger</td><td><span class="pill p-take">TAKE</span></td><td>A student from the same country, a real letter, a real room, filmed live. Needs consent.</td></tr>
+<tr><td>Good friction (a video, a quiz) versus bad friction (a slow page)</td><td><span class="pill p-take">TAKE</span></td><td>Too many weak leads: add a question. Too few leads: remove one.</td></tr>
+<tr><td>Set-up order: verified business, domain, pixel + Conversions API</td><td><span class="pill p-take">TAKE</span></td><td>Must be done before the first ad.</td></tr>
+<tr><td>Spending big on ads and judging by total cash</td><td><span class="pill p-adapt">ADAPT</span></td><td>True at scale. For us: a hard limit on what one paid student may cost (page 16).</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>9</span></div>
+</section>
+
+<!-- 8 MISSING -->
+<section class="page">
+<div class="kick"><span class="tag">05</span> What is missing</div>
+<h1>Twelve gaps no document covers</h1>
+<p class="lead">These are what separate a trusted agency from a clever funnel. Most cost time, not money.</p>
+<div class="g2">
+<div class="card t-peach"><h3>1 · Proof assets</h3><p class="small">No consented student stories, letters or room tours yet. Target: 3 by 15 December, with names and numbers hidden and permission in writing. <span class="pill p-nm">NM</span></p></div>
+<div class="card t-peach"><h3>2 · A parent path</h3><p class="small">The parent often pays. Needed: a parent page, a 90-second parent video, and a Facebook FAQ: costs, safety, who is accountable, what we will not promise. <span class="pill p-nm">NM</span> <span class="pill p-cl">CLAUDE</span></p></div>
+<div class="card"><h3>3 · Privacy and consent</h3><p class="small">We hold passports and grades. Needed: a short privacy notice (Nigeria Data Protection Act 2023, Türkiye's KVKK), a retention rule, and an opt-in tick for WhatsApp on the assessment and application. <span class="pill p-cl">CLAUDE</span> drafts, a lawyer checks.</p></div>
+<div class="card"><h3>4 · An anti-scam “How to verify us” page</h3><p class="small">Students fear fake agents. One page: we never ask for tuition, we only take payment on myorbuni.com / Whop / Paystack, our team with photos, our Istanbul address, and our WhatsApp number with the blue tick once verified.</p></div>
+<div class="card"><h3>5 · Tracking before ads</h3><p class="small">Meta pixel + Conversions API, one tracking link per channel and creator, and video start / 50% / finish events. Without these, any ad money is spent blind.</p></div>
+<div class="card"><h3>6 · University deposit deadlines</h3><p class="small">Each offer page should show the university's own deadline (usually 1–2 weeks). Send me the list per university. <span class="pill p-nm">NM</span></p></div>
+<div class="card"><h3>7 · A referral programme for students</h3><p class="small">Every placed student knows 5 more. Pay a fixed thank-you (for example $50) only after the friend pays the service fee. Whop affiliates can track it.</p></div>
+<div class="card"><h3>8 · A reply rota</h3><p class="small">Who answers when, in Istanbul and Lagos time, including weekends. The AI covers nights; a person covers high-intent leads in working hours. <span class="pill p-gw">GW</span></p></div>
+<div class="card"><h3>9 · Reviews</h3><p class="small">A Google Business Profile, and a review request 7 days after arrival. Reviews are free proof that also helps search ranking.</p></div>
+<div class="card"><h3>10 · Intake calendar</h3><p class="small">When applications open and close at each partner university, for both spring and fall intakes, so content and ads run in the right weeks. Confirm per university <span class="chk">[CHECK]</span>.</p></div>
+<div class="card"><h3>11 · Complaint and refund procedure</h3><p class="small">Who answers, within how many hours, how the refund tiers (10% / 20% / 30–40%) are explained, and how it is logged. This also protects the Whop and Paystack accounts.</p></div>
+<div class="card"><h3>12 · Maximum cost per student</h3><p class="small">A hard rule before ads: one paid student may cost at most about 25% of the average fee (about $300). Above that, stop and fix the funnel.</p></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>10</span></div>
+</section>
+
+<!-- 9 PRICES -->
+<section class="page">
+<div class="kick"><span class="tag">06</span> Prices, tiers and the revenue model</div>
+<h1>One price list, everywhere</h1>
+<p class="lead">The documents use four different price lists. The live one is below. Every video, page and message must use it, and nothing else.</p>
+<table>
+<tr><th>Package</th><th>Fee</th><th>When paid</th><th>For whom</th><th>Refund if we cannot finish</th></tr>
+<tr><td><b>Standard</b><br><span class="small mute">admission service</span></td><td><b>$800</b></td><td>After the offer letter</td><td>Self-driven students, documents mostly ready</td><td>10% ($80); or carry over to the next intake</td></tr>
+<tr><td><b>Plus</b><br><span class="small mute">+ visa help, pickup, arrival</span></td><td><b>$1,650</b></td><td>After the offer letter</td><td>Want help with visa preparation and arrival</td><td>20% ($330); or carry over</td></tr>
+<tr><td><b>Premier</b><br><span class="small mute">door to door</span></td><td><b>2 × $1,325</b></td><td>After the offer, 30 days apart</td><td>A parent paying, a near intake, full handling</td><td>30–40% ($795–$1,060); or carry over</td></tr>
+<tr><td>Add-ons</td><td>$150 / $200</td><td>When booked</td><td>Airport pickup / escort to university</td><td>Full refund if cancelled 48 h before</td></tr>
+<tr><td>Masterclass</td><td>$10</td><td>Any time</td><td>Not ready yet; wants the whole picture</td><td>—</td></tr>
+<tr><td>Partner Growth</td><td>$150</td><td>Any time</td><td>Agencies and independent counsellors</td><td>—</td></tr>
+</table>
+<p class="small mute" style="margin-top:2mm">Tuition and university deposits are always paid straight to the university. Government fees (visa, residence permit) are paid by the student.</p>
+
+<h2>What the “Accelerator” tiers suggested, and what we do instead</h2>
+<div class="g3">
+<div class="card"><h3>“Tier 3 VIP $3,000+”</h3><p class="small">Premier at $2,650 already fills this place. A higher tier needs vendors we have not tested yet (a licensed visa agent in each country, luxury transport). <b>Revisit in June 2027</b>, once two Premier students have been delivered well.</p></div>
+<div class="card"><h3>“Quad revenue”</h3><p class="small">University and housing commissions are normal in this industry. Rule: written contract first, disclosed to the student, <b>never counted in forecasts</b> before the money arrives. The fee stays the main income.</p></div>
+<div class="card"><h3>“$250–$800 consultation”</h3><p class="small">Too high before we have proof. Instead: a <b>$25–$49 Profile Review</b> on Whop Calendar Bookings, 30 minutes, credited in full against Plus or Premier if they sign within 90 days.</p></div>
+</div>
+
+<h2>The ladder, from free to full service</h2>
+<div class="flow">
+<div class="st"><b>Free</b>Videos, community, documents checklist, 2-minute assessment</div><div class="ar">›</div>
+<div class="st"><b>$10</b>Masterclass: the whole process, made clear</div><div class="ar">›</div>
+<div class="st"><b>$25–$49</b>Profile Review (credited)</div><div class="ar">›</div>
+<div class="st"><b>$0 to apply</b>Free application; fee only after an offer</div><div class="ar">›</div>
+<div class="st" style="background:var(--mint)"><b>$800 · $1,650 · $2,650</b>The service fee</div>
+</div>
+<div class="callout"><b>Why this works without pressure:</b> each step is worth its price even if the student never buys the next one. Low-intent students learn, middle-intent students apply, high-intent students get a person. Nobody is pushed.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>11</span></div>
+</section>
+
+<!-- 10 WHOP + PAYSTACK -->
+<section class="page">
+<div class="kick"><span class="tag">07</span> Getting more from Whop · Paystack check</div>
+<h1>Whop is underused, not wrong</h1>
+<p class="lead">We already have products, a free community and a $10 course on Whop. The community has 0 members, and the Masterclass needs its lessons filmed. These ten moves turn Whop into the home for students who are not ready yet.</p>
+<table>
+<tr><th style="width:4%">#</th><th style="width:28%">Move</th><th>How</th><th style="width:12%">When</th></tr>
+<tr><td>1</td><td><b>Fill the free community</b></td><td>Link it from: low-intent results, the AI's “not ready” replies, every video description, the webinar thank-you page. Welcome message and 3 pinned posts: “Start here”, “Deadlines”, “Ask a counsellor”.</td><td>W1–W2</td></tr>
+<tr><td>2</td><td><b>Webinars on Whop Livestreaming</b></td><td>Run the rehearsal and the public webinar inside the community (no Zoom cost; members get notified). Upload the replay to the course.</td><td>Dec / Feb</td></tr>
+<tr><td>3</td><td><b>Film the $10 Masterclass</b></td><td>6 lessons of 8–12 min from the same shoot days. Its description already lists them: scholarships, real cost, choosing 3 universities, money plan, documents, visa and first weeks.</td><td>Nov</td></tr>
+<tr><td>4</td><td><b>Profile Review on Calendar Bookings</b></td><td>$25–$49, 30 min, credited against Plus or Premier within 90 days. Two slots a week, Godfrey.</td><td>Nov</td></tr>
+<tr><td>5</td><td><b>Tracking links</b></td><td>One link per channel and per creator (YouTube, IG, FB, TikTok creators, partners). Weekly: clicks and sales per link.</td><td>W2</td></tr>
+<tr><td>6</td><td><b>Affiliates for the Masterclass</b></td><td>30–40% to members and partner agencies who share it. For the service fee: a fixed referral thank-you, paid only after the friend pays.</td><td>Dec</td></tr>
+<tr><td>7</td><td><b>Content Rewards $30 test</b></td><td>Creators paid per 1,000 approved views, #ad, no outcome claims, one tracking link each. Only after the main video is live.</td><td>W5</td></tr>
+<tr><td>8</td><td><b>Forums as the FAQ</b></td><td>Each real question becomes a thread. These threads become next month's video topics.</td><td>Ongoing</td></tr>
+<tr><td>9</td><td><b>Automated messages</b></td><td>New member → welcome, the assessment link, the next webinar date. Course buyer → “lesson 1 is here, and this is how to apply free”.</td><td>W3</td></tr>
+<tr><td>10</td><td><b>Discover listing</b></td><td>List the Masterclass and community in Whop's marketplace (Education). Free reach. Turn it on once the lessons exist.</td><td>Dec</td></tr>
+</table>
+<div class="callout warn"><b>The “spam” checkout link:</b> it was an empty product called “ORBUNI” with a free “App Access” plan that Whop created automatically on 30 September. It is now <b>hidden</b>. All other checkout links were legitimate checkouts made by the site for real visitors, plus one test.</div>
+
+<h2>Paystack: connected, and not overcharging</h2>
+<div class="g2">
+<div class="card t-mint"><h3>What I checked</h3><ul class="b small"><li>Connected and creating checkouts. Example: $10 → ₦13,277 at about ₦1,327.68 per $</li><li>No real payment yet: 3 unfinished test checkouts by your family's profiles and 1 failed internal test</li><li>The “huge amount” is the <b>naira conversion of a dollar price</b>, not a fee</li></ul></div>
+<div class="card"><h3>Fees and advice</h3><ul class="b small"><li>Local cards: about 1.5% + ₦100, capped at ₦2,000. International cards: about 3.9% + ₦100 <span class="chk">[CHECK current rates]</span></li><li>Do one real ₦ payment end to end (the $10 Masterclass), then refund it</li><li><b>Drop Flutterwave.</b> Paystack for naira, Whop for cards and other currencies is enough.</li></ul></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>12</span></div>
+</section>
+
+<!-- 11 FOLLOW-UP AUDIT -->
+<section class="page">
+<div class="kick"><span class="tag">08</span> The follow-up system, audited</div>
+<h1>Built, tested, waiting for Meta</h1>
+<p class="lead">Every moment where a student can go quiet, and what happens there today. The rules are built into the engine: quiet hours, STOP always works, each message is sent only once, at most 40 per run, and nothing goes to a chat that was active in the last 24 hours.</p>
+<table>
+<tr><th style="width:24%">Moment</th><th>What goes out</th><th style="width:12%">Status</th><th style="width:22%">A person steps in when</th></tr>
+<tr><td>Student writes on WhatsApp</td><td>AI reply in seconds with tap buttons (assessment, portal, programmes, scholarships, housing)</td><td><span class="pill p-done">LIVE</span></td><td>Refund, scam, complaint, visa refusal, or 2 unresolved answers</td></tr>
+<tr><td>Staff replies from the portal</td><td>Student sees “typing…”, then the reply</td><td><span class="pill p-done">LIVE</span></td><td>—</td></tr>
+<tr><td>Assessment left unfinished</td><td>Emails at 15 min, 1 h, 24 h</td><td><span class="pill p-done">LIVE</span></td><td>They reply “problem”</td></tr>
+<tr><td>Checkout started, not paid</td><td>Email reminders every 15 min check; WhatsApp “Help me pay” after 2 h</td><td><span class="pill p-wait">EMAIL LIVE · WA PENDING</span></td><td>HELP, or unpaid after 24 h</td></tr>
+<tr><td>Assessment finished (20 min – 2 days)</td><td>WhatsApp: “Would you like help choosing?” [Yes, help me] [Not now] [Stop]</td><td><span class="pill p-wait">PENDING META</span></td><td>High intent: always, within 5 min</td></tr>
+<tr><td>Documents missing</td><td>Daily email chase; weekly WhatsApp with [Upload documents]</td><td><span class="pill p-wait">EMAIL LIVE · WA PENDING</span></td><td>After the 2nd reminder</td></tr>
+<tr><td>Offer letter ready</td><td>WhatsApp [See the update] + email</td><td><span class="pill p-wait">PENDING META</span></td><td>Same-day call for Premier</td></tr>
+<tr><td>Silent for 14 days</td><td>“Still planning to study in Türkiye?” [Yes] [Maybe later] [Stop]</td><td><span class="pill p-wait">PENDING META</span></td><td>They reply</td></tr>
+<tr><td>Staff alerts</td><td>Push alerts every 2 min; WhatsApp alert template</td><td><span class="pill p-wait">PUSH LIVE · WA PENDING</span></td><td>—</td></tr>
+<tr><td>Twilio balance under $5</td><td>Alert to the team, once a day</td><td><span class="pill p-done">LIVE</span></td><td>Top up</td></tr>
+</table>
+<h2>Still to build (in this order)</h2>
+<div class="g2">
+<div class="card"><h3>A · Days 2, 4, 7, 14 nurture</h3><p class="small">One fear answered, one proof story, one “door stays open”. Needs 3 more templates and the proof clips. <span class="pill p-cl">CLAUDE</span> W6</p></div>
+<div class="card"><h3>B · Deposit-deadline reminders</h3><p class="small">7, 3 and 1 day before the university's deadline, with a call the day before. Needs your deadline list. <span class="pill p-cl">CLAUDE</span> W5</p></div>
+<div class="card"><h3>C · Webinar reminders</h3><p class="small">Confirmation, 24 h, 1 h, 10 min by email and WhatsApp; replay link 2 hours after. <span class="pill p-cl">CLAUDE</span> W8</p></div>
+<div class="card"><h3>D · Speed-to-lead timer</h3><p class="small">A high-intent result starts a 5-minute clock. If no person has replied, the alert goes to the second person on the rota. <span class="pill p-cl">CLAUDE</span> W3</p></div>
+</div>
+<div class="callout warn"><b>Cost note:</b> Meta charges per message. Roughly: a marketing message to Nigeria costs about 6–8 US cents and a utility message about 1 cent. From 1 October 2026 some replies inside the 24-hour window are also charged. Use utility wording wherever the message is about something the student already started <span class="chk">[CHECK current rate card]</span>.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>13</span></div>
+</section>
+
+<!-- 12 WEBINAR 1 -->
+<section class="page">
+<div class="kick"><span class="tag">09</span> The webinar funnel · 1 of 2</div>
+<h1>A free hour that teaches,<br>and a $10 course for those who want more</h1>
+<p class="lead">You asked: should we use a webinar, with a landing page selling the $10 offer? <b>Yes, with one change:</b> the webinar is free and the $10 Masterclass is offered at the end. Charging $10 to join would cut sign-ups. Letting people pay after they have seen the value builds trust.</p>
+<div class="flow">
+<div class="st"><b>1 · Traffic</b>Feeder videos, WhatsApp AI, community, partners, creators</div><div class="ar">›</div>
+<div class="st"><b>2 · Registration page</b>myorbuni.com/webinar · name, WhatsApp, email, country, opt-in</div><div class="ar">›</div>
+<div class="st"><b>3 · Thank-you page</b>3-min “before you come” video, add to calendar, join community</div><div class="ar">›</div>
+<div class="st"><b>4 · Reminders</b>Confirm · 24 h · 1 h · 10 min</div><div class="ar">›</div>
+<div class="st"><b>5 · Live, 60–75 min</b>Whop Livestream; Godfrey moderates the chat</div><div class="ar">›</div>
+<div class="st" style="background:var(--mint)"><b>6 · Three doors</b>Free assessment · $10 Masterclass · Apply / book a call</div>
+</div>
+
+<div class="g2">
+<div>
+<h2>The registration page (draft)</h2>
+<div class="card" style="font-size:8.6pt">
+<p class="mute small" style="margin-bottom:1mm">FREE LIVE SESSION · SATURDAY · 18:00 ISTANBUL / 16:00 LAGOS</p>
+<p style="font-family:Fraunces,serif;font-size:13pt;font-weight:700;line-height:1.2">Studying in Türkiye in 2027: the real costs, the real scholarships and the real steps, in one hour.</p>
+<p>Live from Istanbul with the Orbuni team. No “guaranteed scholarship”, no pressure. Bring your questions and your parents.</p>
+<ul class="b"><li>What a “scholarship” letter from a Turkish university really means</li><li>A real student file, from first message to keys <span class="chk">[needs consent]</span></li><li>What you pay, to whom, and when. Tuition never comes to us.</li><li>The documents, in the right order</li></ul>
+<p><b>[ Save my seat, it's free ]</b></p>
+<p class="small mute">You'll get the link by email and WhatsApp. Reply STOP any time.</p>
+</div>
+</div>
+<div>
+<h2>Realistic numbers</h2>
+<table>
+<tr><th>Per 100 sign-ups</th><th>Expect</th></tr>
+<tr><td>Attend live</td><td>~30 (education webinars average about 31% of sign-ups)</td></tr>
+<tr><td>Watch the replay</td><td>~10–15 more</td></tr>
+<tr><td>Finish the assessment</td><td>~15–20</td></tr>
+<tr><td>Buy the $10 Masterclass</td><td>~5–10 <span class="small mute">(our guess)</span></td></tr>
+<tr><td>Start an application within 14 days</td><td>~2–4</td></tr>
+</table>
+<div class="callout" style="margin-top:3mm"><b>What the webinar is for:</b> collecting questions, building trust, and getting more assessments done. The $10 covers costs and shows who is serious, but the service fee is the real income. Judge the webinar by assessments and applications, not by $10 sales.</div>
+<h3>Dates</h3>
+<p class="small"><b>Sat 19 Dec 2026:</b> rehearsal with 10–20 friendly people (past leads, community, friends). Record it.<br><b>Sat 6 Feb 2027:</b> first public webinar. Registration opens 3 Jan.</p>
+</div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>14</span></div>
+</section>
+
+<!-- 13 WEBINAR 2 -->
+<section class="page">
+<div class="kick"><span class="tag">09</span> The webinar funnel · 2 of 2</div>
+<h1>Running order, and how not to over-promise</h1>
+<table>
+<tr><th style="width:12%">Minutes</th><th style="width:22%">Part</th><th>What happens</th><th style="width:11%">Who</th></tr>
+<tr><td>0–5</td><td>Welcome</td><td>Who we are, where we are (show the street), what this hour will and will not cover. “By the end you will know if Türkiye fits you, and what to do next.”</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>5–20</td><td>The report card</td><td>Six questions any study-abroad choice must answer: real 2-year cost, visa realism for your passport, the degree's recognition back home, language, plan B, who is accountable. Answered for DIY, a typical agent, and Orbuni.</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>20–35</td><td>Scholarships, honestly</td><td>Tuition discounts from private universities vs the government scholarship (Türkiye Bursları). What a “100% scholarship” leaves you to pay. Real letters on screen with names hidden.</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>35–45</td><td>One real file</td><td>A consented student's timeline: documents → offer → deposit → visa → room → arrival.</td><td><span class="pill p-gw">GW</span></td></tr>
+<tr><td>45–55</td><td>How paying works</td><td>Applying is free. The fee comes only after the offer. Tuition goes to the university. Refund tiers. The three packages in one slide.</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>55–75</td><td>Questions, then three doors</td><td>Live questions first. Then: (1) not checked yet → free assessment; (2) not ready → $10 Masterclass; (3) ready → apply free or book a call. Parents: book a call.</td><td><span class="pill p-nm">NM</span> <span class="pill p-gw">GW</span></td></tr>
+</table>
+
+<div class="g2" style="margin-top:4mm">
+<div class="card t-mint"><h3>The offer, said honestly</h3><p class="small">“If you want everything from tonight in order, with the documents checklist and the money plan, the Masterclass is $10. You do <b>not</b> need it to apply with us. Applying is free, and you pay our fee only if a university sends you an offer.”</p></div>
+<div class="card t-peach"><h3>Never say</h3><ul class="b small"><li>“Guaranteed admission / scholarship / visa / job”</li><li>“Only 5 places left” (unless it is true and written by a university)</li><li>A countdown timer, a fake “price goes up tonight”</li><li>Any number of students placed that we cannot show</li></ul></div>
+</div>
+
+<h2>After the webinar</h2>
+<table>
+<tr><th style="width:16%">When</th><th>Attended</th><th>Registered, did not attend</th></tr>
+<tr><td>+2 hours</td><td>Thank you + replay + the three doors</td><td>“We missed you. Here is the replay, available for 48 hours.”</td></tr>
+<tr><td>Day 1</td><td>Answers to the 3 most-asked questions (short video)</td><td>Replay reminder</td></tr>
+<tr><td>Day 3</td><td>One student story</td><td>One student story</td></tr>
+<tr><td>Day 7</td><td>“Did you check your assessment result?” and the next webinar date</td><td>Next webinar date</td></tr>
+</table>
+<div class="callout"><b>Re-use everything:</b> the recording gives 6–10 short clips (each answer is a clip), the Masterclass lessons, and the questions for the next feeder videos.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>15</span></div>
+</section>
+
+<!-- 14 META ADS -->
+<section class="page">
+<div class="kick"><span class="tag">10</span> Paid ads playbook · Meta (Phase 2, not before)</div>
+<h1>Ads only make a working funnel bigger</h1>
+<p class="lead">No ad money before the exit gate on 1 January: main video live and tracked, 3 organic videos earning link clicks, and Meta business verification done. Then start small, one country at a time, in an intake window.</p>
+<div class="g2">
+<div>
+<h2>Set-up checklist (in this order)</h2>
+<table>
+<tr><td>1</td><td>Business verified in Meta Business Manager (in progress)</td></tr>
+<tr><td>2</td><td>Domain myorbuni.com verified</td></tr>
+<tr><td>3</td><td>Pixel on the site + Conversions API from Supabase (events: assessment finished, application started, fee paid)</td></tr>
+<tr><td>4</td><td>Ad account, payment method, two admins (both founders)</td></tr>
+<tr><td>5</td><td>Research in the Meta Ad Library: other agencies' longest-running ads</td></tr>
+<tr><td>6</td><td>Landing page per angle, headline matching the ad</td></tr>
+</table>
+<h2>Budget rules</h2>
+<ul class="b small">
+<li>Start: $10–$15 a day, one country, 4–6 ads, for 7 days</li>
+<li>Goal event: <b>assessment finished</b> (not page view, not “lead”)</li>
+<li>Kill rule: an ad that spends 2× the target cost per finished assessment with none, off</li>
+<li>Target to begin with: about $8 per finished assessment <span class="small mute">(assumption; reset after 50)</span></li>
+<li>Hard stop: if one paid student costs over about $300, pause and fix the funnel</li>
+<li>Judge by cash in from fees within 60 days, not by clicks</li>
+</ul>
+</div>
+<div>
+<h2>Creative: what to make</h2>
+<ul class="b small">
+<li><b>70% image ads, 30% video.</b> One hour a week makes 5–10 new images from the best lines of the main video.</li>
+<li><b>Don't look like an ad:</b> phone-filmed, a real street, a real room, a real letter (hidden names).</li>
+<li><b>Audience in the words:</b> “For students in Nigeria planning 2027…”, “Parents in Ghana: …”, “Nursing in Türkiye, in English: …”.</li>
+<li><b>Sell the information, not the package:</b> “What a ‘100% scholarship’ in Türkiye really costs”.</li>
+<li><b>Long copy is fine:</b> it tells Meta who the ad is for.</li>
+<li><b>Proof ads:</b> a student from the same country, on camera, saying one specific thing.</li>
+</ul>
+<div class="callout red"><b>Meta personal-attributes rule:</b> an ad may not say or imply it knows the viewer's nationality, race, religion, finances and so on. “Are you a Nigerian student?” or “You can't afford the UK?” will be rejected. “For students in Nigeria…” and “Studying abroad on a budget?” are fine.</div>
+<h2>Retargeting (people who came but did not act)</h2>
+<table>
+<tr><th>Who</th><th>Show them</th></tr>
+<tr><td>Watched 50% of the briefing, no assessment</td><td>The 90-second closer</td></tr>
+<tr><td>Finished the assessment, did not apply</td><td>Objection clips (cost, scam, visa)</td></tr>
+<tr><td>Did not apply after 14 days</td><td>A different offer: the webinar or the $10 Masterclass</td></tr>
+<tr><td>Parents' page visitors</td><td>The parent video and the money map</td></tr>
+</table>
+</div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>16</span></div>
+</section>
+
+<!-- 15 GOOGLE -->
+<section class="page">
+<div class="kick"><span class="tag">10</span> Paid ads playbook · Google search</div>
+<h1>A few searches that mean “I'm ready”</h1>
+<p class="lead">Sabri Suby's point holds: a handful of high-intent searches bring most of the results. Start with a small, strict list and add negative keywords every day. Never accept Google reps' “auto-apply” suggestions or Performance Max until search works.</p>
+<div class="g2">
+<div>
+<h2>First “Coliseum” keywords to test</h2>
+<table>
+<tr><th>Keyword (phrase match)</th><th>Landing page</th></tr>
+<tr><td>study in turkey from nigeria</td><td>Main briefing + assessment</td></tr>
+<tr><td>private university in turkey fees international students</td><td>Money map / fees</td></tr>
+<tr><td>turkey university scholarship for international students</td><td>Scholarships, honestly</td></tr>
+<tr><td>study nursing in turkey in english</td><td>Nursing subject page</td></tr>
+<tr><td>study medicine in turkey english fees</td><td>Medicine subject page</td></tr>
+<tr><td>istanbul university admission international students</td><td>Istanbul page</td></tr>
+<tr><td>turkey student visa from nigeria</td><td>Visa steps article</td></tr>
+<tr><td><b>orbuni</b> (our own name)</td><td>Home. Cheap insurance against copycats</td></tr>
+</table>
+<p class="small mute" style="margin-top:2mm">Volumes and prices to be checked in Keyword Planner before launch <span class="chk">[CHECK]</span>.</p>
+</div>
+<div>
+<h2>Negative keywords from day one</h2>
+<p class="small">jobs · work permit · free visa · visa lottery · cheap flights · tourist · holiday · pdf · download · salary · citizenship · asylum · sample · essay · wiki</p>
+<h2>The ads: sell the click with information</h2>
+<div class="card" style="font-size:8.4pt">
+<p style="color:#1a0dab;font-size:10pt">What a Turkish “100% Scholarship” Really Costs | Real Letters, Explained</p>
+<p class="small" style="color:#006621">myorbuni.com/scholarships</p>
+<p class="small">See real scholarship letters (names hidden), the full yearly cost, and the documents in order. Tuition is paid to the university, never to us. Free 2-minute check.</p>
+</div>
+<h2>Comparison page, the honest version</h2>
+<p class="small">“Doing it yourself vs a typical agent vs Orbuni”: who holds your tuition, what's included, when you pay, what happens if the visa is refused. No competitor names in ads. You may bid on searches that contain them only where local trademark rules allow <span class="chk">[CHECK]</span>.</p>
+<h2>Daily routine: 15 minutes</h2>
+<ul class="b small"><li>Read the search terms report: add 10–20 negatives</li><li>Add up to 5 new high-intent keywords</li><li>Raise bids 10–20% only on keywords with finished assessments</li><li>Monthly: list which keywords brought paid students, and put 80% of the budget there</li></ul>
+</div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>17</span></div>
+</section>
+
+<!-- 16 VIDEOS OVERVIEW -->
+<section class="page">
+<div class="kick"><span class="tag">11</span> The five videos</div>
+<h1>One main video, four that send people to it</h1>
+<p class="lead">The main briefing does the teaching. The three pathway videos meet each student at their level after the assessment. The fifth fills the webinar. All five can be filmed in two shoot days.</p>
+<table>
+<tr><th>#</th><th style="width:23%">Video</th><th>Length</th><th>Where it lives</th><th>Job</th><th>Who</th></tr>
+<tr><td>1</td><td><b>The main briefing</b></td><td>~12 min + 90-s cut</td><td>Start page before the assessment; YouTube</td><td>Answer the 8 big fears before a person has to</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>2</td><td><b>Not ready yet</b></td><td>3–4 min</td><td>Low-intent result page</td><td>Keep them warm; checklist + community</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>3</td><td><b>Choosing your package</b></td><td>5–6 min</td><td>Middle-intent result page</td><td>Standard vs Plus vs Premier, money map → apply</td><td><span class="pill p-nm">NM</span></td></tr>
+<tr><td>4</td><td><b>Welcome: your next 7 days</b></td><td>4–5 min</td><td>High-intent result page</td><td>Personal welcome; the 3-person group; apply or call</td><td><span class="pill p-gw">GW</span> + <span class="pill p-nm">NM</span></td></tr>
+<tr><td>5</td><td><b>Webinar invitation + Masterclass</b></td><td>~3 min + 60-s ad</td><td>Webinar page, community, retargeting</td><td>Fill the webinar; explain the $10 course honestly</td><td><span class="pill p-nm">NM</span></td></tr>
+</table>
+<h2>How each script was written</h2>
+<div class="g3">
+<div class="card"><h3>Your words</h3><p class="small">Written plainly, as you speak in voice notes. Read each line out loud and rewrite anything that doesn't sound like you. The structure matters more than the exact words.</p></div>
+<div class="card"><h3>Claims check</h3><p class="small">Every <span class="chk">[CHECK]</span> must be confirmed with a document, a screenshot or a contract before filming. If it can't be proved, delete the line.</p></div>
+<div class="card"><h3>Three tests, no ad money</h3><p class="small">(1) Read the script to 5 real leads by voice note. (2) 5 strangers watch the cut, then take the assessment. (3) 10 people go through the whole funnel.</p></div>
+</div>
+<h2>Shoot plan</h2>
+<div class="g2">
+<div class="card t-sky"><h3>Shoot day 1 · week of 12 Oct</h3><p class="small">Video 1 (in chapters, 2–3 takes each), its 90-second closer, Video 5, feeders 1–3 as talking heads. Indoors, window light, phone on a tripod at eye level, clip-on mic.</p></div>
+<div class="card t-sky"><h3>Shoot day 2 · week of 2 Nov</h3><p class="small">Videos 2, 3 and 4, feeders 4–6, Masterclass lessons 1–3. Godfrey films the street, residence and campus B-roll the same week.</p></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>18</span></div>
+</section>
+
+<!-- 17 SCRIPT 1 a -->
+<section class="page">
+<div class="kick"><span class="tag">12</span> Script 1 · The main briefing · part 1 of 3</div>
+<h1 style="font-size:20pt">“Study in Türkiye, without the guesswork”</h1>
+<div class="meta"><span>~12 minutes · about 1,600 words</span><span>Speaker: Nurudeen</span><span>Chapters on YouTube</span><span>Call to action: 2-minute assessment</span></div>
+<div class="script">
+<div class="row"><div class="tc">0:00<br>Hook</div><div class="say"><span class="h">Name the feeling</span>You wrote to an agent. They sent you a long list of universities, a few prices, and the word “scholarship” many times. Then nothing happened, because you still didn't know what to do first, who to trust, or what it would really cost your family. If that's you, this video is for you. In the next twelve minutes I'll show you exactly how studying in Türkiye works: what you pay, to whom, and when. At the end you'll know if it fits you, and what your next step is.</div><div class="vis">Close-up, natural light. Text on screen: “What you pay · to whom · when”. No music for the first 5 s.</div></div>
+<div class="row"><div class="tc">0:45<br>Who</div><div class="say"><span class="h">Who is talking, and what we won't promise</span>My name is Nurudeen. I run Orbuni, here in Istanbul. We help students, mostly from Africa, apply to universities in Türkiye and settle in when they arrive. Before anything else, three things we will <b>never</b> promise you: a visa, a job, or a university ranking. Those decisions belong to embassies, employers and universities. Anyone who promises them is selling you a story. What we promise is a clear file, honest numbers, and a person who answers you.</div><div class="vis">Wide shot: you at the desk, Istanbul window or street behind. Lower-third: “Nurudeen · Orbuni, Istanbul”.</div></div>
+<div class="row"><div class="tc">2:00<br>Report card</div><div class="say"><span class="h">The six questions every choice must answer</span>When families choose a country and a university, they usually compare one thing: the price on a website. That's a mistake. There are six questions you should answer first. One: what will the <i>whole</i> two years cost: tuition, housing, food, visa, residence permit? Two: how realistic is the visa for <i>your</i> passport? Three: will this degree be recognised back home? Four: what language will you study in, and is your English enough? Five: what's your plan B if something goes wrong? And six: who is accountable when something goes wrong? Let's score three ways of doing this: doing it yourself, using a typical agent, and doing it with us.</div><div class="vis">Animated card: 6 rows × 3 columns (DIY · Typical agent · Orbuni). Fill only rows you can prove.</div></div>
+<div class="row"><div class="tc">3:30</div><div class="say">Doing it yourself costs the least money but the most time, and the mistakes are yours: a missing translation, a wrong deadline, a deposit sent to the wrong place. A typical agent may be fast, but many ask for money before anything is certain, and some even ask you to send tuition through them. With Orbuni, applying is free. You pay our service fee only <b>after</b> a university sends you an offer letter. And your tuition is never paid to us. It goes straight to the university's own account. <span class="chk">[CHECK: wording matches the Student Service Agreement of 24 Sept 2026]</span></div><div class="vis">Show the money map graphic: “Orbuni fee → after offer” · “Tuition → university only”.</div></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>19</span></div>
+</section>
+
+<!-- 18 SCRIPT 1 b -->
+<section class="page">
+<div class="kick"><span class="tag">12</span> Script 1 · The main briefing · part 2 of 3</div>
+<div class="script">
+<div class="row"><div class="tc">4:30<br>Fears</div><div class="say"><span class="h">Eight fears, thirty seconds each</span>Let me answer the eight questions every family asks us, quickly and honestly.<br><br><b>“Is this real, or a scam?”</b> Fair question. You never pay us before an offer letter. Payments happen only on myorbuni.com checkout pages, never to a personal account and never by a code in a chat. We are in Istanbul. Come and see us.<br><br><b>“Can we afford it?”</b> Private universities here set their own fees, and many give international students a discount on tuition. It's often called a scholarship. The size depends on the university, the programme and sometimes your grades. We show you the real letter before you decide. <span class="chk">[CHECK: no range quoted unless shown on screen]</span><br><br><b>“Will my degree count back home?”</b> It depends on the university and the field. We check this for your country before you apply, not after.<br><br><b>“What if the visa is refused after we pay?”</b> That's why our fee comes after the offer, and why our refund rules are written down. You can also carry your service over to the next intake at no extra fee.</div><div class="vis">Each fear: title card in big text, then you on camera. Cut every 25–30 s. Chapter markers.</div></div>
+<div class="row"><div class="tc">6:30</div><div class="say"><b>“Where will I sleep in the first month?”</b> We show you real rooms. <span class="h" style="display:inline">[Godfrey's room tour B-roll]</span> You choose before you fly, and the contract is with the residence, not with us.<br><br><b>“How do I choose a university when I've never seen the city?”</b> You don't choose from twenty logos. We match you to three routes that fit your grades, budget and goals, and you pick one.<br><br><b>“Which documents, in what order?”</b> Passport, school results, diploma or certificate, a photo, and later translations. Our checklist shows the order, so nothing is done twice.<br><br><b>“Who is accountable?”</b> A named counsellor on your file, a written agreement, and a portal where you can see every step.</div><div class="vis">Godfrey's B-roll: residence corridor, room, kitchen, street at night. Portal screen recording (test student only).</div></div>
+<div class="row"><div class="tc">8:30<br>Bridge</div><div class="say"><span class="h">You don't learn the maze, you follow a file</span>Here's the big idea. You don't need to become an expert in Turkish universities. You need to follow a file that someone already runs every week. Let me show you one. <span class="chk">[needs written consent; names and numbers hidden]</span> Day 1: the student wrote to us on WhatsApp. Day 2: assessment done, three universities matched. Day 9: documents complete. Day 23: offer letter. Then the university deposit, paid straight to the university. Then the visa appointment, the room, the flight, and Godfrey at the airport.</div><div class="vis">Screen: the real timeline in the portal, blurred names. Slow zoom. Then the arrival photo, if consented.</div></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>20</span></div>
+</section>
+
+<!-- 19 SCRIPT 1 c -->
+<section class="page">
+<div class="kick"><span class="tag">12</span> Script 1 · The main briefing · part 3 of 3</div>
+<div class="script">
+<div class="row"><div class="tc">10:30<br>Paying</div><div class="say"><span class="h">How paying works, in one minute</span>So, how does the money work? Applying with us is free. When a university sends you an offer letter, you choose one of three packages. <b>Standard</b>, $800: we handle your application from choosing to the offer and the acceptance steps. <b>Plus</b>, $1,650: everything in Standard, plus visa preparation, airport pickup and help in your first days. <b>Premier</b>, two payments of $1,325: door to door, including a visa agent in your country, escort to the university and residence-permit support. If we can't finish the service, part of the fee comes back, as written in the agreement. And your tuition? Always to the university. Never to us.</div><div class="vis">Three cards on screen, same order every time. Small print: “Refund tiers: myorbuni.com/#agreement”.</div></div>
+<div class="row"><div class="tc">11:30<br>Two doors</div><div class="say"><span class="h">The call to action</span>Here's what to do now. There are two doors. Door one: take the free 2-minute assessment below. It looks at your grades, your budget, your documents and your timeline, and shows you which universities and which package fit. Not a list of twenty. Door two: if you'd rather talk, book a call with us. There is no third door called “just send me options”. Send-me-options is how people lose a year. Take the assessment now. We'll see you on the other side.</div><div class="vis">Button animation “Check in 2 minutes →”. End screen: assessment link + next video.</div></div>
+</div>
+<h2>The 90-second closer (cut from the same shoot)</h2>
+<div class="script">
+<div class="row"><div class="tc">0:00</div><div class="say">You already started. You wrote to us, or you looked at universities in Türkiye, and then life got busy. That's normal.</div><div class="vis">Selfie-style, walking.</div></div>
+<div class="row"><div class="tc">0:10</div><div class="say">Here's the part most people miss: with Orbuni, applying is free, our fee comes only after an offer letter, and your tuition goes straight to the university.</div><div class="vis">Money-map graphic.</div></div>
+<div class="row"><div class="tc">0:35</div><div class="say">You don't need to learn the whole system. You follow a file we run every week. [one-line proof, consented]</div><div class="vis">Timeline clip.</div></div>
+<div class="row"><div class="tc">1:05</div><div class="say">Take the 2-minute assessment. It shows which universities fit you, and what it really costs. The link is right here.</div><div class="vis">Real intake date only, no countdown.</div></div>
+</div>
+<div class="callout warn"><b>Before filming, confirm:</b> the agreement wording on fees and refunds, any discount range you mention, the consent for the student file, and that the portal recording shows only the test student.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>21</span></div>
+</section>
+
+<!-- 20 SCRIPT 2 -->
+<section class="page">
+<div class="kick"><span class="tag">13</span> Script 2 · Low intent</div>
+<h1 style="font-size:20pt">“Not ready yet? Here's how to get ready.”</h1>
+<div class="meta"><span>3–4 minutes</span><span>Shown to: far intake, documents not ready, just looking</span><span>Call to action: checklist + free community</span></div>
+<div class="script">
+<div class="row"><div class="tc">0:00</div><div class="say">Your result says you're not ready to apply yet. That's a good thing to know now, not a bad thing. Most students who rush lose money on the wrong documents or miss the right intake. So let's use the next few months well.</div><div class="vis">Warm, relaxed. Same backdrop as video 1.</div></div>
+<div class="row"><div class="tc">0:25</div><div class="say"><span class="h">Step one: documents</span>Start with what takes longest. Your passport: if you don't have one, apply now, because it can take months. Then your school results and certificate. Ask your school for official copies early. Below this video is our documents checklist, in the right order. Download it and tick things off.</div><div class="vis">Checklist on screen; highlight “passport first”.</div></div>
+<div class="row"><div class="tc">1:15</div><div class="say"><span class="h">Step two: money</span>Sit with your family and write down three numbers: what you can pay for tuition each year, for housing each month, and for the one-off costs like the visa and flight. Our money map shows what goes to the university, what goes to the government, and what goes to us. Ours comes only after an offer.</div><div class="vis">Money map graphic.</div></div>
+<div class="row"><div class="tc">2:00</div><div class="say"><span class="h">Step three: the calendar</span>Universities here usually take students twice a year. Know which intake you're aiming for and work backwards. <span class="chk">[CHECK: name the next real intake windows]</span></div><div class="vis">Simple calendar graphic.</div></div>
+<div class="row"><div class="tc">2:40</div><div class="say"><span class="h">Stay close, for free</span>Join our free community on Whop. We post deadlines, answer questions live and run free webinars. When you're closer, take the assessment again and we'll take it from there. No pressure. The door stays open.</div><div class="vis">Button: “Join the free community”. Second: “Download the checklist”.</div></div>
+</div>
+<div class="callout"><b>Optional line (only once lessons exist):</b> “If you want the whole process in one place, our Masterclass is $10. You don't need it to apply.”</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>22</span></div>
+</section>
+
+<!-- 21 SCRIPT 3 -->
+<section class="page">
+<div class="kick"><span class="tag">14</span> Script 3 · Middle intent</div>
+<h1 style="font-size:20pt">“You're close. Here's how to choose.”</h1>
+<div class="meta"><span>5–6 minutes</span><span>Shown to: interested, comparing, unsure of the package</span><span>Call to action: start the free application</span></div>
+<div class="script">
+<div class="row"><div class="tc">0:00</div><div class="say">Your result says you're close. You have a direction, some documents, and a rough budget. What's left is choosing how much help you want. Let me make that simple, in five minutes.</div><div class="vis">Desk, laptop open on the result page.</div></div>
+<div class="row"><div class="tc">0:20</div><div class="say"><span class="h">First, what doesn't change</span>Whatever you pick: applying is free, you pay us only after an offer letter, and tuition goes straight to the university. The packages differ only in how much we do for you after the offer.</div><div class="vis">Three icons: free to apply · fee after offer · tuition to university.</div></div>
+<div class="row"><div class="tc">0:50</div><div class="say"><span class="h">Standard, $800</span>For students who are organised and want a professional to run the application. We choose the programmes with you, prepare and submit the application, check every document, follow every update until the offer, and guide the acceptance steps. You handle the visa and travel yourself, with our checklist. You can add an airport pickup later from your portal.</div><div class="vis">Card 1 lights up.</div></div>
+<div class="row"><div class="tc">1:50</div><div class="say"><span class="h">Plus, $1,650</span>Everything in Standard, plus help preparing the visa, a pickup when you land, and help in your first days. This is for students who are fine with the application but nervous about the arrival. Orbuni is not a visa agent: we help you prepare, the embassy decides.</div><div class="vis">Card 2. B-roll: airport arrival hall.</div></div>
+<div class="row"><div class="tc">2:50</div><div class="say"><span class="h">Premier, two payments of $1,325</span>Door to door. A trusted visa agent in your country, escort to the university for registration, our person with you for up to two days after you land, and support with the residence permit. Most often chosen when parents are paying from home and want one team accountable for everything.</div><div class="vis">Card 3. B-roll: campus registration, residence.</div></div>
+<div class="row"><div class="tc">3:50</div><div class="say"><span class="h">How to decide in one minute</span>Ask yourself: am I comfortable doing the visa and arrival myself? Yes: Standard. No, but the application is easy for me: Plus. Our family wants one team to handle everything: Premier. Your result page also shows the package we recommend, and why. You still choose.</div><div class="vis">Decision tree graphic.</div></div>
+<div class="row"><div class="tc">4:40</div><div class="say"><span class="h">Next step</span>Start your free application now. It takes about 15 minutes, and your documents checklist is right next to it. If anything is unclear, write to us on WhatsApp. A person reads every message.</div><div class="vis">Button: “Start my free application”.</div></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>23</span></div>
+</section>
+
+<!-- 22 SCRIPT 4 -->
+<section class="page">
+<div class="kick"><span class="tag">15</span> Script 4 · High intent</div>
+<h1 style="font-size:20pt">“Welcome. Here's your next seven days.”</h1>
+<div class="meta"><span>4–5 minutes</span><span>Speakers: Godfrey, then Nurudeen</span><span>Shown to: ready, near intake, funds clear</span><span>Call to action: apply or book a call</span></div>
+<div class="script">
+<div class="row"><div class="tc">0:00<br>GW</div><div class="say">Hello, I'm Godfrey. I run student success at Orbuni here in Istanbul. Your result says you're ready, so I'll be personal. In the next few minutes a real person from our team will message you on WhatsApp, during working hours usually within 15 minutes. <span class="chk">[CHECK: matches the reply rota]</span> That's me, or Nurudeen.</div><div class="vis">Godfrey outdoors, recognisable Istanbul background.</div></div>
+<div class="row"><div class="tc">0:30<br>GW</div><div class="say"><span class="h">Day 1: one group, three people</span>We'll create a small WhatsApp group: you (and your parent, if they're part of the decision), me, and Nurudeen. One place for every question, so nothing gets lost between emails.</div><div class="vis">Mock chat on screen (no real numbers).</div></div>
+<div class="row"><div class="tc">1:05<br>GW</div><div class="say"><span class="h">Days 2–3: your three routes</span>We look at your assessment together and agree on three universities and programmes. Three, not twenty. One ambitious, one solid, one safe.</div><div class="vis">Three university cards.</div></div>
+<div class="row"><div class="tc">1:40<br>GW</div><div class="say"><span class="h">Days 3–7: the file</span>You upload documents to your portal, not to WhatsApp. That keeps your passport safe. We check each one before anything is sent, and you can see every step in the portal.</div><div class="vis">Portal upload screen (test student).</div></div>
+<div class="row"><div class="tc">2:20<br>NM</div><div class="say"><span class="h">The money, once more</span>Hi, I'm Nurudeen. Let me be clear about money so nothing surprises you: you pay nothing until a university sends an offer. Then you choose Standard, Plus or Premier. Tuition and the university's deposit are paid straight to the university, and the deposit has its own deadline, which we'll show you on the offer page.</div><div class="vis">Money map. Offer page mock with deadline field.</div></div>
+<div class="row"><div class="tc">3:10<br>NM</div><div class="say"><span class="h">What we ask of you</span>Answer us within a day, upload documents when we ask, and tell us early if anything changes: money, family, dates. That's how files finish on time.</div><div class="vis">Simple list on screen.</div></div>
+<div class="row"><div class="tc">3:40<br>NM</div><div class="say"><span class="h">Your choice</span>If you prefer to start right away, press “Start my application” below. If you or your parents want to talk first, book a call. Either way, we'll be in touch shortly. Welcome.</div><div class="vis">Two buttons: “Start my application” · “Book a call”.</div></div>
+</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>24</span></div>
+</section>
+
+<!-- 23 SCRIPT 5 -->
+<section class="page">
+<div class="kick"><span class="tag">16</span> Script 5 · Webinar invitation and Masterclass</div>
+<h1 style="font-size:20pt">“One honest hour about studying in Türkiye”</h1>
+<div class="meta"><span>~3 minutes + a 60-second ad cut</span><span>Speaker: Nurudeen</span><span>Used on: webinar page, community, retargeting</span></div>
+<div class="script">
+<div class="row"><div class="tc">0:00</div><div class="say">If you're thinking about studying in Türkiye next year, you've probably seen a lot of promises: full scholarships, guaranteed admission, “visa in two weeks”. I want to do the opposite. One hour, live, with the real numbers.</div><div class="vis">Direct to camera, simple.</div></div>
+<div class="row"><div class="tc">0:20</div><div class="say"><span class="h">What we'll cover</span>On Saturday at 6 pm Istanbul time (4 pm in Lagos) I'll show you: what a scholarship letter from a Turkish university really means, what the whole first year costs, a real student's file from the first message to the keys <span class="chk">[consent]</span>, and exactly what you pay, to whom, and when.</div><div class="vis">Four bullet cards, one at a time.</div></div>
+<div class="row"><div class="tc">1:05</div><div class="say"><span class="h">Why join live</span>Because you can ask your own question. Bring your parents. Godfrey will be answering the chat while I talk, and every question gets an answer, live or the next day.</div><div class="vis">Clip from the rehearsal (after 19 Dec).</div></div>
+<div class="row"><div class="tc">1:35</div><div class="say"><span class="h">The Masterclass, honestly</span>At the end I'll mention our Masterclass. It's $10, and it puts everything in order: lessons on scholarships, costs, choosing universities, documents, the visa and your first weeks. You do <b>not</b> need it to apply with us. Applying is free. It's for people who like to learn everything first.</div><div class="vis">Course screenshot (once filmed).</div></div>
+<div class="row"><div class="tc">2:20</div><div class="say"><span class="h">Call to action</span>The session is free. Save your seat below. We'll send the link by email and WhatsApp, and you can stop messages any time. See you on Saturday.</div><div class="vis">Button: “Save my free seat”. Date on screen (real date only).</div></div>
+</div>
+<h2>60-second ad cut</h2>
+<div class="card small"><b>0–5 s:</b> “Studying in Türkiye next year? Here are the real numbers, not the promises.” · <b>5–35 s:</b> the four things we'll cover, quickly, with on-screen text · <b>35–50 s:</b> “Tuition goes to the university, never to us. Bring your parents and your questions.” · <b>50–60 s:</b> “Free, live, Saturday 6 pm Istanbul. Save your seat.”</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>25</span></div>
+</section>
+
+<!-- 24 PRODUCTION -->
+<section class="page">
+<div class="kick"><span class="tag">17</span> Filming and editing</div>
+<h1>Phone, window, mic, and the edit</h1>
+<div class="g3">
+<div class="card"><h3>Kit (about $40–$80)</h3><ul class="b small"><li>Your phone, back camera, 4K/30 or 1080/30</li><li>Tripod with a phone clamp, lens at eye level</li><li>Clip-on wireless mic (the biggest quality jump)</li><li>Face a window; no light behind you</li><li>Quiet room; soft things around to cut the echo</li></ul></div>
+<div class="card"><h3>On the day</h3><ul class="b small"><li>Script on a teleprompter app or as bullet notes</li><li>Film each chapter separately, 2–3 takes</li><li>Clap once at the start of each take (makes syncing easy)</li><li>Film 16:9 for YouTube; leave space so 9:16 cut-downs still frame your face</li><li>10 minutes of B-roll: hands, laptop, street, door</li></ul></div>
+<div class="card"><h3>Editing workflow</h3><ul class="b small"><li><b>Descript</b> or <b>CapCut</b>: cut using the transcript (delete words = delete video)</li><li>Remove “umm”s and long pauses, but keep it human</li><li>Captions burned in (most people watch muted)</li><li>Simple cards in Canva, same font and colours every time</li><li>Music under 10% volume, none under key lines</li></ul></div>
+</div>
+<h2>Edit checklist (before anything is published)</h2>
+<table>
+<tr><td style="width:50%">☐ First 5 seconds: the problem is stated, no logo intro</td><td>☐ Every claim matches the agreement or a document</td></tr>
+<tr><td>☐ A cut or a change on screen at least every 10 seconds</td><td>☐ No student name, face or number without written consent</td></tr>
+<tr><td>☐ Captions checked for spelling (Türkiye, Orbuni, university names)</td><td>☐ Prices exactly as live: $800 · $1,650 · 2 × $1,325 · $10</td></tr>
+<tr><td>☐ Chapters added (YouTube description: 0:00 Hook, 2:00 Report card…)</td><td>☐ End screen points to the assessment and the next video</td></tr>
+<tr><td>☐ Loudness evened out (−14 LUFS for YouTube)</td><td>☐ One tracking link per channel in the description</td></tr>
+<tr><td>☐ Thumbnail: your face + 3–4 words, readable on a phone</td><td>☐ Uploaded, embedded, and start / 50% / finish events arriving</td></tr>
+</table>
+<h2>Thumbnails and titles: test, don't guess</h2>
+<div class="g2">
+<div class="card t-sky"><p class="small"><b>Three versions per video.</b> Use YouTube Studio's “Test &amp; compare” to run them against each other. Keep the winner, and re-title anything under its channel average after 14 days. One hour a week.</p></div>
+<div class="card t-mint"><p class="small"><b>Title formula:</b> a clear outcome + an honest twist. “What a Turkish ‘100% Scholarship’ Really Costs”, “Studying in Istanbul: The First 30 Days, Honestly”, “Doing It Yourself vs Using an Agent: The Real Difference”.</p></div>
+</div>
+<div class="callout"><b>Who edits:</b> until the creative director is hired, Claude prepares the cut list from your transcript (exact timecodes to keep and remove), and you or a freelancer cuts it in CapCut in about 2 hours per long video.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>26</span></div>
+</section>
+
+<!-- 25 NEXT 13 WEEKS -->
+<section class="page">
+<div class="kick"><span class="tag">18</span> The next 13 weeks</div>
+<h1>October to December, week by week</h1>
+<table>
+<tr><th style="width:13%">Week</th><th>Funnel and site <span class="pill p-cl">CLAUDE</span></th><th>Videos and content <span class="pill p-nm">NM</span> <span class="pill p-gw">GW</span></th><th>People, money, company</th></tr>
+<tr><td><b>W1</b> 5–11 Oct</td><td>SEO: pre-built pages for Google and AI tools, llms.txt; parent page; “How to verify us” page; privacy notice draft</td><td>Voice notes for video 1; script v1 read to 5 real leads</td><td>Upload r35 to Netlify · check Meta verification · send uni deposit deadlines</td></tr>
+<tr><td><b>W2</b> 12–18 Oct</td><td>Recommended package on result pages; Whop tracking links; community welcome posts</td><td><b>Shoot day 1</b>: video 1, closer, video 5, feeders 1–3</td><td>Ask 2–3 students for story consent</td></tr>
+<tr><td><b>W3</b> 19–25 Oct</td><td>Speed-to-lead timer + rota; opt-in tick; Pixel + Conversions API (ready, ads off)</td><td>Edit video 1 (cut list from Claude)</td><td>Reply rota agreed (Godfrey)</td></tr>
+<tr><td><b>W4</b> 26 Oct–1 Nov</td><td>Video 1 embedded before the assessment, with start / 50% / finish events</td><td>Test round 1: 5 strangers; publish feeders 1–2</td><td>Georgia company documents (noter)</td></tr>
+<tr><td><b>W5</b> 2–8 Nov</td><td>Deposit-deadline reminders; Profile Review on Whop bookings</td><td><b>Shoot day 2</b>: videos 2–4, feeders 4–6, Masterclass 1–3</td><td>Creator test $30 goes live</td></tr>
+<tr><td><b>W6</b> 9–15 Nov</td><td>Pathway videos on result pages; nurture templates (days 2/4/7/14) submitted</td><td>Test round 2: 10 people; feeders 3–4</td><td>Student Success Manager role written</td></tr>
+<tr><td><b>W7</b> 16–22 Nov</td><td>Monday board from real events; score weights written</td><td><b>Shoot day 3</b>: feeders 7–12, Masterclass 4–6</td><td>Co-founder contract draft</td></tr>
+<tr><td><b>W8</b> 23–29 Nov</td><td>Webinar page, reminders, replay page</td><td>Webinar outline and slides; feeders 5–6</td><td>Lawyer reviews contract and privacy notice</td></tr>
+<tr><td><b>W9</b> 30 Nov–6 Dec</td><td>Fix list from test round 2; Masterclass lessons uploaded</td><td>Webinar script, claims check; feeders 7–8</td><td>Contract signed</td></tr>
+<tr><td><b>W10</b> 7–13 Dec</td><td>End-to-end dry run with 10 new people</td><td>Invite rehearsal guests; feeders 9–10</td><td>Georgia IE registration</td></tr>
+<tr><td><b>W11</b> 14–20 Dec</td><td>Registration and reminders tested</td><td><b>Sat 19 Dec: webinar rehearsal</b>; record, cut clips</td><td>Bank account steps</td></tr>
+<tr><td><b>W12</b> 21–27 Dec</td><td>Fixes from the rehearsal</td><td>Feeders 11–12; January calendar</td><td>Phase 1 review</td></tr>
+<tr><td><b>W13</b> 28 Dec–3 Jan</td><td><b>Exit gate check</b>; open registration for 6 Feb</td><td>Public webinar promotion plan</td><td>Q1 targets from real numbers</td></tr>
+</table>
+<div class="callout green"><b>Exit gate on 1 January.</b> Phase 2 (ads in intake windows) starts only if: main video and three pathway videos are live and tracked; 12 feeders are published, at least 3 with link clicks; templates are approved and follow-ups are running; the Monday board was filled in 6 weeks in a row; and the rehearsal was recorded.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>27</span></div>
+</section>
+
+<!-- 26 TECH 1 -->
+<section class="page">
+<div class="kick"><span class="tag">19</span> Technical appendix · 1 of 2</div>
+<h1>How the pieces connect</h1>
+<div class="g3" style="margin-top:2mm">
+<div class="card t-sky"><h3>Front</h3><p class="small"><b>myorbuni.com</b> on Netlify: one main page (site, assessment, portals) plus article, subject, housing and scholarship pages. Light/dark themes. Sitemap + Search Console.</p></div>
+<div class="card t-lav"><h3>Core</h3><p class="small"><b>Supabase</b> (project ytsebzdykfeiiuxbdtvr): Postgres with row-level security, logins, file storage for documents, edge functions, and scheduled jobs (pg_cron + pg_net with a secret in the vault).</p></div>
+<div class="card t-mint"><h3>Money</h3><p class="small"><b>Whop</b> (business biz_340OHdZOPCa81N): checkouts, community, courses, livestreams, bookings; synced every 10 min. <b>Paystack</b>: naira checkouts.</p></div>
+</div>
+<div class="g3" style="margin-top:3mm">
+<div class="card t-sand"><h3>WhatsApp</h3><p class="small"><b>Twilio</b> sender +1 443 448 1577 (“MY ORBUNI”). Webhook → AI (Claude, short structured answers with buttons) → reply; staff inbox through wa-send; templates through the Content API.</p></div>
+<div class="card t-peach"><h3>AskUni</h3><p class="small"><b>askuni-bot</b> on Render (Playwright browser) fills AskUni's wizard for each student. One fix is waiting to be pushed (paused).</p></div>
+<div class="card"><h3>Secrets</h3><p class="small">Only in Supabase secrets and Render environment settings. Never in code, chat or email. Calls between our services are signed with a shared secret.</p></div>
+</div>
+<h2>Edge functions and scheduled jobs</h2>
+<table>
+<tr><th>Name</th><th>What it does</th><th>When</th></tr>
+<tr><td>wa-webhook</td><td>Receives WhatsApp messages; STOP handling; AI answer with buttons or a link; hand-off to a person</td><td>On each message</td></tr>
+<tr><td>wa-send</td><td>Staff replies from the portal; “typing…” indicator</td><td>On demand</td></tr>
+<tr><td>wa-templates</td><td>Creates templates in Twilio, submits them to Meta, records the decision</td><td>:07 and :37 each hour</td></tr>
+<tr><td>wa-followups</td><td>Quiz, payment, documents, offer, 14-day check-in messages; Twilio balance alert</td><td>:15 each hour</td></tr>
+<tr><td>book-call</td><td>Call booking without a calendar tool</td><td>On demand</td></tr>
+<tr><td>orb-student-emails / orb-push-alerts</td><td>Student emails; staff push alerts</td><td>Every 2 min</td></tr>
+<tr><td>orbuni-checkout-reminders / orb-email-revive</td><td>Unfinished checkouts and assessments</td><td>Every 15 / 30 min</td></tr>
+<tr><td>orb-chase-leads / orb-chase-docs</td><td>Lead and document chasing</td><td>Hourly 06–17 / daily 08:00</td></tr>
+<tr><td>orb-whop-sync</td><td>Whop payments and memberships into the database</td><td>Every 10 min</td></tr>
+<tr><td>orb-weekly-brief / orb-housekeeping</td><td>Monday summary; nightly clean-up</td><td>Mon 06:10 / daily 03:20</td></tr>
+</table>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>28</span></div>
+</section>
+
+<!-- 27 TECH 2 -->
+<section class="page">
+<div class="kick"><span class="tag">19</span> Technical appendix · 2 of 2</div>
+<h1>Open items, safety, and sources</h1>
+<table>
+<tr><th>Open item</th><th>Owner</th><th>Status</th></tr>
+<tr><td>SEO for Google and AI tools: pre-built HTML for the main sections, structured data, llms.txt, sitemap refresh. A fully server-rendered site is not needed on Netlify; pre-built pages give Google the same result.</td><td><span class="pill p-cl">CLAUDE</span></td><td><span class="pill p-todo">NEXT</span></td></tr>
+<tr><td>Upload website r35 to Netlify</td><td><span class="pill p-nm">NM</span></td><td><span class="pill p-todo">TO DO</span></td></tr>
+<tr><td>AskUni “Apply step” fix: push needs GitHub write access</td><td><span class="pill p-nm">NM</span> <span class="pill p-cl">CLAUDE</span></td><td><span class="pill p-block">PAUSED</span></td></tr>
+<tr><td>Meta Business Verification → display name, messaging limits, ads trust</td><td><span class="pill p-nm">NM</span></td><td><span class="pill p-wait">WAITING</span></td></tr>
+<tr><td>14 WhatsApp templates</td><td>Meta</td><td><span class="pill p-wait">PENDING</span></td></tr>
+<tr><td>Leaked-password protection on logins; Google Form webhook secret; call-booking abuse limit</td><td><span class="pill p-cl">CLAUDE</span></td><td><span class="pill p-todo">BEFORE WEBINAR</span></td></tr>
+<tr><td>Privacy notice and data retention rule</td><td><span class="pill p-cl">CLAUDE</span> + lawyer</td><td><span class="pill p-todo">W1–W8</span></td></tr>
+<tr><td>Company-owned logins in a shared password manager both founders can open</td><td><span class="pill p-nm">NM</span> <span class="pill p-gw">GW</span></td><td><span class="pill p-todo">W2</span></td></tr>
+</table>
+<h2>Safety rules that stay in force</h2>
+<div class="g2">
+<ul class="b small"><li>No secret is ever printed, logged, committed or pasted</li><li>No deletion of data without the exact command shown to you first</li><li>Real students' AskUni files are never touched in tests; only the test student “Abubakar Yaya”</li></ul>
+<ul class="b small"><li>Passports and documents stay in the portal, never in WhatsApp or email</li><li>WhatsApp only to people who opted in; STOP always works; no night-time messages</li><li>Payment only on myorbuni.com / Whop / Paystack checkout pages</li></ul>
+</div>
+<h2>Sources used for this plan</h2>
+<ul class="b small">
+<li>Your uploads: ORB UNI Student Acquisition &amp; Qualification Engine (Sept 2026); Orbuni Accelerator Engine Master Guide; Orbuni Student Accelerator Operational Manual; Lead Systems &amp; Conversion Engine (01/03); Operational Systems, Content &amp; Scaling (03/03); Orbuni Phase 1 plan (30 Sept 2026); the pasted blueprint, recovery strategy and transcripts.</li>
+<li>Live data: Orbuni database, Whop products and Twilio, read on 4 October 2026.</li>
+<li>ICEF Monitor, Oct 2025: Türkiye's international students grew about six-fold in a decade to about 340,000, with a target of 500,000 by 2028 (monitor.icef.com).</li>
+<li>YÖK international office: Nigerian students in Türkiye, scholarship holders and self-funded (uluslararasi.yok.gov.tr).</li>
+<li>Webinar benchmarks 2025: sign-up to attendance about 60% overall, about 31% for education (goldcast.io / ON24 reports).</li>
+<li>WhatsApp Business pricing for Nigeria and the 1 Oct 2026 change (developers.facebook.com pricing page; msmeafricaonline.com).</li>
+<li>Whop features: livestreams, chat, tracking links, content rewards, affiliates (whop.com docs; schoolmaker.com review).</li>
+</ul>
+<div class="callout" style="margin-top:4mm">Legal, tax and platform-policy points here are planning notes, not legal advice. Confirm with a lawyer, an accountant, or the platform's current rules before acting.</div>
+<div class="foot"><span><b>Orbuni</b> · Growth plan · 4 Oct 2026</span><span>29</span></div>
+</section>
+
+</body></html>
