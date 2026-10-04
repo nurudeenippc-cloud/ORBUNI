@@ -169,7 +169,7 @@ def head(title, desc, url, ld):
 
 FOOT = """<footer class="ft"><div class="wrap"><div><a class="brand" href="/"><span class="orb"></span>Orbuni</a><p>Orbuni helps students get into universities in Türkiye, N. Cyprus, the UAE, Germany, Egypt and Russia — published fees, a named counsellor, tuition paid direct to the university. Fees on these pages come from each university's published figures; your counsellor confirms the current figure in writing before you pay anything.</p></div>
 <div><h4>Explore</h4><a href="/universities/">Universities &amp; fees</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Student housing</a><a href="/articles/">Study guides</a><a href="/study/">Study by subject</a></div>
-<div><h4>Orbuni</h4><a href="/">Home</a><a href="/#start">Start your application</a><a href="/#about">About us</a><a href="/#terms">Terms</a></div></div></footer>
+<div><h4>Orbuni</h4><a href="/">Home</a><a href="/pricing/">Prices</a><a href="/how-it-works/">How it works</a><a href="/parents/">For parents</a><a href="/faq/">Questions</a><a href="/about/">About &amp; verify us</a><a href="/#start">Start your application</a><a href="/#about">About us</a><a href="/#terms">Terms</a></div></div></footer>
 </body></html>
 """
 
