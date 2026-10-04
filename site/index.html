@@ -5744,6 +5744,8 @@ dialog[open]{margin:auto}
 .vk-steps code{font-family:var(--mono);font-size:11.5px;background:var(--p2);padding:1px 5px;border-radius:5px;word-break:break-all}
 .vk-row{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
 .vk-row small{color:var(--dim);display:block}
+.pause-note{margin:0 0 14px;padding:13px 15px;border-radius:14px;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);background:color-mix(in srgb,var(--gold) 10%,transparent);font-size:13.5px;line-height:1.55;color:var(--txt)}
+.pause-note .btn{margin-top:10px;display:inline-flex}
 .ai-items{margin:6px 0 2px;padding-left:18px;font-size:13px;line-height:1.5}
 /* ---- 4 Oct 2026 · assistant round 3: live answers, beating orb, floating window, voice mode ---- */
 .ai-row{display:flex;gap:10px;align-items:flex-start;margin:2px 0 14px}
@@ -5817,6 +5819,77 @@ dialog[open]{margin:auto}
 #ask-voice .ov-mic.on{background:#ff5d5d;color:#fff;box-shadow:0 12px 34px rgba(255,93,93,.45)}
 .ov-hint{font-size:12px;color:var(--faint);padding:0 24px calc(18px + env(safe-area-inset-bottom,0px));text-align:center}
 @media(prefers-reduced-motion:reduce){.orb3,.orb3 i,.ov-orb,.ov-orb i,.ov-orb b,.orb-say,.ai-caret{animation:none!important}}
+/* ---- 4 Oct 2026 (evening) · composer like Claude's + the new voice screen ---- */
+#ask-voice-btn{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;background:var(--txt);color:var(--bg);display:grid;place-items:center;cursor:pointer;transition:transform .15s}
+#ask-voice-btn:hover{transform:scale(1.06)}
+#ask-voice-btn svg{width:20px;height:20px}
+#ask-send{border-radius:50%!important}
+#ask-compose:not(.has-text) #ask-send{display:none}
+#ask-compose.has-text #ask-voice-btn{display:none}
+#portal .ask-spark.wake{position:relative}
+#portal .ask-spark.wake::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#3ED598;box-shadow:0 0 0 3px var(--bg)}
+#ask-voice{--lvl:0;background:#05070c;overflow:hidden;color:#f4f1ea}
+#ask-voice .ov-glow{position:absolute;left:-35%;right:-35%;bottom:-40%;height:78%;filter:blur(48px);pointer-events:none;
+  transform-origin:50% 100%;transform:scaleY(calc(.38 + var(--lvl) * .9));opacity:calc(.45 + var(--lvl) * .55);transition:opacity .4s}
+#ask-voice .ov-glow i{position:absolute;bottom:0;width:58%;height:100%;border-radius:50%;mix-blend-mode:screen;animation:ovDrift 9s ease-in-out infinite alternate}
+#ask-voice .ov-glow i:nth-child(1){left:-2%;background:radial-gradient(closest-side,#F2B544,rgba(242,181,68,0))}
+#ask-voice .ov-glow i:nth-child(2){left:22%;background:radial-gradient(closest-side,#E0702E,rgba(224,112,46,0));animation-duration:11s;animation-direction:alternate-reverse}
+#ask-voice .ov-glow i:nth-child(3){left:44%;background:radial-gradient(closest-side,#8f58ee,rgba(143,88,238,0));opacity:.75;animation-duration:13s}
+#ask-voice.st-think .ov-glow{transform:scaleY(.5);animation:ovSlow 2.4s ease-in-out infinite}
+#ask-voice.st-think .ov-glow i:nth-child(3){opacity:1}
+@keyframes ovDrift{from{transform:translateX(-9%) scale(1)}to{transform:translateX(9%) scale(1.14)}}
+@keyframes ovSlow{0%,100%{opacity:.5}50%{opacity:.85}}
+#ask-voice .ov-top{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:20px 18px 0;
+  font:inherit;letter-spacing:0;text-transform:none;color:inherit}
+#ask-voice .ov-top b{display:block;font:700 18px/1.1 var(--disp);letter-spacing:-.02em}
+#ask-voice #ov-state{display:inline-flex;align-items:center;gap:7px;margin-top:6px;font-size:12.5px;color:rgba(244,241,234,.6)}
+#ask-voice #ov-state::before{content:"";width:7px;height:7px;border-radius:50%;background:rgba(244,241,234,.35)}
+#ask-voice.st-listen #ov-state::before{background:#3ED598;box-shadow:0 0 0 4px rgba(62,213,152,.18)}
+#ask-voice.st-think #ov-state::before{background:#a57cf5}
+#ask-voice.st-speak #ov-state::before{background:#F2B544}
+#ask-voice .ov-icon{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(244,241,234,.8);display:grid;place-items:center;cursor:pointer}
+#ask-voice .ov-icon svg{width:18px;height:18px}
+#ask-voice .ov-mid{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:0 26px}
+#ask-voice .ov-mark{width:176px;height:176px;overflow:visible}
+#ask-voice .ov-ring,#ask-voice .ov-sat,#ask-voice .ov-halo{transform-box:view-box;transform-origin:50% 50%}
+#ask-voice .ov-ring{transform:scale(calc(1 + var(--lvl) * .13));filter:drop-shadow(0 0 calc(8px + var(--lvl) * 30px) rgba(242,181,68,.6))}
+#ask-voice.st-idle .ov-ring{animation:ovBeat3 2.8s ease-in-out infinite}
+@keyframes ovBeat3{0%{transform:scale(1)}7%{transform:scale(1.06)}14%{transform:scale(1)}21%{transform:scale(1.06)}28%{transform:scale(1)}35%{transform:scale(1.06)}43%,100%{transform:scale(1)}}
+#ask-voice .ov-halo{transform:scale(calc(.9 + var(--lvl) * .5));opacity:calc(.55 + var(--lvl))}
+#ask-voice .ov-sat{animation:orbSpin 10s linear infinite}
+#ask-voice.st-listen .ov-sat{animation-duration:5s}
+#ask-voice.st-think .ov-sat{animation-duration:1.1s}
+#ask-voice.st-speak .ov-sat{animation-duration:3.6s}
+#ask-voice .ov-trail{stroke-dasharray:74 320;stroke-dashoffset:-218;opacity:0;transition:opacity .3s}
+#ask-voice.st-think .ov-trail{opacity:.7}
+#ask-voice .ov-cap{max-width:30ch;min-height:84px;text-align:center;font-family:'Source Serif 4',Georgia,serif;font-size:19px;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+#ask-voice .ov-cap .me{color:rgba(244,241,234,.55);font-style:italic}
+#ask-voice .ov-cap .ai{color:#f4f1ea}
+#ask-voice .ov-ctrl{position:relative;z-index:2;display:flex;justify-content:center;gap:22px;padding:8px 0 calc(28px + env(safe-area-inset-bottom,0px))}
+#ask-voice .ov-btn{width:62px;height:62px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#f4f1ea;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .15s}
+#ask-voice .ov-btn:hover{transform:scale(1.05)}
+#ask-voice .ov-btn svg{width:24px;height:24px}
+#ask-voice .ov-btn.live{background:#f4f1ea;color:#0b0d12}
+#ask-voice .ov-btn.end{background:rgba(255,86,86,.16);border-color:rgba(255,96,96,.35);color:#ff9090}
+#ov-sheet{position:absolute;left:14px;right:14px;top:70px;z-index:6;display:none;padding:6px;border-radius:18px;
+  background:rgba(16,20,30,.94);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#ov-sheet.on{display:block}
+#ov-sheet .ov-row{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border:0;border-radius:12px;background:none;color:#f4f1ea;text-align:left;font:inherit;cursor:pointer}
+#ov-sheet .ov-row + .ov-row{border-top:1px solid rgba(255,255,255,.07)}
+#ov-sheet .ov-row:hover{background:rgba(255,255,255,.04)}
+#ov-sheet .ov-row span{flex:1;min-width:0}
+#ov-sheet .ov-row b{display:block;font-size:14px;font-weight:650}
+#ov-sheet .ov-row small{display:block;margin-top:3px;font-size:12px;line-height:1.45;color:rgba(244,241,234,.55)}
+#ov-sheet .ov-row input{position:absolute;opacity:0;width:0;height:0}
+#ov-sheet .ov-sw{flex:0 0 auto;width:44px;height:26px;border-radius:13px;background:rgba(255,255,255,.18);position:relative;transition:background .2s}
+#ov-sheet .ov-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+#ov-sheet .ov-row input:checked + .ov-sw{background:#3ED598}
+#ov-sheet .ov-row input:checked + .ov-sw::after{left:21px}
+#ov-sheet .ov-row em{font-style:normal;font-size:22px;color:rgba(244,241,234,.4)}
+@media(prefers-reduced-motion:reduce){#ask-voice .ov-glow i,#ask-voice .ov-sat,#ask-voice .ov-ring{animation:none!important}}
+
 
 .ask-fab{position:fixed;right:22px;bottom:26px;z-index:120;display:inline-flex;align-items:center;gap:8px;
   padding:12px 18px 12px 14px;border-radius:100px;border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));
@@ -8713,14 +8786,14 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div class="eye">Orbuni</div>
     <h3 id="ask-title">Assistant</h3>
     <div class="s" id="ask-sub">Tell it what to do — it always asks before anything is saved.</div>
-    <button type="button" class="ask-siri" onclick="orbSiriSetup()">🎙 Use with “Hey Siri”</button>
   </div>
   <div id="ask-thread"></div>
   <div id="ask-attach-chip"></div>
   <div id="ask-compose">
     <label id="ask-attach-btn" title="Attach a photo or PDF (receipt, passport, transcript, screenshot)" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 auto;border-radius:8px;cursor:pointer;color:var(--dim);font-size:16px">📎<input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,application/pdf,.pdf" style="display:none" onchange="askAttach(this)"></label>
-    <button id="ask-mic" type="button" onclick="orbMic()" aria-label="Speak to Orbuni" title="Speak — Orbuni answers out loud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-    <textarea id="ask-input" rows="1" placeholder="Ask Orbuni…" onkeydown="askKey(event)"></textarea>
+    
+    <textarea id="ask-input" rows="1" placeholder="Ask Orbuni…" onkeydown="askKey(event)" oninput="orbComposeState()"></textarea>
+    <button id="ask-voice-btn" type="button" onclick="orbVoiceOpen()" aria-label="Talk to Orbuni" title="Talk to Orbuni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M5 10v4M9.5 6.5v11M14 9v6M18.5 7.5v9"/></svg></button>
     <button id="ask-send" onclick="orbuniSend()" aria-label="Send">➤</button>
   </div>
 </div>
@@ -32705,9 +32778,8 @@ function ovListen(){
 var ORB_POS_KEY = "orb-ask-pos";
 function orbAskChrome(){
   var p = $("askuni-panel"); if(!p) return;
-  var head = p.querySelector(".ask-head"); if(!head || head.querySelector(".ask-hbtn")) return;
-  head.insertAdjacentHTML("beforeend", '<button type="button" class="ask-hbtn" onclick="orbVoiceOpen()" aria-label="Voice mode" title="Voice mode — talk to Orbuni">'
-    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></button>');
+  var head = p.querySelector(".ask-head"); if(!head || head.getAttribute("data-drag")) return;
+  head.setAttribute("data-drag", "1");
   head.addEventListener("pointerdown", function(e){
     if(!p.classList.contains("float") || e.target.closest("button,a,input,select,textarea")) return;
     var r = p.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
@@ -32764,6 +32836,342 @@ function orbAskFloat(){
     if(e.key === "Escape" && OV.on){ orbVoiceClose(); }
   });
 })();
+
+/* ============================================================
+   4 Oct 2026 (evening) · "Hey Orbuni" and a voice screen worth looking at
+   ------------------------------------------------------------
+   · Wake word: with "Listen for Hey Orbuni" switched on (per device), the
+     open portal listens for "Hey Orbuni" and opens voice mode by itself.
+     "Hey Orbuni, what's the update?" asks straight away. Siri is gone from
+     the assistant; the iPhone shortcut stays as a small extra in settings.
+   · The composer works like Claude's: one round voice button that turns
+     into Send as soon as you type. No pulsing microphone.
+   · Voice screen, redesigned: Orbuni's own mark (the gold ring with a small
+     orbiting "uni" dot), a warm glow rising from the bottom that moves with
+     your voice and with Orbuni's, captions in serif, and two quiet round
+     controls. Four states: ready (ring beats three times and rests),
+     listening (glow follows your voice), thinking (the dot speeds round its
+     orbit) and speaking (glow and ring move with the words).
+   ============================================================ */
+window.orbComposeState = function(){
+  var c = $("ask-compose"), i = $("ask-input"); if(!c || !i) return;
+  c.classList.toggle("has-text", !!(i.value.trim() || ASK.pendingAttachment));
+};
+(function(){ var rc = askRenderAttachChip; askRenderAttachChip = function(){ rc(); try{ orbComposeState(); }catch(e){} }; })();
+
+/* ---- the level meter that drives the glow ---- */
+var LV = { v:0, t:0, raf:0, ana:null, buf:null, stream:null, ctx:null, talk:0 };
+var IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function lvLoop(){
+  LV.raf = requestAnimationFrame(lvLoop);
+  if(LV.ana){
+    LV.ana.getByteTimeDomainData(LV.buf);
+    var sum = 0; for(var i = 0; i < LV.buf.length; i++){ var d = (LV.buf[i] - 128) / 128; sum += d * d; }
+    LV.t = Math.max(LV.t, Math.min(1, Math.sqrt(sum / LV.buf.length) * 5));
+  }
+  try{ if(window.speechSynthesis && speechSynthesis.speaking && performance.now() > LV.talk){ LV.t = Math.max(LV.t, .3 + Math.random() * .55); LV.talk = performance.now() + 110 + Math.random() * 120; } }catch(e){}
+  LV.v += (LV.t - LV.v) * .16; LV.t *= .9;
+  var el = $("ask-voice"); if(el) el.style.setProperty("--lvl", LV.v.toFixed(3));
+}
+async function lvMic(on){
+  if(!on || IS_IOS){   // on iPhone the meter would fight speech recognition for the mic
+    if(LV.stream){ LV.stream.getTracks().forEach(function(t){ t.stop(); }); LV.stream = null; }
+    LV.ana = null; return;
+  }
+  if(LV.ana) return;
+  try{
+    LV.stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } });
+    LV.ctx = LV.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    var src = LV.ctx.createMediaStreamSource(LV.stream);
+    LV.ana = LV.ctx.createAnalyser(); LV.ana.fftSize = 512; LV.buf = new Uint8Array(LV.ana.fftSize);
+    src.connect(LV.ana);
+  }catch(e){ LV.ana = null; }
+}
+
+/* ---- the voice screen ---- */
+var OV_ICON = {
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  micoff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 9.3V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.8 2.4M5 11a7 7 0 0 0 11.4 5.4M19 11a7 7 0 0 1-.6 2.8M12 18v3M3 3l18 18"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+};
+var OV_MARK = '<svg class="ov-mark" viewBox="0 0 160 160" aria-hidden="true"><defs>'
+  + '<linearGradient id="ovRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE3A1"/><stop offset=".55" stop-color="#F2B544"/><stop offset="1" stop-color="#E0702E"/></linearGradient>'
+  + '<radialGradient id="ovCore" cx=".5" cy=".45" r=".6"><stop offset="0" stop-color="#F2B544" stop-opacity=".28"/><stop offset="1" stop-color="#F2B544" stop-opacity="0"/></radialGradient></defs>'
+  + '<circle class="ov-halo" cx="80" cy="80" r="62" fill="url(#ovCore)"/>'
+  + '<circle class="ov-orbit" cx="80" cy="80" r="62" fill="none" stroke="rgba(242,181,68,.16)" stroke-width="1" stroke-dasharray="2 6"/>'
+  + '<g class="ov-ring"><circle cx="80" cy="80" r="38" fill="none" stroke="url(#ovRing)" stroke-width="9"/></g>'
+  + '<g class="ov-sat"><circle class="ov-trail" cx="80" cy="80" r="62" fill="none" stroke="#FFE3A1" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0 390"/><circle cx="80" cy="18" r="6" fill="#FFF4DA"/></g>'
+  + "</svg>";
+ovEnsure = function(){
+  var p = $("askuni-panel"); if(!p) return;
+  var old = $("ask-voice"); if(old && old.getAttribute("data-v") === "2") return;
+  if(old) old.remove();
+  p.insertAdjacentHTML("beforeend", '<div id="ask-voice" data-v="2" class="st-idle" aria-live="polite">'
+    + '<div class="ov-glow" aria-hidden="true"><i></i><i></i><i></i></div>'
+    + '<div class="ov-top"><div><b>Orbuni</b><span id="ov-state">Ready</span></div>'
+    + '<button type="button" class="ov-icon" onclick="ovSettings()" aria-label="Voice settings">' + OV_ICON.gear + "</button></div>"
+    + '<div class="ov-mid">' + OV_MARK + '<div class="ov-cap" id="ov-cap"></div></div>'
+    + '<div class="ov-sheet" id="ov-sheet"></div>'
+    + '<div class="ov-ctrl"><button type="button" class="ov-btn" id="ov-mic" onclick="ovTap()" aria-label="Talk">' + OV_ICON.mic + "</button>"
+    + '<button type="button" class="ov-btn end" onclick="orbVoiceClose()" aria-label="End">' + OV_ICON.x + "</button></div></div>");
+};
+ovSet = function(state, line, cap){
+  var v = $("ask-voice"); if(!v) return;
+  v.className = "on st-" + state;
+  var s = $("ov-state"); if(s) s.textContent = state === "listen" ? "Listening" : state === "think" ? "Thinking" : state === "speak" ? "Speaking" : (line || "Tap to talk");
+  var c = $("ov-cap");
+  if(c){
+    if(state === "speak") c.innerHTML = '<span class="ai">' + esc(line || "") + "</span>";
+    else if(cap != null) c.innerHTML = cap ? '<span class="me">“' + esc(cap) + '”</span>' : "";
+    else if(state === "idle") c.innerHTML = "";
+  }
+  var b = $("ov-mic"); if(b){ b.classList.toggle("live", state === "listen"); b.innerHTML = state === "listen" ? OV_ICON.micoff : OV_ICON.mic; b.setAttribute("aria-label", state === "listen" ? "Stop listening" : "Talk"); }
+  lvMic(state === "listen");
+};
+window.orbVoiceOpen = function(opts){
+  wakeStop();
+  ovEnsure(); OV.on = true;
+  var v = $("ask-voice"); if(v) v.classList.add("on");
+  if(!LV.raf) lvLoop();
+  try{ var u0 = new SpeechSynthesisUtterance(" "); u0.volume = 0; speechSynthesis.speak(u0); }catch(e){}
+  var q = opts && opts.question;
+  if(q){ ovSet("think", null, q); var input = $("ask-input"); if(input) input.value = q; ASK.voiceTurn = true; orbuniSend(); }
+  else ovListen();
+};
+window.orbVoiceClose = function(){
+  OV.on = false;
+  try{ if(OV.rec) OV.rec.abort(); }catch(e){}
+  try{ speechSynthesis.cancel(); }catch(e){}
+  lvMic(false);
+  if(LV.raf){ cancelAnimationFrame(LV.raf); LV.raf = 0; }
+  var v = $("ask-voice"); if(v) v.className = "st-idle";
+  var sh = $("ov-sheet"); if(sh) sh.classList.remove("on");
+  setTimeout(wakeStart, 600);
+};
+window.ovSettings = function(){
+  var sh = $("ov-sheet"); if(!sh) return;
+  if(sh.classList.contains("on")){ sh.classList.remove("on"); return; }
+  var SRok = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  sh.innerHTML = '<label class="ov-row"><span><b>Listen for “Hey Orbuni”</b><small>' + (SRok ? (IS_IOS ? "Works while the portal is open on screen. iPhone may ask you to tap the mic now and then." : "While the portal is open, say “Hey Orbuni” and it answers. This device only.") : "This browser can't listen — use Chrome, Edge or Safari.") + "</small></span>"
+    + '<input type="checkbox" ' + (WAKE.on ? "checked " : "") + (SRok ? "" : "disabled ") + 'onchange="wakeToggle(this.checked)"><i class="ov-sw"></i></label>'
+    + '<button type="button" class="ov-row link" onclick="orbVoiceClose();orbSiriSetup()"><span><b>Use it from a locked iPhone</b><small>A one-time shortcut. Until the Orbuni app comes next year, Apple only lets Siri listen when the phone is locked.</small></span><em>›</em></button>';
+  sh.classList.add("on");
+};
+
+/* ---- "Hey Orbuni" ---- */
+var WAKE = { on:false, rec:null, timer:0 };
+try{ WAKE.on = localStorage.getItem("orb-wake") === "1"; }catch(e){}
+var WAKE_RE = /\b(?:hey|hi|hello|okay|ok|yo)[\s,.!]*(?:or[\s-]?b[ouoa]{1,2}n+[iyie]{1,2}|or[\s-]?bunny|orbani|orbuni|urbani|urbuni|orboni|orbony|all bunny|or bonnie|orbiting|or bunni|orbunny)\b[\s,.!]*/i;
+function wakeOk(){ return WAKE.on && !OV.on && !document.hidden && typeof PROF !== "undefined" && PROF && (PROF.role === "staff" || PROF.role === "admin") && !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function wakePaint(){ document.querySelectorAll("#portal .ask-spark").forEach(function(b){ b.classList.toggle("wake", !!WAKE.rec); b.title = WAKE.rec ? "Orbuni — listening for “Hey Orbuni”" : "Ask Orbuni (Ctrl+K)"; }); }
+function wakeStart(){
+  clearTimeout(WAKE.timer);
+  if(WAKE.rec || !wakeOk()) return;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = new SR(); WAKE.rec = rec;
+  rec.lang = navigator.language || "en-US"; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = function(ev){
+    for(var i = ev.resultIndex; i < ev.results.length; i++){
+      var t = ev.results[i][0].transcript, m = t.match(WAKE_RE);
+      if(!m) continue;
+      var rest = t.slice(m.index + m[0].length).trim();
+      if(!ev.results[i].isFinal && rest.split(/\s+/).length < 3 && rest) continue;   // let a short question finish
+      try{ rec.abort(); }catch(e){}
+      WAKE.rec = null; wakePaint();
+      var p = $("askuni-panel");
+      if(!p || !p.classList.contains("on")){ if(typeof window.orbAsk === "function") window.orbAsk(); }
+      setTimeout(function(){ orbVoiceOpen(rest.length > 3 ? { question: rest } : null); }, 250);
+      return;
+    }
+  };
+  rec.onerror = function(ev){ if(ev.error === "not-allowed" || ev.error === "service-not-allowed"){ WAKE.on = false; try{ localStorage.setItem("orb-wake", "0"); }catch(e){} toast("Allow the microphone for myorbuni.com to use “Hey Orbuni”.", true); } };
+  rec.onend = function(){ WAKE.rec = null; wakePaint(); WAKE.timer = setTimeout(wakeStart, 500); };
+  try{ rec.start(); wakePaint(); }catch(e){ WAKE.rec = null; }
+}
+function wakeStop(){ clearTimeout(WAKE.timer); var r = WAKE.rec; WAKE.rec = null; if(r){ r.onend = null; try{ r.abort(); }catch(e){} } wakePaint(); }
+window.wakeToggle = function(on){
+  WAKE.on = !!on; try{ localStorage.setItem("orb-wake", on ? "1" : "0"); }catch(e){}
+  toast(on ? "On — say “Hey Orbuni” any time the portal is open." : "“Hey Orbuni” is off on this device.");
+};
+document.addEventListener("visibilitychange", function(){ if(document.hidden) wakeStop(); else setTimeout(wakeStart, 400); });
+(function wakeBoot(){ var n = 0; var t = setInterval(function(){ n++; if(wakeOk()){ clearInterval(t); wakeStart(); } else if(n > 120) clearInterval(t); }, 1000); })();
+
+ovListen = function(){
+  if(!OV.on) return;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ ovSet("idle", "This browser can't listen"); return; }
+  var thread = ASK.history[ASK.section] || [];
+  if(thread.some(function(m){ return m.think || m.live; })){ ovSet("think"); return; }
+  var rec = new SR(); OV.rec = rec;
+  rec.lang = navigator.language || "en-US"; rec.interimResults = true; rec.continuous = false;
+  var heard = "";
+  rec.onresult = function(ev){
+    var t = ""; for(var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+    heard = t.trim(); LV.t = Math.max(LV.t, .55);
+    var c = $("ov-cap"); if(c) c.innerHTML = '<span class="me">' + esc(heard) + "</span>";
+  };
+  rec.onerror = function(ev){ OV.rec = null; ovSet("idle", (ev.error === "not-allowed" || ev.error === "service-not-allowed") && !IS_IOS ? "Allow the microphone" : ev.error === "no-speech" ? "Didn't catch that" : "Tap to talk"); };
+  rec.onend = function(){
+    OV.rec = null;
+    if(!OV.on) return;
+    if(!heard){ var v = $("ask-voice"); if(v && /st-listen/.test(v.className)) ovSet("idle", "Tap to talk"); return; }
+    if(/^(stop|end|bye|goodbye|that's all|thank you,? that's all|cancel)\b/i.test(heard)){ orbSpeak("Okay.", function(){}); orbVoiceClose(); return; }
+    ovSet("think", null, heard);
+    var input = $("ask-input"); if(input) input.value = heard;
+    ASK.voiceTurn = true; orbuniSend();
+  };
+  try{ rec.start(); ovSet("listen", null, ""); }catch(e){ OV.rec = null; ovSet("idle", "Tap to talk"); }
+};
+
+/* ---- 4 Oct 2026 (evening) · a real conversation: talk over Orbuni and it stops and listens ---- */
+orbVoice = function(){
+  var vs = []; try{ vs = speechSynthesis.getVoices() || []; }catch(e){}
+  var en = vs.filter(function(x){ return /^en/i.test(x.lang); });
+  var female = /(aria|jenny|sonia|libby|ava|zoe|samantha|allison|susan|karen|moira|tessa|serena|emma|michelle|natasha|clara|female|woman|kate|serena)/i;
+  var natural = /(natural|neural|premium|enhanced|online)/i;
+  // best first: a natural/neural female voice (Edge's "Aria Online (Natural)", iPhone's "Ava (Premium)"), then any female, then any English
+  return en.find(function(x){ return natural.test(x.name) && female.test(x.name); })
+      || en.find(function(x){ return /Google UK English Female/.test(x.name); })
+      || en.find(function(x){ return female.test(x.name); })
+      || en[0] || null;
+};
+var BARGE = { rec:null, said:"", on:false };
+function bargeWords(t){ return String(t || "").toLowerCase().replace(/[^a-z0-9' ]+/g, " ").split(/\s+/).filter(function(w){ return w.length > 1; }); }
+function bargeIsEcho(heard){
+  var h = bargeWords(heard), said = " " + bargeWords(BARGE.said).join(" ") + " ";
+  if(h.length < 2) return true;
+  var hits = h.filter(function(w){ return said.indexOf(" " + w + " ") > -1; }).length;
+  return hits / h.length > .6;   // most words are what Orbuni is saying: it's hearing itself
+}
+function bargeStart(text){
+  BARGE.said = text; BARGE.on = true;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR || !OV.on || BARGE.rec) return;
+  var rec = new SR(); BARGE.rec = rec;
+  rec.lang = navigator.language || "en-US"; rec.continuous = true; rec.interimResults = true;
+  var cut = false;
+  rec.onresult = function(ev){
+    var t = ""; for(var i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+    t = t.trim(); if(!t || bargeIsEcho(t)) return;
+    if(!cut){ cut = true; try{ speechSynthesis.cancel(); }catch(e){} ovSet("listen", null, t); }
+    else { var c = $("ov-cap"); if(c) c.innerHTML = '<span class="me">' + esc(t) + "</span>"; }
+    if(ev.results[ev.results.length - 1].isFinal){
+      bargeStop();
+      if(/^(stop|wait|ok stop|that's enough|enough)\b/i.test(t)){ ovSet("idle", "Tap to talk"); setTimeout(ovListen, 300); return; }
+      ovSet("think", null, t);
+      var input = $("ask-input"); if(input) input.value = t;
+      ASK.voiceTurn = true; orbuniSend();
+    }
+  };
+  rec.onerror = function(){ BARGE.rec = null; };
+  rec.onend = function(){ BARGE.rec = null; if(BARGE.on && OV.on && !cut){ try{ if(speechSynthesis.speaking) bargeStart(BARGE.said); }catch(e){} } };
+  try{ rec.start(); }catch(e){ BARGE.rec = null; }
+}
+function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(r){ r.onend = null; try{ r.abort(); }catch(e){} } }
+(function(){
+  var sp0 = orbSpeak;
+  orbSpeak = function(t, onEnd){
+    if(!OV.on) return sp0(t, onEnd);
+    bargeStop();
+    var done = false;
+    sp0(t, function(){ if(done) return; done = true; bargeStop(); if(onEnd) onEnd(); });
+    setTimeout(function(){ if(!done) bargeStart(t); }, 450);   // a beat after it starts, so it doesn't catch its own first word
+  };
+  var close0 = window.orbVoiceClose;
+  window.orbVoiceClose = function(){ bargeStop(); return close0.apply(this, arguments); };
+  var tap0 = window.ovTap;
+  window.ovTap = function(){ bargeStop(); return tap0.apply(this, arguments); };
+})();
+
+/* ============================================================
+   4 Oct 2026 · New student accounts are paused (admission gate being built)
+   ------------------------------------------------------------
+   The database refuses new STUDENT accounts while the owner's switch
+   (app_flags.student_signups_open) is off — that is the real lock. This only
+   makes it friendly: the "Create account" screen becomes "Applications reopen
+   soon" with a waitlist (a lead, so the follow-up system still works), and
+   the team's "Create a student" page says it's paused. Everyone who already
+   has an account — students, partners, team — signs in exactly as before.
+   ============================================================ */
+var SIGNUPS_OPEN = null;
+async function orbSignupsOpen(){
+  if(SIGNUPS_OPEN !== null) return SIGNUPS_OPEN;
+  try{ var r = await sb.from("app_flags").select("on_off").eq("key", "student_signups_open").maybeSingle(); SIGNUPS_OPEN = !(r.data && r.data.on_off === false); }
+  catch(e){ SIGNUPS_OPEN = true; }
+  return SIGNUPS_OPEN;
+}
+(function(){
+  var f0 = friendly;
+  window.friendly = friendly = function(e){
+    var m = String((e && (e.message || e.error_description)) || "").toLowerCase();
+    if(m.indexOf("student_signups_paused") > -1 || m.indexOf("database error saving new user") > -1)
+      return "New student accounts are paused while we prepare the next intake. Join the waitlist and we’ll message you the moment we reopen.";
+    return f0(e);
+  };
+  var s0 = window.setAuth;
+  window.setAuth = setAuth = function(s){
+    s0(s);
+    if(s !== "student-up") return;
+    orbSignupsOpen().then(function(open){
+      if(open || AUTH !== "student-up") return;
+      var card = $("acard"); if(!card) return;
+      card.innerHTML = '<div class="abrand"><div class="row"><span class="orb"><b>O</b></span><span class="nm">Orbuni</span></div></div>'
+        + '<h2>Applications reopen soon</h2>'
+        + '<p class="sub">We’re preparing the next intake, so new student accounts are paused for a short time. Leave your details and we’ll message you on WhatsApp the moment we reopen — you’ll be first in line.</p>'
+        + '<div class="fld"><label>Your name</label><input id="wl-n" autocomplete="name" placeholder="As on your passport"></div>'
+        + '<div class="fld"><label>Email</label><input id="wl-e" type="email" autocomplete="email" placeholder="you@example.com"></div>'
+        + '<div class="fld"><label>WhatsApp number</label><input id="wl-p" type="tel" autocomplete="tel" placeholder="+234 …"></div>'
+        + '<button class="btn btn-p btn-w" id="wl-go" onclick="orbWaitlist(event)">Join the waitlist</button>'
+        + '<p class="sub" style="margin-top:14px;font-size:13px">Already have an account? <a href="#" onclick="setAuth(\'student-in\');return false">Sign in</a></p>';
+    });
+  };
+})();
+window.orbWaitlist = async function(ev){
+  var n = ($("wl-n") || {}).value || "", e = ($("wl-e") || {}).value || "", p = ($("wl-p") || {}).value || "";
+  n = n.trim(); e = e.trim(); p = p.trim();
+  if(!n){ toast("Add your name.", true); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && p.replace(/\D/g, "").length < 8){ toast("Add an email or a WhatsApp number so we can reach you.", true); return; }
+  var btn = ev && ev.target; if(btn) busy(btn, true, "Saving…");
+  var utm = (typeof orbUTM === "function") ? orbUTM() : {};
+  var r = await sb.from("leads").insert({ name:n, email:e || null, phone:p || null, region:(typeof regionFromPhone === "function" ? regionFromPhone(p) : null),
+    message:"Waitlist: wants to apply when student accounts reopen", source:"website",
+    utm_source:utm.utm_source || null, utm_medium:utm.utm_medium || null, utm_campaign:utm.utm_campaign || null, landing_page:utm.landing_page || null });
+  if(btn) busy(btn, false);
+  if(r.error){ toast(friendly(r.error), true); return; }
+  $("acard").innerHTML = '<div class="abrand"><div class="row"><span class="orb"><b>O</b></span><span class="nm">Orbuni</span></div></div>'
+    + '<h2>You’re on the list ✅</h2><p class="sub">Thank you, ' + esc(n.split(" ")[0]) + '. We’ll message you as soon as applications reopen. In the meantime you can read our guides and scholarship pages.</p>'
+    + '<button class="btn btn-p btn-w" onclick="closePortal ? closePortal() : location.reload()">Back to the site</button>';
+};
+/* the team's "Create a student" page and the owner's switch */
+(function(){
+  var g0 = window.aGo;
+  if(typeof g0 !== "function") return;
+  window.aGo = function(v){
+    var r = g0.apply(this, arguments);
+    if(v === "create"){
+      orbSignupsOpen().then(function(open){
+        if(open) return;
+        setTimeout(function(){
+          var box = $("a-live"); if(!box || box.querySelector(".pause-note")) return;
+          var own = PROF && PROF.is_owner;
+          box.insertAdjacentHTML("afterbegin", '<div class="pause-note"><b>New student accounts are paused.</b> '
+            + 'Students who already have an account sign in as normal. New accounts (from the website, from partners, or from here) are refused until the switch is turned back on.'
+            + (own ? ' <button class="btn btn-o btn-s" onclick="orbSignupsSwitch(true)">Reopen student sign-ups</button>' : "") + "</div>");
+        }, 200);
+      });
+    }
+    return r;
+  };
+})();
+window.orbSignupsSwitch = async function(open){
+  if(!confirm(open ? "Reopen new student accounts on the website and for partners?" : "Pause new student accounts?")) return;
+  var r = await sb.from("app_flags").update({ on_off: !!open, updated_by: ME.id, updated_at: new Date().toISOString() }).eq("key", "student_signups_open");
+  if(r.error){ toast(friendly(r.error), true); return; }
+  SIGNUPS_OPEN = !!open;
+  toast(open ? "Student sign-ups are open again." : "Student sign-ups are paused.");
+  var n = document.querySelector(".pause-note"); if(n && open) n.remove();
+};
 
 /* ============================================================
    Marketing → Follow-up emails. Who is being followed up after an
