@@ -66,3 +66,30 @@ begin
 end $$;
 revoke all on function public.voice_key_identity(text) from public, anon, authenticated;
 grant execute on function public.voice_key_identity(text) to service_role;
+
+-- 4 Oct 2026 (later): the key sees exactly what its owner can OPEN in the portal
+-- (can_open), plus marketing / content / team-workload flags.
+create or replace function public.voice_key_identity(p_hash text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare r ai_voice_keys; uid uuid; own boolean;
+begin
+  select * into r from ai_voice_keys where key_hash = p_hash and revoked_at is null;
+  if not found then return null; end if;
+  uid := r.profile_id;
+  if r.hour_start is null or r.hour_start < now() - interval '1 hour' then
+    update ai_voice_keys set hour_start = now(), hour_count = 1, last_used_at = now() where id = r.id;
+  else
+    if r.hour_count >= 60 then return jsonb_build_object('error', 'limit'); end if;
+    update ai_voice_keys set hour_count = hour_count + 1, last_used_at = now() where id = r.id;
+  end if;
+  perform set_config('request.jwt.claim.sub', uid::text, true);
+  perform set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
+  own := coalesce((select is_owner from profiles where id = uid), false);
+  return jsonb_build_object('uid', uid, 'staff', public.is_staff(),
+    'finance', public.can_open('finance'), 'ops', public.can_open('ops'),
+    'marketing', public.can_open('marketing'), 'content', public.can_open('content'),
+    'apps', public.can_open('apps') or public.can_manage_section('applications'),
+    'team', own or public.can_manage_section('leads'), 'owner', own);
+end $$;
+revoke all on function public.voice_key_identity(text) from public, anon, authenticated;
+grant execute on function public.voice_key_identity(text) to service_role;
