@@ -21816,8 +21816,11 @@ async function aLeads(){
   var people = await loadAdmissionsTeam();
 
   var mineAll = all.filter(function(l){ return ME && (l.owner_id === ME.id || l.senior_id === ME.id); });
-  var scope = LEADQ.who === "mine" ? mineAll : all;
+  var isWL = function(l){ return /^waitlist:/i.test(String(l.message || "")); };
+  var wlAll = all.filter(isWL);
+  var scope = (LEADQ.who === "mine" && LEADQ.stage !== "waitlist") ? mineAll : all;
   var rows = scope.filter(function(l){
+    if(LEADQ.stage === "waitlist")  return isWL(l);
     if(LEADQ.stage === "open")      return !LEAD_CLOSED[l.stage];
     if(LEADQ.stage === "overdue")   return leadOverdue(l);
     if(LEADQ.stage === "won")       return l.stage === "student" || l.stage === "active_project" || l.stage === "alumni";
@@ -21864,7 +21867,10 @@ async function aLeads(){
     + tab("stage", "mql", "MQL") + tab("stage", "working", "Working")
     + tab("stage", "opportunity", "Opportunity") + tab("stage", "won", "Won")
     + tab("stage", "lost", "Lost") + tab("stage", "all", "All")
-    + "</div></div>"
+    + '<span style="width:11px"></span>' + tab("stage", "waitlist", "Waitlist", wlAll.length)
+    + "</div>"
+    + (LEADQ.stage === "waitlist" ? '<div class="s" style="margin-top:10px;line-height:1.55">Everyone here left their name on the website while student sign-ups are paused. They are ordinary leads: they were scored and handed out like the rest, and the follow-up messages still go to them. Message them when you reopen sign-ups.</div>' : "")
+    + "</div>"
 
     + (rows.length ? rows.map(function(l){
         var late = leadOverdue(l);
@@ -33618,16 +33624,16 @@ window.vpRevoke = async function(pid, off){
 
 /* ---- the portal guide videos, at the top of Guides (students and partners) ---- */
 var VG = {
-  student: { src:"/video/guide-student.mp4?v=r47", quiet:null, len:"74 seconds", h:"How to use your portal", p:"Documents, programmes, offers, housing and getting help — narrated by Orbuni." },
-  partner: { src:"/video/guide-partner.mp4?v=r47", quiet:null, len:"90 seconds", h:"How the partner portal works", p:"Adding students, applications, programme search, scholarships, commission, your plan and your assistant." },
-  team:    { src:"/video/team-guide.mp4?v=r47", quiet:null, len:"3 min 20 s", h:"The team portal: the full tour", p:"Every section: Today, Spaces, WhatsApp, Challenges, leads, creating students, applications, documents, AskUni, partners, finance and partner payouts, your earnings, team access, Ask Orbuni and the Orbuni button." },
+  student: { src:"/video/guide-student.mp4?v=r48", quiet:null, len:"74 seconds", h:"How to use your portal", p:"Documents, programmes, offers, housing and getting help — narrated by Orbuni." },
+  partner: { src:"/video/guide-partner.mp4?v=r48", quiet:null, len:"90 seconds", h:"How the partner portal works", p:"Adding students, applications, programme search, scholarships, commission, your plan and your assistant." },
+  team:    { src:"/video/team-guide.mp4?v=r48", quiet:null, len:"3 min 20 s", h:"The team portal: the full tour", p:"Every section: Today, Spaces, WhatsApp, Challenges, leads, creating students, applications, documents, AskUni, partners, finance and partner payouts, your earnings, team access, Ask Orbuni and the Orbuni button." },
 };
 function vgCard(kind){
   var g = VG[kind] || VG.student;
   return '<div class="vg-card" data-kind="' + kind + '"><div class="vg-txt"><span class="vg-eye">Video guide · ' + g.len + "</span>"
     + "<h3>" + g.h + "</h3><p>" + g.p + "</p>"
     + (g.quiet ? '<div class="vg-sw" role="group" aria-label="Sound"><button class="on" onclick="vgVoice(this,1)">With voice</button><button onclick="vgVoice(this,0)">Without voice</button></div>' : "")
-    + '</div><video class="vg-v" controls playsinline preload="none" poster="' + g.src.replace(/\.mp4(\?.*)?$/, "-poster.jpg$1") + '" src="' + g.src + '"></video></div>';
+    + '</div><video class="vg-v" controls playsinline preload="metadata" poster="' + g.src.replace(/\.mp4(\?.*)?$/, "-poster.jpg$1") + '" src="' + g.src + '"></video></div>';
 }
 window.vgVoice = function(b, on){
   var c = b.closest(".vg-card"), v = c && c.querySelector("video"); if(!v) return;
@@ -33637,6 +33643,14 @@ window.vgVoice = function(b, on){
   v.src = on ? g.src : (g.quiet || g.src);
   v.addEventListener("loadedmetadata", function f(){ v.removeEventListener("loadedmetadata", f); try{ v.currentTime = t; }catch(e){} if(playing) v.play(); });
 };
+/* r48: one voice at a time. Starting any video pauses every other video or audio clip and the assistant's voice,
+   so two copies of a narration can never overlap (that is what sounds like an echo). */
+document.addEventListener("play", function(e){
+  var t = e.target; if(!t || (t.tagName !== "VIDEO" && t.tagName !== "AUDIO")) return;
+  document.querySelectorAll("video,audio").forEach(function(m){ if(m !== t && !m.paused && !m.muted) { try{ m.pause(); }catch(_){} } });
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(_){}
+  try{ if(typeof bargeStop === "function") bargeStop(); }catch(_){}
+}, true);
 /* r46: the team tour sits at the top of the team's Guides page */
 setInterval(function(){
   if(typeof AV === "undefined" || AV !== "arts") return;
