@@ -33618,9 +33618,9 @@ window.vpRevoke = async function(pid, off){
 
 /* ---- the portal guide videos, at the top of Guides (students and partners) ---- */
 var VG = {
-  student: { src:"/video/guide-student.mp4?v=r47", quiet:null, len:"74 seconds", h:"How to use your portal", p:"Documents, programmes, offers, housing and getting help — narrated by Orbuni." },
+  student: { src:"/video/guide-student.mp4?v=r47", quiet:"/video/guide-student-silent.mp4?v=r47", len:"74 seconds", h:"How to use your portal", p:"Documents, programmes, offers, housing and getting help — narrated by Orbuni." },
   partner: { src:"/video/guide-partner.mp4?v=r47", quiet:null, len:"90 seconds", h:"How the partner portal works", p:"Adding students, applications, programme search, scholarships, commission, your plan and your assistant." },
-  team:    { src:"/video/team-guide.mp4?v=r47", quiet:null, len:"3 min 20 s", h:"The team portal: the full tour", p:"Every section: Today, Spaces, WhatsApp, Challenges, leads, creating students, applications, documents, AskUni, partners, finance and partner payouts, your earnings, team access, Ask Orbuni and the Orbuni button." },
+  team:    { src:"/video/team-guide.mp4?v=r47", quiet:"/video/team-guide-silent.mp4?v=r47", len:"3 min 20 s", h:"The team portal: the full tour", p:"Every section: Today, Spaces, WhatsApp, Challenges, leads, creating students, applications, documents, AskUni, partners, finance and partner payouts, your earnings, team access, Ask Orbuni and the Orbuni button." },
 };
 function vgCard(kind){
   var g = VG[kind] || VG.student;
@@ -34910,6 +34910,7 @@ window.psStart = async function(btn){
   setTimeout(check, 1200);
 })();
 /* ==WHOP-JS-END== */
+window.__T={ set:function(f,me,prof){ sb=f; ME=me; PROF=prof; }, ask:function(){ return ASK; }, render:function(){ askRenderThread(); }, sbx:function(){ return sb; }, go:function(v){ return aGo(v); }, ev:function(src){ return eval(src); } };
 })();
 
 </script>
