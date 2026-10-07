@@ -7541,7 +7541,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     </div>
   </div></section>
 
-  <!-- the numbers: plain figures, no boxes, no counting animation -->
+  <!-- the numbers: plain figures that roll up as they come into view (see ORB-MOTION) -->
   <section class="nstrip"><div class="wrap">
     <div class="nstrip-in">
       <div class="nstat"><b>48<i>+</i></b><span>partner universities</span></div>
@@ -35393,5 +35393,153 @@ a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
 var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
 s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
 <!--/orb-wa-->
+<!-- ==ORB-MOTION== public-site motion layer: rolling numbers, staggered
+     reveals, hero headline. Public pages only; the portal is untouched, and
+     everything is skipped for people who ask their device for less motion. -->
+<style id="orb-motion-css">
+/* the stats blocks style every <span> inside them as a caption, so these
+   are spelled out in full and win over that */
+b .odo{display:inline-flex!important;align-items:flex-start;white-space:nowrap;margin:0!important;max-width:none!important;font:inherit!important;color:inherit!important;line-height:1.08em!important}
+b .odo .odo-col{display:inline-block!important;height:1.08em!important;line-height:1.08em!important;overflow:hidden!important;vertical-align:top;position:relative;margin:0!important;max-width:none!important;font:inherit!important;color:inherit!important}
+b .odo .odo-strip{display:block!important;margin:0!important;max-width:none!important;font:inherit!important;color:inherit!important;transform:translateY(0);will-change:transform;
+  transition:transform 2.1s cubic-bezier(.16,1,.3,1)}
+b .odo .odo-strip>span{display:block!important;height:1.08em!important;line-height:1.08em!important;margin:0!important;max-width:none!important;font:inherit!important;color:inherit!important;text-align:center}
+b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;margin:0!important;font:inherit!important;color:inherit!important}
+.mv{opacity:0;transform:translate3d(0,26px,0);filter:blur(6px);
+  transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .8s cubic-bezier(.16,1,.3,1)}
+.mv.mv-in{opacity:1;transform:none;filter:none}
+.hl{display:block;overflow:hidden;padding-bottom:.08em;margin-bottom:-.08em}
+.hl-in{display:inline-block;transform:translate3d(0,108%,0);transition:transform 1.05s cubic-bezier(.16,1,.3,1)}
+.hl-go .hl-in{transform:none}
+.hl:nth-child(2) .hl-in{transition-delay:.12s}
+.btn-p{position:relative;overflow:hidden}
+.btn-p::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);transition:none}
+.btn-p:hover::after{left:130%;transition:left .75s cubic-bezier(.16,1,.3,1)}
+@media (prefers-reduced-motion:reduce){
+  .mv{opacity:1;transform:none;filter:none;transition:none}
+  .hl-in{transform:none;transition:none}
+  b .odo .odo-strip{transition:none}
+  .btn-p::after{display:none}
+}
+</style>
+<script id="orb-motion-js">
+(function(){
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var pages = function(){ return document.querySelectorAll("main.page"); };
+
+  /* ---------- rolling numbers ---------- */
+  function odo(b){
+    if(b.__odo) return; b.__odo = 1;
+    var tail = b.querySelector("i"); var tailHTML = tail ? tail.outerHTML : "";
+    var txt = (tail ? b.childNodes[0].textContent : b.textContent).trim();
+    if(!/^[\d,]+$/.test(txt)) return;
+    b.setAttribute("aria-label", txt + (tail ? tail.textContent : ""));
+    var html = '<span class="odo" aria-hidden="true">', cols = [];
+    var digits = txt.replace(/,/g, "").length, k = 0;
+    for(var i = 0; i < txt.length; i++){
+      var ch = txt[i];
+      if(ch === ","){ html += '<span class="odo-sep">,</span>'; continue; }
+      var d = +ch, turns = Math.min(2, digits - 1 - k), strip = "";
+      for(var t = 0; t <= turns; t++) for(var n = 0; n < 10; n++) strip += "<span>" + n + "</span>";
+      html += '<span class="odo-col"><span class="odo-strip" data-to="' + (turns * 10 + d) + '" data-n="' + ((turns + 1) * 10) + '" style="transition-delay:' + (k * 0.09) + 's">' + strip + "</span></span>";
+      k++;
+    }
+    b.innerHTML = html + "</span>" + tailHTML;
+  }
+  function roll(b){
+    b.querySelectorAll(".odo-strip").forEach(function(s){
+      s.style.transform = "translateY(" + (-100 * (+s.dataset.to) / (+s.dataset.n)) + "%)";
+    });
+  }
+
+  /* ---------- what fades up ---------- */
+  var PICK = [
+    "section h2", "section .eyebrow", "section .lead", ".nh-head",
+    ".nstat", ".fcard", ".uc", ".lp-facts > div", ".cr-stats > div",
+    "section .grid > *", "section [class*='grid'] > *", "section figure", "section .card",
+    ".faq details", "footer .wrap > *"
+  ].join(",");
+  function eligible(el){
+    if(el.closest("#portal,.hero,.hshot,.lp-float,[aria-hidden='true']")) return false;
+    if(el.classList.contains("rv") || el.closest(".rv")) return false;
+    if(el.querySelector("video,iframe,input,select,textarea")) return false;
+    var cs = getComputedStyle(el);
+    if(cs.position === "fixed" || cs.position === "sticky") return false;
+    return true;
+  }
+  var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target; io.unobserve(el);
+      if(el.__odoB){ roll(el.__odoB); return; }
+      // siblings arriving together come in one after another
+      var sib = el.parentElement ? [].filter.call(el.parentElement.children, function(c){ return c.classList.contains("mv") && !c.classList.contains("mv-in"); }) : [];
+      var i = Math.max(0, sib.indexOf(el));
+      el.style.transitionDelay = Math.min(i * 0.07, 0.42) + "s";
+      el.classList.add("mv-in");
+      setTimeout(function(){ el.style.transitionDelay = ""; }, 1400);
+    });
+  }, { rootMargin:"0px 0px -8% 0px", threshold:0.12 }) : null;
+
+  function scan(root){
+    if(!io || still) return;
+    (root || document).querySelectorAll("main.page " + PICK.split(",").join(", main.page ")).forEach(function(el){
+      if(el.__mv || !eligible(el)) return;
+      el.__mv = 1; el.classList.add("mv"); io.observe(el);
+    });
+    (root || document).querySelectorAll("main.page .nstat b, main.page .lp-facts b, main.page [data-count]").forEach(function(b){
+      if(b.__odoW) return; b.__odoW = 1;
+      odo(b); if(!b.querySelector(".odo")) return;
+      var w = b.closest(".nstat,.lp-facts > div") || b;
+      // the number rolls when its block comes into view
+      var probe = w.__mv ? w : b;
+      if(probe === b){ b.__odoB = b; io.observe(b); }
+      else {
+        var orig = probe; var o2 = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ o2.disconnect(); setTimeout(function(){ roll(b); }, 180); } }); }, { threshold:0.3 });
+        o2.observe(orig);
+      }
+    });
+  }
+
+  /* ---------- the home headline rises line by line ---------- */
+  function headline(){
+    var h = document.querySelector("#pg-home .hero h1"); if(!h || h.__hl || still) return;
+    h.__hl = 1;
+    var parts = [], cur = document.createElement("span");
+    [].slice.call(h.childNodes).forEach(function(n){
+      if(n.nodeName === "BR"){ parts.push(cur); cur = document.createElement("span"); return; }
+      cur.appendChild(n);
+    });
+    parts.push(cur);
+    h.innerHTML = "";
+    parts.forEach(function(p){
+      var l = document.createElement("span"); l.className = "hl";
+      p.className = "hl-in"; l.appendChild(p); h.appendChild(l);
+    });
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ h.classList.add("hl-go"); }); });
+  }
+
+  function start(){
+    headline(); scan();
+    // pages and lists drawn later (programmes, universities, guides) get the same treatment
+    var pend = null;
+    new MutationObserver(function(ms){
+      if(pend) return;
+      pend = setTimeout(function(){ pend = null; scan(); }, 120);
+    }).observe(document.body, { childList:true, subtree:true });
+    // never leave anything invisible: whatever is on screen after a moment shows
+    setTimeout(function(){
+      document.querySelectorAll(".mv:not(.mv-in)").forEach(function(el){
+        var r = el.getBoundingClientRect();
+        if(r.top < innerHeight && r.bottom > 0 && r.width) el.classList.add("mv-in");
+      });
+    }, 2500);
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+<!-- /ORB-MOTION -->
+
 </body>
 </html>
