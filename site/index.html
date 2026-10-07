@@ -19194,7 +19194,13 @@ function connectorRow(provider){
   var isOwner = !!(PROF && PROF.is_owner);
 
   var sub, pill, action;
-  if(mine){
+  if(mine && mine.status && mine.status !== "connected" && configured){
+    // Google drops the link after a while (and after 7 days while the Google app is
+    // still in Testing), so say so and offer the one-tap fix instead of "Connected".
+    sub = "Connection expired" + (mine.account_email ? " for " + mine.account_email : "") + " — tap to reconnect";
+    pill = '<span class="setrow-pill on">Reconnect</span>';
+    action = "connectorConnect('" + jsq(provider) + "')";
+  } else if(mine){
     sub = "Connected" + (mine.account_email ? " as " + mine.account_email : "") + " · " + ago(mine.connected_at);
     pill = '<span class="setrow-pill on">Disconnect</span>';
     action = "connectorDisconnect('" + jsq(provider) + "')";
@@ -26857,6 +26863,11 @@ function updateBackButton(role){
 window.goBack = function(role){
   var target = NAVBACK[role];
   if(target == null) return;
+  // A detail screen with its own "← …" button (see detailNav): press that, so
+  // the arrow lands exactly where the screen's own link would — the residence
+  // list rather than the Housing section's first tab, say.
+  if(typeof detailNavBack === "function" && detailNavBack(role)) return;
+  if(target && target.__detail){ NAVBACK[role] = null; updateBackButton(role); return; }
   // Clear it before navigating, not after — landing back on the section's
   // list is the end of the line, so there is nothing left to go back to.
   NAVBACK[role] = null;
@@ -30435,7 +30446,7 @@ if(window.aHousingOpen && !window.aHousingOpen.__r6){
     var tone = h.gender === "female" ? "lilac" : h.gender === "male" ? "sky" : "mint";
     var i = HOUSE_ROWS.indexOf(h), prev = HOUSE_ROWS[i - 1], next = HOUSE_ROWS[i + 1];
     box.innerHTML = '<div class="o6 r6-house">'
-      + '<div class="r6-house-nav"><button class="o6-btn" onclick="aHousingListings()">' + r6Ic("back") + " All residences</button>"
+      + '<div class="r6-house-nav"><button class="o6-btn" data-back onclick="aHousingListings()">' + r6Ic("back") + " All residences</button>"
       + '<span class="r6-house-pg">' + (i + 1) + " of " + HOUSE_ROWS.length + "</span>"
       + '<div class="r6-person-a">' + (prev ? '<button class="o6-btn sm" onclick="aHousingOpen(' + prev.id + ')" aria-label="Previous residence">‹ Previous</button>' : "")
       + (next ? '<button class="o6-btn sm" onclick="aHousingOpen(' + next.id + ')" aria-label="Next residence">Next ›</button>' : "") + "</div></div>"
@@ -34943,6 +34954,237 @@ window.psStart = async function(btn){
   setTimeout(check, 1200);
 })();
 /* ==WHOP-JS-END== */
+/* ============================================================
+   DETAIL SCREENS: OPEN AT THE TOP, GO BACK TO WHERE YOU WERE
+   ------------------------------------------------------------
+   A residence, a student's file, a partner, a project, a guide —
+   every screen you drill into from a list starts with its own
+   "← All …" button. Each one used to be drawn into the list's
+   container without touching the scroll, so opening the 30th
+   residence landed you at the bottom of its page with the back
+   button out of sight, the phone's own Back left the portal
+   altogether, and going back dropped you at the top of the list.
+   This watches the three portals for any screen that opens with
+   a "←" button and, for all of them at once:
+     · scrolls the new screen to its top,
+     · turns the header's top-left button into Back,
+     · makes the phone's Back button / back swipe go back to the list,
+     · puts the list back where you were when you return.
+   ============================================================ */
+/* Buttons drawn as HTML call their function by name from the page's global
+   scope. These few were only declared inside this script, so pressing them
+   threw an error and did nothing: the residence page's "All residences",
+   Spaces' "Message someone" back arrow, the WhatsApp and project upload
+   buttons ($), and the WhatsApp typing signal. */
+window.aHousingListings = aHousingListings;
+window.drawChannelList = drawChannelList;
+window.waTypingPing = waTypingPing;
+if(typeof window.$ !== "function") window.$ = $;
+
+(function detailNav(){
+  var SHELLS = { admin:"sh-admin", partner:"sh-partner", student:"sh-student" };
+  var OPEN = { admin:null, partner:null, student:null };   // the open detail per role
+  var IGNORE_POP = 0, KEEP_URL = null;
+  // Drop the history step a detail screen added without moving the address
+  // away from whatever section is showing now.
+  function unstep(){ KEEP_URL = location.href; IGNORE_POP++; try{ history.back(); }catch(e){ IGNORE_POP--; KEEP_URL = null; } }
+
+  function roleOf(el){
+    for(var r in SHELLS){ var s = document.getElementById(SHELLS[r]); if(s && s.contains(el)) return r; }
+    return null;
+  }
+  // The first button or link on the screen, if it reads "← Something".
+  function backControl(box){
+    var c = box.querySelectorAll("a,button");
+    for(var i = 0; i < c.length && i < 3; i++){
+      var t = (c[i].textContent || "").replace(/\s+/g, " ").trim();
+      if(c[i].classList.contains("backlink") || c[i].hasAttribute("data-back") || /^←\s*\S/.test(t)) return c[i];
+      if(c[i].closest(".proj-tabs,.usearch")) return null;
+    }
+    return null;
+  }
+  function scroller(el){
+    for(var n = el; n && n !== document.body; n = n.parentElement){
+      var cs = getComputedStyle(n);
+      if(/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 2) return n;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+  function toTop(box){
+    for(var n = box; n && n !== document.body; n = n.parentElement){ if(n.scrollTop) n.scrollTop = 0; }
+    try{ if(document.scrollingElement) document.scrollingElement.scrollTop = 0; window.scrollTo(0, 0); }catch(e){}
+  }
+  function restore(sc, y){
+    if(!sc || !y) return;
+    var tries = 0, stop = false;
+    function off(){ stop = true; }
+    window.addEventListener("wheel", off, { once:true, passive:true });
+    window.addEventListener("touchstart", off, { once:true, passive:true });
+    // A list often draws twice (a "Loading…" pass, then the rows), and each
+    // redraw throws the scroll back to the top, so keep putting it back for a
+    // moment after it first fits — until the person scrolls themselves.
+    var held = 0;
+    (function again(){
+      if(stop) return;
+      if(sc.scrollHeight - sc.clientHeight >= y - 2){
+        if(Math.abs(sc.scrollTop - y) > 2) sc.scrollTop = y;
+        if(++held < 15) setTimeout(again, 100);
+        return;
+      }
+      if(++tries < 60) setTimeout(again, 100);
+      else sc.scrollTop = y;
+    })();
+  }
+  function setArrow(role, on){
+    if(typeof NAVBACK === "undefined" || typeof updateBackButton !== "function") return;
+    if(on){ if(NAVBACK[role] == null) NAVBACK[role] = { __detail:true }; }
+    else if(NAVBACK[role] && NAVBACK[role].__detail) NAVBACK[role] = null;
+    updateBackButton(role);
+  }
+
+  // Leave the detail screen the way its own button would.
+  window.detailNavBack = function(role){
+    var o = OPEN[role]; if(!o) return false;
+    var b = o.box && document.contains(o.box) ? backControl(o.box) : null;
+    if(b){ b.click(); return true; }
+    return false;
+  };
+
+  function opened(role, box){
+    var sc = scroller(box);
+    // the list's position was recorded just before it was replaced (see the
+    // scroll listener below), so it survives the new screen resetting it
+    var pre = PRE[role];
+    OPEN[role] = { box:box, sc:sc, y:(pre && pre.sc === sc ? pre.y : LASTY.get(sc)) || 0, sheet:pre && pre.sheet };
+    toTop(box);
+    setArrow(role, true);
+    try{ history.pushState({ orbDetail:role }, "", location.href); }catch(e){}
+  }
+  function closed(role){
+    var o = OPEN[role]; OPEN[role] = null;
+    setArrow(role, false);
+    // a back target someone else set for this same list is spent too
+    try{
+      var cur = { admin:window.AV, partner:window.PV, student:window.SV }[role];
+      if(typeof NAVBACK !== "undefined" && NAVBACK[role] != null && NAVBACK[role] === cur){ NAVBACK[role] = null; updateBackButton(role); }
+    }catch(e){}
+    if(o){
+      restore(o.sc, o.y);
+      if(o.sheet && o.sheet.y){ var ss = o.sheet, n = 0; (function wait(){ var b = document.getElementById(ss.sc.id); if(b && b.closest(".open")) return restore(b, ss.y); if(++n < 30) setTimeout(wait, 100); })(); }
+    }
+    // closed by its own button: take back the history step opening it added
+    if(history.state && history.state.orbDetail === role) unstep();
+  }
+
+  // Remember the last scroll position of every scrolling area, so the list's
+  // spot is known even after the detail screen has replaced it.
+  var LASTY = new WeakMap(), LASTEL = null;
+  document.addEventListener("scroll", function(e){
+    var t = e.target === document ? (document.scrollingElement || document.documentElement) : e.target;
+    if(t && t.nodeType === 1 && !Object.values(OPEN).some(function(o){ return o && o.sc === t; })){ LASTY.set(t, t.scrollTop); LASTEL = t; }
+  }, true);
+
+  var pending = false;
+  function check(){
+    pending = false;
+    for(var role in SHELLS){
+      var shell = document.getElementById(SHELLS[role]); if(!shell) continue;
+      var live = shell.querySelector("[id$='-live']") || null;
+      var sheet = shell.querySelector("[id$='-sheet-body']");
+      var box = null;
+      [sheet && sheet.closest(".open") ? sheet : null, live].forEach(function(b){ if(!box && b && backControl(b)) box = b; });
+      var o = OPEN[role];
+      if(box && !o) opened(role, box);
+      else if(box && o && o.box !== box){ o.box = box; toTop(box); }
+      else if(!box && o) closed(role);
+    }
+  }
+  // Read where each list was scrolled to before the browser gets to clamp it
+  // to the (shorter) new screen: mutation callbacks run before scroll events.
+  var PRE = { admin:null, partner:null, student:null };
+  function snapshot(){
+    for(var r in SHELLS){
+      if(OPEN[r]) continue;
+      var sh = document.getElementById(SHELLS[r]), live = sh && sh.querySelector("[id$='-live']");
+      if(!live) continue;
+      var sc = scroller(live);
+      PRE[r] = { sc:sc, y:LASTY.has(sc) ? LASTY.get(sc) : sc.scrollTop };
+      // a list shown in the pop-up sheet (Students, Applications…) scrolls on its own
+      // (opening a file can close the sheet before anything is redrawn, so
+      // fall back to its last recorded position)
+      var sb = sh.querySelector("[id$='-sheet-body']");
+      PRE[r].sheet = sb && (sb.closest(".open") || LASTEL === sb) ? { sc:sb, y:LASTY.has(sb) ? LASTY.get(sb) : sb.scrollTop } : null;
+    }
+  }
+  var mo = new MutationObserver(function(){ if(!pending){ pending = true; snapshot(); setTimeout(check, 0); } });
+  function watch(){
+    for(var r in SHELLS){ var s = document.getElementById(SHELLS[r]); if(s && !s.__dnav){ s.__dnav = 1; mo.observe(s, { childList:true, subtree:true }); } }
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch); else watch();
+
+  // The phone's Back button / back swipe: close whatever is open on top first —
+  // a growth project's workspace, then a detail screen — instead of leaving.
+  window.addEventListener("popstate", function(){
+    if(IGNORE_POP > 0){
+      IGNORE_POP--;
+      if(KEEP_URL && KEEP_URL !== location.href){ try{ history.replaceState(history.state, "", KEEP_URL); }catch(e){} }
+      KEEP_URL = null;
+      return;
+    }
+    var ws = document.getElementById("project-workspace");
+    if(ws && ws.classList.contains("on") && typeof closeGrowthProject === "function"){ closeGrowthProject(); return; }
+    for(var role in OPEN){ if(OPEN[role] && window.detailNavBack(role)) return; }
+  });
+
+  // A growth project opens as a full workspace over the page: give it the
+  // same Back-button behaviour and start it at its top.
+  if(typeof window.openGrowthProject === "function" && !window.openGrowthProject.__dnav){
+    var og = window.openGrowthProject, cg = window.closeGrowthProject;
+    window.openGrowthProject = function(){
+      var ws0 = document.getElementById("project-workspace");
+      var already = ws0 && ws0.classList.contains("on");
+      if(!already){ try{ history.pushState({ orbWorkspace:1 }, "", location.href); }catch(e){} }
+      var p = og.apply(this, arguments);
+      Promise.resolve(p).then(function(){ var sh = document.querySelector("#project-workspace .project-sheet"); if(sh) sh.scrollTop = 0; });
+      return p;
+    };
+    window.openGrowthProject.__dnav = 1;
+    window.closeGrowthProject = function(){
+      var r = cg.apply(this, arguments);
+      if(history.state && history.state.orbWorkspace) unstep();
+      return r;
+    };
+  }
+
+  // Opening or closing one project's details redraws the whole Projects page
+  // through a short "Loading…" state, which threw the page back to the top
+  // and lost the project you had just opened. Keep your place, and bring
+  // the project you opened into view from its start.
+  ["projToggle", "deptProjOpen"].forEach(function(name){
+    var f = window[name]; if(typeof f !== "function" || f.__dnav) return;
+    window[name] = function(id){
+      var live = document.getElementById("a-live"), sc = live ? scroller(live) : null, y = sc ? sc.scrollTop : 0;
+      var h = live ? Math.max(live.offsetHeight, 0) : 0;
+      if(live) live.style.minHeight = h + "px";
+      var r = f.apply(this, arguments);
+      var tries = 0;
+      (function settle(){
+        var still = live && live.querySelector(".spin");
+        if(still && ++tries < 40) return setTimeout(settle, 80);
+        if(live) live.style.minHeight = "";
+        if(sc) sc.scrollTop = y;
+        var btn = live && live.querySelector('[onclick*="' + name + "('" + String(id).replace(/'/g, "\\'") + "'"  + '"]');
+        if(btn){
+          var card = btn.closest(".panel,.proj-card,.chal,article,li") || btn;
+          var top = card.getBoundingClientRect().top, vh = window.innerHeight;
+          if(top < 60 || top > vh * 0.7) card.scrollIntoView({ block:"start", behavior:"smooth" });
+        }
+      })();
+      return r;
+    };
+    window[name].__dnav = 1;
+  });
+})();
 })();
 
 </script>
