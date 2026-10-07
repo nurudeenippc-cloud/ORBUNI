@@ -1,2 +1,5 @@
 *.zip
 screenshots-*/
+
+# delivered files (site zips, videos, PDFs) - sent to the team, not source
+out/
