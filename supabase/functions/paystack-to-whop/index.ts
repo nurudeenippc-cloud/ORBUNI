@@ -8,6 +8,8 @@
 // student's name, email, item and Paystack reference are on the invoice.
 // Runs every 5 minutes (pg_cron, x-orb-secret) and is safe to re-run: a payment
 // is only recorded once (paystack_payments.whop_invoice_id).
+// It also sends Whop a "purchase" event for the sale (event id paystack:<reference>),
+// so Whop ads count naira payers as sales.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
@@ -33,6 +35,12 @@ Deno.serve(async (req) => {
   if (!WHOP_KEY) return json(200, { error: "WHOP_API_KEY not set" });
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
   const reqBody = await req.json().catch(() => ({}));
+  // team check that the Whop key may send events: an empty event is refused as invalid
+  // (400/422) when the key has access, and as forbidden (401/403) when it has not. Nothing is recorded.
+  if (reqBody?.check_events === true) {
+    const r = await whop("/events", { account_id: WHOP_ACCOUNT });
+    return json(200, { status: r.status, detail: r.t });
+  }
   // team self-test: one ₦100 bookkeeping invoice to Orbuni's own inbox, marked paid (no money moves)
   if (reqBody?.test === true) {
     const body: any = { company_id: WHOP_ACCOUNT, collection_method: "send_invoice", due_date: new Date(Date.now() + 864e5).toISOString(),
@@ -87,7 +95,17 @@ Deno.serve(async (req) => {
       const m = await whop(`/invoices/${encodeURIComponent(inv)}/mark_paid`, {});
       if (!m.ok && !/already|paid/i.test(m.t)) throw new Error("mark_paid " + m.status + ": " + m.t);
       await sb.from("paystack_payments").update({ whop_recorded_at: new Date().toISOString(), whop_error: null }).eq("id", p.id);
-      out.push({ ref: p.reference, invoice: inv, ok: true });
+      // Tell Whop ads it was a sale, in dollars. The website reports the same sale with the
+      // same event id when the payer is still on the page, so Whop counts it once; this copy
+      // covers transfers that confirm after they have left.
+      const ev = await whop("/events", {
+        account_id: WHOP_ACCOUNT, event_name: "purchase", event_id: "paystack:" + p.reference,
+        event_time: p.paid_at || new Date().toISOString(), action_source: "website", url: "https://myorbuni.com/",
+        value: Number(p.amount_usd) || 0, currency: "usd",
+        user: { email: email || null, external_id: p.profile_id || null, name: name || null },
+      });
+      if (!ev.ok) console.warn("whop purchase event", ev.status, ev.t);
+      out.push({ ref: p.reference, invoice: inv, ok: true, event: ev.ok });
     } catch (e) {
       const msg = scrub(e).slice(0, 400);
       await sb.from("paystack_payments").update({ whop_error: msg }).eq("id", p.id);

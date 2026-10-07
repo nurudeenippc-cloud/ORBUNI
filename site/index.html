@@ -27180,6 +27180,18 @@ setTimeout(whopLoadConfig, 300);
   }catch(e){}
 })();
 function orbTrack(ev, data){ try{ if(window.whop && window.whop.track) window.whop.track(ev, data || undefined); }catch(e){} }
+/* A naira payment, reported as a sale in dollars. The Paystack reference is the event id, and the
+   server (paystack-to-whop) reports the same sale with the same id, so Whop counts it once. */
+function orbTrackPaystack(ref){
+  var usd = 0; try{ usd = Number(sessionStorage.getItem("orb-ps-usd") || 0); sessionStorage.removeItem("orb-ps-usd"); }catch(e){}
+  var d = { currency: "USD", event_id: "paystack:" + ref }; if(usd > 0) d.value = usd;
+  orbTrack("purchase", d);
+}
+/* Any tap on a button that opens Orbuni's WhatsApp counts as a "contact" for Whop ads. */
+document.addEventListener("click", function(e){
+  var a = e.target && e.target.closest ? e.target.closest('a[href*="wa.me/14434481577"]') : null;
+  if(a) orbTrack("contact");
+}, true);
 var _lastPixelHash = location.hash;
 window.addEventListener("hashchange", function(){
   if(location.hash !== _lastPixelHash){ _lastPixelHash = location.hash; orbTrack("page"); }
@@ -27597,7 +27609,7 @@ window.lpcBook = async function(){
     return;
   }
   lpEvent("call_booked", null, LPC.pick, LPC.path);
-  orbTrack("lead", { email: email, name: c.name });
+  orbTrack("schedule", { email: email, name: c.name, phone: c.phone || undefined, event_id: "call:" + email + ":" + LPC.pick });
   var box = document.getElementById("lpr-call");
   box.innerHTML = '<div class="lpr-done"><span>✓</span><div><b>You are booked — ' + esc(d.when || "") + " (Türkiye time)</b>"
     + "<small>" + (d.host ? "With " + esc(d.host) + ". " : "")
@@ -27891,6 +27903,7 @@ var LP_DOCS = { bachelors:["Bachelor's degree","Bachelors"], masters:["Master's 
 window.lpDocsOpen = function(level){
   level = LP_DOCS[level] ? level : (LPQ_ROLE.level || "bachelors");
   lpEvent("cta_click", null, "docs_view_" + level);
+  orbTrack("view_content");
   var f = "/docs/Orbuni-Required-Documents-" + LP_DOCS[level][1];
   var el = document.getElementById("lpd-ov");
   if(!el){ el = document.createElement("div"); el.id = "lpd-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el);
@@ -27899,7 +27912,7 @@ window.lpDocsOpen = function(level){
     + '<div class="lpd-tabs">' + Object.keys(LP_DOCS).map(function(k){ return '<button class="' + (k === level ? "on" : "") + '" onclick="lpDocsOpen(\'' + k + '\')">' + LP_DOCS[k][0] + "</button>"; }).join("") + "</div>"
     + '</div>'
     + '<div class="lpd-img"><img src="' + f + '.jpg" alt="Required documents for a ' + esc(LP_DOCS[level][0]) + ' in Türkiye — full checklist"></div>'
-    + '<div class="lpd-foot"><a class="lpd-b gold" href="' + f + '.pdf" download onclick="lpEvent(\'cta_click\',null,\'docs_download_' + level + '\')">Download the PDF</a>'
+    + '<div class="lpd-foot"><a class="lpd-b gold" href="' + f + '.pdf" download onclick="lpEvent(\'cta_click\',null,\'docs_download_' + level + '\');orbTrack(\'docs_download\')">Download the PDF</a>'
     + '<button class="lpd-b ink" onclick="lpDocsClose();lpStartApp(\'docs\')">Start my application →</button></div></div>';
   el.classList.add("on"); document.documentElement.style.overflow = "hidden";
 };
@@ -27912,6 +27925,7 @@ window.lpStartApp = async function(from){
   if(open){ openPortal("student-up"); return; }
   var c = LPQ_STATE.contact || {};
   try{ await sb.rpc("lead_reserve", { p_phone: c.phone || "", p_email: c.email || "" }); }catch(e){}
+  orbTrack("submit_application", { email: c.email || undefined, phone: c.phone || undefined, name: c.name || undefined });
   var el = document.getElementById("lpd-ov");
   if(!el){ el = document.createElement("div"); el.id = "lpd-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el);
     el.addEventListener("click", function(e){ if(e.target === el) lpDocsClose(); }); }
@@ -28360,7 +28374,7 @@ async function ocDone(receiptId, how){
       ocLog("confirm:slow");
       return;
     }
-    try{ orbTrack("purchase", { value: OC.amount, currency: "USD" }); lpEvent("purchase", null, OC.tier || OC.product || OC.kind || null); }catch(e){}
+    try{ if(how !== "confirmed") orbTrack("purchase", { value: OC.amount, currency: "USD", event_id: "whop:" + (receiptId || OC.order && OC.order.id || "") }); lpEvent("purchase", null, OC.tier || OC.product || OC.kind || null); }catch(e){}
   }
   var service = OC.kind === "service", extra = OC.kind === "extra", partner = OC.kind === "partner";
   var signed = !!(typeof ME !== "undefined" && ME && ME.id);
@@ -29017,7 +29031,7 @@ async function whopOrdersPanel(){
     var st = await orbPayConfirm({ receipt: receipt, onTick: function(ms){ payCheckTick("pay-ov-chk", ms); } });
     if(st === "paid"){
       payOverlay(null);
-      try{ orbTrack("purchase", {}); }catch(e){}
+      try{ orbTrack("purchase", receipt ? { event_id: "whop:" + receipt } : {}); }catch(e){}
       try{ if(typeof window.orbThanks === "function") window.orbThanks({ pkg: pkg, hash: location.hash }); }catch(e){}
       try{ if(typeof route === "function") route(); }catch(e){}
     } else payOverlay(st);
@@ -35386,7 +35400,7 @@ async function psVerify(ref, onDone){
     try{
       var r = await sb.functions.invoke("paystack?verify=" + encodeURIComponent(ref), { method: "GET" });
       var st = (r.data || {}).status;
-      if(st === "paid" || st === "success"){ try{ orbTrack("purchase", { currency: "NGN" }); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){} onDone("paid"); return; }
+      if(st === "paid" || st === "success"){ try{ orbTrackPaystack(ref); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){} onDone("paid"); return; }
       if((st === "pending" || st === "ongoing" || !st) && tries < 10) return setTimeout(check, tries < 3 ? 2500 : 5000);
       onDone(st === "failed" || st === "abandoned" ? "failed" : "waiting");
     }catch(e){ if(tries < 10) setTimeout(check, 5000); else onDone("waiting"); }
@@ -35419,7 +35433,7 @@ window.psStart = async function(btn){
     try{ lpEvent("checkout_open", null, "paystack"); }catch(x){}
     var amt = "₦" + Number(d.amount_ngn || 0).toLocaleString() + " (" + (typeof ocMoney === "function" ? ocMoney(d.amount_usd) : "$" + d.amount_usd)
       + " at ₦" + Number(d.rate || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " per $)";
-    try{ sessionStorage.setItem("orb-ps-ref", d.reference); }catch(x){}
+    try{ sessionStorage.setItem("orb-ps-ref", d.reference); sessionStorage.setItem("orb-ps-usd", String(d.amount_usd || "")); }catch(x){}
     var ok = d.access_code && await jsReady;
     if(!ok){ if(fine) fine.innerHTML = amt + ". Taking you to Paystack…"; location.href = d.authorization_url; return; }
     if(fine) fine.innerHTML = amt + ". Complete the payment in the Paystack window.";
@@ -35466,7 +35480,7 @@ window.psStart = async function(btn){
       var st = await orbPayConfirm({ paystack: ref, onTick: function(ms){ payCheckTick("pay-ov-chk", ms); } });
       if(st === "paid"){
         payOverlay(null);
-        try{ orbTrack("purchase", { currency: "NGN" }); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){}
+        try{ orbTrackPaystack(ref); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){}
         try{ if(typeof window.orbThanks === "function") window.orbThanks({ pkg: (back && back.pkg) || "", hash: (back && back.hash) || "" }); }catch(e){}
         return;
       }
@@ -35903,7 +35917,6 @@ window.ulineStop = function(btn){
     document.head.appendChild(st); document.body.appendChild(el);
     document.addEventListener("keydown", onKey);
     var f = el.querySelector(".go"); if(f) try{ f.focus({preventScroll:true}); }catch(e){}
-    try{ if(typeof orbTrack === "function") orbTrack("purchase", {}); }catch(e){}
   };
 })();
 </script>
