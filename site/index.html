@@ -19170,6 +19170,16 @@ var CONNECTOR_META = {
 var CONNECTOR_STATE = { providers: [], mine: {}, team: [] };
 
 async function loadConnectors(){
+  // Renew my own Google/Zoom link first, so Settings shows the true state and a
+  // link that can be renewed heals by itself instead of asking to reconnect.
+  if(ME){
+    try{
+      await Promise.race([
+        sb.functions.invoke("calendar-book", { body: { action: "check" } }),
+        new Promise(function(r){ setTimeout(r, 6000); })
+      ]);
+    }catch(e){}
+  }
   var st = await sb.rpc("connector_status");
   CONNECTOR_STATE.providers = st.data || [];
   var mine = {};
@@ -20858,20 +20868,41 @@ window.chInvite = function(){
     + "</p></div></div>";
 };
 window.chSendInvite = async function(ev){
+  // This used to only send a password-reset email, which does nothing for
+  // someone who has no account yet, and never recorded them as team. Now it
+  // records the invitation (name, title, role) and emails them the link; the
+  // moment they create their account with this email they land in the team
+  // portal, even while new student sign-ups are paused.
   var btn = ev && ev.target ? ev.target : null;
   var e = $("iv-e") ? $("iv-e").value.trim() : "";
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)){ $("iv-out").innerHTML = '<div class="err">That is not a complete email address.</div>'; return; }
-  busy(btn, true, "Sending…");
+  var first = ($("iv-f") || {}).value ? $("iv-f").value.trim() : "";
+  var last = ($("iv-l") || {}).value ? $("iv-l").value.trim() : "";
+  var title = ($("iv-j") || {}).value ? $("iv-j").value.trim() : "";
+  busy(btn, true, "Adding…");
   try{
-    var r = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + "/?reset=1", captchaToken: await orbCaptcha() });
+    var r = await sb.rpc("invite_teammate", { p_email: e, p_first: first || null, p_last: last || null,
+      p_title: title || null, p_role: "staff", p_sections: [] });
     if(r.error) throw r.error;
-    $("iv-out").innerHTML = '<div class="ok">Invitation sent to ' + esc(e) + "."
-      + " They will not appear in the team until they set their password and sign in once.</div>";
+    if($("iv-s") && !$("iv-s").checked){
+      try{ await sb.from("team_invites").update({ takes_students: false }).eq("email", e.toLowerCase()).is("accepted_at", null); }catch(_){}
+    }
+    var link = "https://myorbuni.com/#signup";
+    var mail = await sb.functions.invoke("send-manual-email", { body: { to_email: e, template: "custom_notice",
+      vars: { first_name: first, subject: "You're invited to the Orbuni team",
+        body: "Hi" + (first ? " " + first : "") + ",\n\nYou've been added to the Orbuni team" + (title ? " as " + title : "") + ".\n\n"
+          + "Create your account here with this email address (" + e + "): " + link + "\n\n"
+          + "You'll land straight in the team portal. Once you're in, open Spaces → Settings → Google Calendar & Meet and press Connect, so your meetings get Meet links.\n\nWelcome aboard,\nNurudeen" } } });
+    var mailErr = await edgeErr(mail);
+    $("iv-out").innerHTML = '<div class="ok">' + esc((first || e)) + " is on the team list."
+      + (mailErr ? " The email could not be sent (" + esc(mailErr) + "), so send them the link yourself:" : " We've emailed them the sign-up link. You can also send it yourself:")
+      + '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
+      + '<button class="btn btn-o btn-s" onclick="copyText(\'' + link + '\')">Copy sign-up link</button>'
+      + '<a class="btn btn-o btn-s" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent("You're invited to the Orbuni team. Create your account with " + e + " here: " + link) + '">Send on WhatsApp</a></div>'
+      + '<div style="margin-top:8px;font-size:12.5px;color:var(--faint)">They must sign up with exactly ' + esc(e) + '.</div></div>';
   }catch(err){ $("iv-out").innerHTML = '<div class="err">' + esc(friendly(err)) + "</div>"; }
   finally{ busy(btn, false); }
 };
-
-
 /* ============================================================
    OPERATIONS — every tool Orbuni runs on, what it costs,
    and what is about to expire. Godfrey heads this.

@@ -49,10 +49,16 @@ async function freshToken(connectionId: string) {
   const stillGood = !tok.expires_at || new Date(tok.expires_at).getTime() - Date.now() > 120_000;
   if (stillGood) return tok.access_token as string;
   if (!tok.refresh_token) return null;
-  const { data: prov } = await admin.from("connector_providers").select("client_id, client_secret").eq("id", "google").maybeSingle();
-  if (!prov?.client_id || !prov?.client_secret) return null;
+  // The secret lives in Vault (client_secret_id) since 12 Sep; the plain column is empty.
+  const { data: prov } = await admin.from("connector_providers").select("client_id, client_secret, client_secret_id").eq("id", "google").maybeSingle();
+  let secret: string | null = prov?.client_secret ?? null;
+  if (prov?.client_secret_id) {
+    const { data: v } = await admin.schema("vault").from("decrypted_secrets").select("decrypted_secret").eq("id", prov.client_secret_id).maybeSingle();
+    if (v?.decrypted_secret) secret = v.decrypted_secret as string;
+  }
+  if (!prov?.client_id || !secret) return null;
   const form = new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token,
-    client_id: String(prov.client_id).replace(/\s+/g, ""), client_secret: String(prov.client_secret).replace(/\s+/g, "") });
+    client_id: String(prov.client_id).replace(/\s+/g, ""), client_secret: String(secret).replace(/\s+/g, "") });
   const r = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.access_token) return null;
