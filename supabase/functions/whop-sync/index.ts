@@ -46,21 +46,105 @@ function tierOf(title: string): string {
   return "other";
 }
 
+
+function mapPayment(p: any) {
+  return {
+    id: p.id,
+    status: p.status ?? null,
+    substatus: p.substatus ?? null,
+    // Adaptive pricing lets people pay in naira, cedis…; the ledger is in USD.
+    amount: p.usd_total ?? p.total ?? p.subtotal ?? null,
+    refunded_amount: (p.usd_total != null && p.total && p.refunded_amount)
+      ? Math.round(Number(p.refunded_amount) * Number(p.usd_total) / Number(p.total) * 100) / 100
+      : (p.refunded_amount ?? 0),
+    currency: p.usd_total != null ? "usd" : (p.currency ?? "usd"),
+    product_id: p.product?.id ?? null,
+    product_title: p.product?.title ?? null,
+    plan_id: p.plan?.id ?? null,
+    tier: tierOf(p.product?.title ?? ""),
+    user_email: p.user?.email ?? null,
+    user_name: p.user?.name ?? p.user?.username ?? null,
+    paid_at: p.paid_at ?? null,
+    created_at: p.created_at ?? null,
+    synced_at: new Date().toISOString(),
+    raw: p
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
   // --- who is calling ---
+  const body = await req.json().catch(() => ({}));
   const given = req.headers.get("x-orb-secret") || "";
   let allowed = !!CRON_SECRET && given === CRON_SECRET;
-  if (!allowed) {
-    const auth = req.headers.get("Authorization") || "";
-    if (!auth.startsWith("Bearer ")) return json(403, { error: "Sign in first." });
+  let me: { id: string; email?: string } | null = null;
+  const auth = req.headers.get("Authorization") || "";
+  if (auth.startsWith("Bearer ")) {
     const asUser = createClient(SUPABASE_URL, ANON_KEY, {
       global: { headers: { Authorization: auth } }, auth: { persistSession: false }
     });
     const { data: u } = await asUser.auth.getUser();
-    if (!u?.user) return json(403, { error: "Sign in first." });
+    me = u?.user ?? null;
+  }
+
+  // --- "did my payment go through?" ---
+  // Asked every few seconds by the checkout right after someone pays. It asks
+  // Whop directly about that payment (or this person's newest ones), stores
+  // what Whop says, and the table's triggers switch the purchase on. Nothing
+  // is ever unlocked from the browser: only a payment Whop itself reports as
+  // "paid" does that. A failed or declined payment unlocks nothing.
+  if (body?.from === "confirm") {
+    if (!WHOP_KEY) return json(200, { state: "pending", configured: false });
+    const receipt = /^[A-Za-z0-9_]{6,80}$/.test(String(body.receipt || "")) ? String(body.receipt) : "";
+    if (!me && !receipt) return json(200, { state: "pending" });
+    try {
+      if (receipt && !receipt.startsWith("paystack_")) {
+        const r = await fetch("https://api.whop.com/api/v1/payments/" + encodeURIComponent(receipt),
+          { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+        if (r.ok) { const p = await r.json(); if (p?.id) await sb.from("whop_payments").upsert([mapPayment(p)], { onConflict: "id" }); }
+      }
+      if (me) {
+        const u = new URL("https://api.whop.com/api/v1/payments");
+        u.searchParams.set("account_id", WHOP_ACCOUNT);
+        u.searchParams.set("first", "25");
+        u.searchParams.set("order", "created_at");
+        u.searchParams.set("direction", "desc");
+        const r = await fetch(u, { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+        if (r.ok) {
+          const b = await r.json();
+          const mine = ((b.data ?? []) as any[]).filter((p) =>
+            (me!.email && String(p.user?.email || "").toLowerCase() === String(me!.email).toLowerCase()) ||
+            p.metadata?.orbuni_profile_id === me!.id || p.id === receipt);
+          if (mine.length) await sb.from("whop_payments").upsert(mine.map(mapPayment), { onConflict: "id" });
+        }
+      }
+    } catch (e) { console.error("confirm: " + scrub(e).slice(0, 200)); }
+
+    // what we now know, newest first
+    let q = sb.from("whop_payments").select("id,status,substatus,tier,amount,refunded_amount,created_at")
+      .gte("created_at", new Date(Date.now() - 6 * 3600e3).toISOString())
+      .order("created_at", { ascending: false }).limit(5);
+    if (receipt && !me) q = q.eq("id", receipt);
+    else if (me) q = q.or(`profile_id.eq.${me.id}${me.email ? `,user_email.ilike.${String(me.email).replace(/[,()]/g, "")}` : ""}${receipt ? `,id.eq.${receipt}` : ""}`);
+    const { data: rows } = await q;
+    const list = (rows ?? []) as any[];
+    const pick = (receipt && list.find((x) => x.id === receipt)) || list[0];
+    let state = "pending";
+    if (pick) {
+      const st = String(pick.status || ""), sub = String(pick.substatus || "");
+      if (st === "paid" && Number(pick.refunded_amount || 0) < Number(pick.amount || 0)) state = "paid";
+      else if (/void|uncollectible|failed|refunded/.test(st) || /fail|declin|cancel|dispute|refund/.test(sub)) state = "failed";
+    }
+    return json(200, { state, tier: pick?.tier ?? null, payment: pick?.id ?? null });
+  }
+
+  if (!allowed) {
+    if (!me) return json(403, { error: "Sign in first." });
+    const asUser = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: auth } }, auth: { persistSession: false }
+    });
     const { data: staff } = await asUser.rpc("is_staff");
     if (staff !== true) {
       const { data: last } = await sb.from("whop_sync_log").select("ran_at").order("id", { ascending: false }).limit(1).maybeSingle();
@@ -98,27 +182,7 @@ Deno.serve(async (req: Request) => {
       const rows = (body.data ?? []) as any[];
       fetched += rows.length;
       if (rows.length) {
-        const mapped = rows.map((p) => ({
-          id: p.id,
-          status: p.status ?? null,
-          substatus: p.substatus ?? null,
-          // Adaptive pricing lets people pay in naira, cedis…; the ledger is in USD.
-          amount: p.usd_total ?? p.total ?? p.subtotal ?? null,
-          refunded_amount: (p.usd_total != null && p.total && p.refunded_amount)
-            ? Math.round(Number(p.refunded_amount) * Number(p.usd_total) / Number(p.total) * 100) / 100
-            : (p.refunded_amount ?? 0),
-          currency: p.usd_total != null ? "usd" : (p.currency ?? "usd"),
-          product_id: p.product?.id ?? null,
-          product_title: p.product?.title ?? null,
-          plan_id: p.plan?.id ?? null,
-          tier: tierOf(p.product?.title ?? ""),
-          user_email: p.user?.email ?? null,
-          user_name: p.user?.name ?? p.user?.username ?? null,
-          paid_at: p.paid_at ?? null,
-          created_at: p.created_at ?? null,
-          synced_at: new Date().toISOString(),
-          raw: p
-        }));
+        const mapped = rows.map(mapPayment);
         const { error } = await sb.from("whop_payments").upsert(mapped, { onConflict: "id" });
         if (error) problems.push(error.message); else upserted += mapped.length;
       }

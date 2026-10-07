@@ -11252,8 +11252,7 @@ async function restore(){
 
     await routeByRole({ greet:false });
     goView(want);
-    if(/connected=/.test(location.hash||"")){
-      try{ toast("Google Calendar connected."); }catch(e){}
+    if(window.__connRet || /connected=/.test(location.hash||"")){
       setTimeout(function(){ try{ if(typeof chOpenSettings==="function") chOpenSettings(); }catch(e){} }, 400);
     }
   }catch(e){}
@@ -19235,7 +19234,7 @@ function connectorRow(provider){
 window.connectorConnect = async function(provider){
   toast("Opening " + (CONNECTOR_META[provider] || {}).label + "…");
   var r = await sb.functions.invoke("connector-oauth", {
-    body: { action:"start", provider: provider, return_url: location.origin + "/#portal=admin:chat" }
+    body: { action:"start", provider: provider, return_url: location.href.split("#")[0] + (location.hash && /portal=/.test(location.hash) ? location.hash : "#portal=admin:chat") }
   });
   var d = r.data || {};
   if(d.url){ location.href = d.url; return; }
@@ -19308,7 +19307,13 @@ window.connectorSetupSave = async function(provider, ev){
     var h = location.hash || "";
     var okM = h.match(/connected=([a-z]+)/), badM = h.match(/connector_error=([a-z_]+)/);
     if(!okM && !badM) return;
-    try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
+    // Keep the rest of the address (it says which portal screen they were on)
+    // and drop only the connector part, so they land back where they left.
+    window.__connRet = okM ? okM[1] : "";
+    var rest = h.replace(/^#/, "").split("&").filter(function(x){
+      return x && !/^(connected|connector_error)=/.test(x);
+    }).join("&");
+    try{ history.replaceState(null, "", location.pathname + location.search + (rest ? "#" + rest : "")); }catch(e){}
     setTimeout(function(){
       if(okM){
         var meta = CONNECTOR_META[okM[1]] || { label: okM[1] };
@@ -28136,13 +28141,75 @@ window.orbWhopError = function(err){
 };
 window.orbWhopComplete = async function(planId, receiptId){
   if(!OC || OC.step === 3) return;
-  orbTrack("purchase", { value: OC.amount, currency: "USD" });
-  lpEvent("purchase", null, OC.tier || OC.product || OC.kind || null);
-  ocDone(receiptId);
+  ocDone(receiptId || null, "whop");
 };
-async function ocDone(receiptId){
+/* ---------- after paying: confirm with Whop before anything is promised ----------
+   The embedded checkout says "complete" the moment the card form is sent, but
+   only Whop's own record decides whether money moved. So the sheet shows a
+   short "confirming" screen, asks the server (which asks Whop) every few
+   seconds, and only then says it is paid. A declined card says so plainly and
+   unlocks nothing. If Whop is slow, it says that too — never endless dots. */
+window.orbPayConfirm = function(o){
+  o = o || {};
+  var t0 = Date.now(), LIMIT = o.limit || 150000, stop = false, n = 0;
+  return new Promise(function(done){
+    async function tick(){
+      if(stop) return;
+      n++;
+      var st = "pending";
+      try{
+        if(o.paystack){
+          var r = await sb.functions.invoke("paystack?verify=" + encodeURIComponent(o.paystack), { method: "GET" });
+          var x = (r.data || {}).status;
+          st = (x === "paid" || x === "success") ? "paid" : (x === "failed" || x === "abandoned" || x === "underpaid") ? "failed" : "pending";
+        } else {
+          var r2 = await sb.functions.invoke("whop-sync", { body: { from: "confirm", receipt: o.receipt || null } });
+          st = (r2.data || {}).state || "pending";
+        }
+      }catch(e){}
+      if(o.onTick) try{ o.onTick(Date.now() - t0); }catch(e){}
+      if(st === "paid" || st === "failed"){ stop = true; return done(st); }
+      if(Date.now() - t0 > LIMIT){ stop = true; return done("waiting"); }
+      setTimeout(tick, n < 6 ? 2500 : 5000);
+    }
+    tick();
+  });
+};
+function payCheckHtml(id){
+  return '<div class="paychk" id="' + id + '"><div class="paychk-ring"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="21"/></svg></div>'
+    + "<h3>Confirming your payment</h3><p>Whop is confirming it with your bank. This usually takes a few seconds.</p>"
+    + '<ol class="paychk-steps"><li class="ok">Payment sent</li><li class="now">Confirmed by Whop</li><li>Switched on in your portal</li></ol>'
+    + '<p class="paychk-t" id="' + id + '-t"></p></div>';
+}
+function payCheckTick(id, ms){
+  var t = document.getElementById(id + "-t"); if(!t) return;
+  t.textContent = ms > 20000 ? "Still confirming — some banks take up to 2 minutes. You can keep this open." : "";
+}
+async function ocDone(receiptId, how){
   OC.step = 3; ocSteps(3);
   wcoClear();
+  if(how === "whop" && OC.amount){
+    var me = OC;
+    document.getElementById("wsx-body").innerHTML = payCheckHtml("oc-chk");
+    var st = await orbPayConfirm({ receipt: receiptId || null, onTick: function(ms){ payCheckTick("oc-chk", ms); } });
+    if(OC !== me) return;
+    if(st === "failed"){
+      OC.step = 2; ocSteps(2);
+      document.getElementById("wsx-body").innerHTML = '<div class="wsx-done"><div class="ok bad">!</div><h3>That payment did not go through</h3>'
+        + "<p>Your bank or card declined it, so nothing was charged and nothing has been switched on. You can try again with another card or method.</p></div>"
+        + '<button class="wsx-go" onclick="ocStep2()">Try again</button>';
+      ocLog("confirm:failed");
+      return;
+    }
+    if(st === "waiting"){
+      document.getElementById("wsx-body").innerHTML = '<div class="wsx-done"><div class="ok wait">…</div><h3>Whop is still confirming</h3>'
+        + "<p>Nothing is lost. Some banks take a few more minutes. The moment Whop confirms, everything switches on by itself and your receipt is emailed to you. If it was declined, nothing is charged.</p></div>"
+        + '<button class="wsx-go" onclick="orbCheckoutClose()">OK</button>';
+      ocLog("confirm:slow");
+      return;
+    }
+    try{ orbTrack("purchase", { value: OC.amount, currency: "USD" }); lpEvent("purchase", null, OC.tier || OC.product || OC.kind || null); }catch(e){}
+  }
   var service = OC.kind === "service", extra = OC.kind === "extra", partner = OC.kind === "partner";
   var signed = !!(typeof ME !== "undefined" && ME && ME.id);
   var nextBtn = partner ? '<button class="wsx-go" onclick="orbCheckoutClose()">See my partner plan <span aria-hidden="true">→</span></button>'
@@ -28151,14 +28218,13 @@ async function ocDone(receiptId){
     : signed ? '<button class="wsx-go" onclick="orbCheckoutClose();orbOpenCourse(\'' + jsq(OC.product) + '\')">Start the course <span aria-hidden="true">→</span></button>'
     : '<button class="wsx-go" onclick="orbCheckoutClose();openPortal(\'student-up\')">Create my free account to read it here</button>'
       + '<p class="wsx-fine">Use the same email you paid with (' + esc(OC.email || "") + ") — the course unlocks automatically.</p>";
-  var msg = partner ? "Your " + esc(OC.title || "partner plan") + " is paid. Your blue tick and perks switch on by themselves within a minute or two, and your receipt is in your email."
+  var msg = partner ? "Your " + esc(OC.title || "partner plan") + " is paid and confirmed by Whop. Your blue tick and perks are switching on now, and your receipt is in your email."
     : service ? (OC.parts === 2 ? "Your first part is paid. Whop takes the second part automatically in 30 days, then stops." : "Your service fee is paid.")
       + " Your counsellor sees it straight away, and this page now shows your receipt."
     : extra ? (OC.amount ? "Paid. " : "") + "Your booking is with the team — you will see who is coming for you, with their phone number, at least 24 hours before."
     : "The course is yours for life. Your receipt is in your email.";
   document.getElementById("wsx-body").innerHTML = '<div class="wsx-done"><div class="ok">' + ocIc("checkCircle") + "</div>"
     + "<h3>" + (partner ? "You're verified — welcome" : service ? "Payment received — thank you" : extra ? "You are booked" : "You're in") + "</h3><p>" + msg + "</p></div>" + nextBtn;
-  try{ if(signed && receiptId !== undefined) await sb.functions.invoke("whop-sync", { body:{ from:"embed", receipt: receiptId || null } }); }catch(e){}
 }
 /* old name, still called from a few places */
 window.whopPayOrder = function(id){ if(CO_ORDER && CO_ORDER.id === id) orbPayOrder(CO_ORDER); };
@@ -28785,18 +28851,20 @@ async function whopOrdersPanel(){
   if(q.get("whop") !== "paid" && !q.get("status")) return;
   if(q.get("whop") !== "paid") return;
   var pkg = q.get("pkg") || "", status = q.get("status") || "success";
+  var receipt = q.get("receipt_id") || q.get("payment_id") || "";
   try{ ["whop","pkg","status","receipt_id","payment_id","plan_id"].forEach(function(k){ q.delete(k); });
        history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash); }catch(e){}
   setTimeout(async function(){
-    if(status === "error"){ toast("That payment did not go through. Nothing was charged — you can try again.", true); return; }
-    toast("Payment received — thank you. It shows here within a minute.");
-    orbTrack("purchase", {});
-    try{ if(typeof window.orbThanks === "function") window.orbThanks({ pkg: pkg, hash: location.hash }); }catch(e){}
-    try{
-      var s = await sb.auth.getSession();
-      if(s && s.data && s.data.session) await sb.functions.invoke("whop-sync", { body:{ from:"return", pkg: pkg } });
-    }catch(e){}
-  }, 2200);
+    if(status === "error"){ payOverlay("failed"); return; }
+    payOverlay("checking");
+    var st = await orbPayConfirm({ receipt: receipt, onTick: function(ms){ payCheckTick("pay-ov-chk", ms); } });
+    if(st === "paid"){
+      payOverlay(null);
+      try{ orbTrack("purchase", {}); }catch(e){}
+      try{ if(typeof window.orbThanks === "function") window.orbThanks({ pkg: pkg, hash: location.hash }); }catch(e){}
+      try{ if(typeof route === "function") route(); }catch(e){}
+    } else payOverlay(st);
+  }, 900);
 })();
 
 /* The student sees what they signed: which document, which version, when, in what name. */
@@ -33347,6 +33415,228 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
   window.ovTap = function(){ bargeStop(); return tap0.apply(this, arguments); };
 })();
 
+/* ---- 7 Oct 2026 · voice v3: talks while it thinks, a natural voice, interrupt any time ----
+   Before: Orbuni waited for the whole answer, then read it with the phone's
+   built-in robot voice, and talking over it barely worked. Now:
+     · it starts speaking the first sentence the moment it's written;
+     · it uses a neural voice (ElevenLabs / OpenAI, through orbuni-tts) when a
+       voice key is set on the server, and the device's most natural voice
+       otherwise;
+     · the microphone stays open (with echo cancelling) while it talks: as soon
+       as you start speaking it drops its volume, and when your words come
+       through it stops and listens — like a phone call. */
+(function(){
+  var VQ = { q:[], playing:false, buf:"", said:"", gen:0, active:false, done:false, endCb:null, tts:null, audio:null, handled:false, cur:null };
+  function cleanSay(t){ return String(t || "").replace(/\*\*/g, "").replace(/^\s*(?:[-•*]|\d+\.)\s+/gm, "").replace(/https?:\/\/\S+/g, "").replace(/[#_`>|]/g, "").replace(/\s+/g, " ").trim(); }
+  function ttsCheck(){
+    if(VQ.tts !== null) return;
+    VQ.tts = false;
+    try{ fetch(SB_URL + "/functions/v1/orbuni-tts", { headers:{ apikey: SB_KEY } }).then(function(r){ return r.json(); }).then(function(j){ VQ.tts = !!(j && j.on); }).catch(function(){}); }catch(e){}
+  }
+  async function ttsFetch(text){
+    try{
+      var ses = await sb.auth.getSession(); var tok = ses && ses.data && ses.data.session && ses.data.session.access_token;
+      if(!tok) return null;
+      var r = await fetch(SB_URL + "/functions/v1/orbuni-tts", { method:"POST", headers:{ "content-type":"application/json", authorization:"Bearer " + tok, apikey: SB_KEY }, body: JSON.stringify({ text: text }) });
+      if(!r.ok || !/audio/.test(r.headers.get("content-type") || "")) return null;
+      return URL.createObjectURL(await r.blob());
+    }catch(e){ return null; }
+  }
+  function prefetch(){ var n = 0; for(var i = 0; i < VQ.q.length && n < 2; i++){ var it = VQ.q[i]; if(VQ.tts && !it.url){ it.url = ttsFetch(it.text); } n++; } }
+  function finish(){
+    if(!VQ.active || VQ.playing || VQ.q.length || !VQ.done) return;
+    VQ.active = false; vBargeOff();
+    try{ orbMicPaint(); }catch(e){}
+    var cb = VQ.endCb; VQ.endCb = null; if(cb) cb();
+  }
+  function synthSay(text, next){
+    try{
+      var u = new SpeechSynthesisUtterance(text), v = orbVoice();
+      if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "en-GB";
+      u.rate = 1.0; u.pitch = 1.0;
+      var fired = false, go = function(){ if(fired) return; fired = true; next(); };
+      u.onend = go; u.onerror = go;
+      speechSynthesis.speak(u);
+    }catch(e){ next(); }
+  }
+  function pump(){
+    if(VQ.playing) return;
+    var it = VQ.q.shift();
+    if(!it){ finish(); return; }
+    VQ.playing = true; VQ.cur = it;
+    var g = VQ.gen;
+    var next = function(){ if(g !== VQ.gen) return; VQ.playing = false; VQ.cur = null; pump(); };
+    try{ orbMicPaint(true); }catch(e){}
+    if(OV.on) ovSet("speak", (VQ.said.length > 220 ? "…" + VQ.said.slice(-220) : VQ.said).trim());
+    prefetch();
+    Promise.resolve(it.url || null).then(function(url){
+      if(g !== VQ.gen) return;
+      if(!url){ synthSay(it.text, next); return; }
+      var a = VQ.audio || (VQ.audio = new Audio());
+      a.src = url; a.volume = 1;
+      a.onended = function(){ try{ URL.revokeObjectURL(url); }catch(e){} next(); };
+      a.onerror = function(){ synthSay(it.text, next); };
+      var p = a.play(); if(p && p.catch) p.catch(function(){ synthSay(it.text, next); });
+    });
+  }
+  function say(s){
+    s = cleanSay(s); if(!s) return;
+    VQ.said += " " + s;
+    VQ.q.push({ text: s });
+    prefetch(); pump();
+  }
+  // hand over whole sentences as they arrive; the very first one as early as possible
+  function feed(d){
+    VQ.buf += d;
+    for(;;){
+      var m = VQ.buf.match(/^([\s\S]*?[.!?…:])(\s+|$)(?=\S)/) || (VQ.buf.length > 160 ? VQ.buf.match(/^([\s\S]{60,}?[,;—])(\s+)/) : null);
+      if(!m) break;
+      var chunk = m[1];
+      if(cleanSay(chunk).length < 18 && VQ.buf.length < 200){
+        var rest = VQ.buf.slice(m[0].length), m2 = rest.match(/^([\s\S]*?[.!?…])(\s+)(?=\S)/);
+        if(!m2) break;
+        chunk = m[0] + m2[1]; VQ.buf = rest.slice(m2[0].length);
+      } else VQ.buf = VQ.buf.slice(m[0].length);
+      say(chunk);
+    }
+  }
+  function flush(){ var b = VQ.buf; VQ.buf = ""; if(b.trim()) say(b); }
+  window.vqStop = function(){
+    VQ.gen++; VQ.q = []; VQ.buf = ""; VQ.playing = false; VQ.cur = null; VQ.active = false; VQ.done = false; VQ.endCb = null; VQ.handled = false;
+    try{ if(VQ.audio){ VQ.audio.onended = null; VQ.audio.onerror = null; VQ.audio.pause(); } }catch(e){}
+    try{ speechSynthesis.cancel(); }catch(e){}
+    vBargeOff();
+    try{ orbMicPaint(); }catch(e){}
+  };
+  function speakingNow(){ return VQ.active && (VQ.playing || VQ.q.length > 0); }
+
+  /* ---- interrupting: an open, echo-cancelled mic + speech recognition ---- */
+  var VB = { stream:null, ctx:null, an:null, floor:0.012, loud:0, timer:null, rec:null, on:false };
+  async function vMic(){
+    if(VB.stream || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    try{
+      VB.stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
+      var AC = window.AudioContext || window.webkitAudioContext; VB.ctx = new AC();
+      var src = VB.ctx.createMediaStreamSource(VB.stream); VB.an = VB.ctx.createAnalyser(); VB.an.fftSize = 1024; src.connect(VB.an);
+    }catch(e){ VB.stream = null; }
+  }
+  function vMicOff(){
+    try{ if(VB.stream) VB.stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+    try{ if(VB.ctx) VB.ctx.close(); }catch(e){}
+    VB.stream = null; VB.ctx = null; VB.an = null;
+  }
+  function rms(){
+    if(!VB.an) return 0;
+    var a = new Float32Array(VB.an.fftSize); VB.an.getFloatTimeDomainData(a);
+    var s = 0; for(var i = 0; i < a.length; i++) s += a[i] * a[i];
+    return Math.sqrt(s / a.length);
+  }
+  function cutIn(heard){
+    vqStop();
+    if(heard){ ovSet("listen", null, heard); }
+  }
+  function vBargeOn(){
+    if(!OV.on) return;
+    VB.on = true; VB.loud = 0;
+    if(!VB.timer) VB.timer = setInterval(function(){
+      if(!VB.an || !OV.on) return;
+      var v = rms();
+      if(!speakingNow()){ VB.floor = VB.floor * .95 + v * .05; VB.loud = 0; return; }
+      var th = Math.max(VB.floor * 3.2, 0.03);
+      if(v > th){ VB.loud += 50; } else VB.loud = Math.max(0, VB.loud - 25);
+      // you've started talking: drop Orbuni's volume at once…
+      if(VQ.audio) VQ.audio.volume = VB.loud >= 150 ? 0.25 : 1;
+      // …and if you keep going, stop and listen
+      if(VB.loud >= 700){ VB.loud = 0; cutIn(""); setTimeout(function(){ if(OV.on && !OV.rec && !VB.rec) ovListen(); }, 120); }
+    }, 50);
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR || VB.rec) return;
+    var rec = new SR(); VB.rec = rec;
+    rec.lang = navigator.language || "en-US"; rec.continuous = true; rec.interimResults = true;
+    var cut = false;
+    rec.onresult = function(ev){
+      var t = ""; for(var i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+      t = t.trim(); if(!t) return;
+      BARGE.said = VQ.said;
+      if(!cut && bargeIsEcho(t)) return;
+      if(!cut){ cut = true; cutIn(t); VB.on = true; }
+      else { var c = $("ov-cap"); if(c) c.innerHTML = '<span class="me">' + esc(t) + "</span>"; }
+      if(ev.results[ev.results.length - 1].isFinal){
+        var r0 = VB.rec; VB.rec = null; if(r0){ r0.onend = null; try{ r0.abort(); }catch(e){} }
+        if(/^(stop|wait|ok stop|that's enough|enough|hold on)\b/i.test(t)){ ovSet("idle", "Tap to talk"); setTimeout(ovListen, 300); return; }
+        ovSet("think", null, t);
+        var input = $("ask-input"); if(input) input.value = t;
+        ASK.voiceTurn = true; orbuniSend();
+      }
+    };
+    rec.onerror = function(){ VB.rec = null; };
+    rec.onend = function(){ VB.rec = null; if(VB.on && OV.on && speakingNow() && !cut) setTimeout(vBargeOn, 150); };
+    try{ rec.start(); }catch(e){ VB.rec = null; }
+  }
+  function vBargeOff(){
+    VB.on = false;
+    var r = VB.rec; VB.rec = null; if(r){ r.onend = null; try{ r.abort(); }catch(e){} }
+    if(VQ.audio) VQ.audio.volume = 1;
+  }
+  window.vBargeOff = vBargeOff;
+
+  /* ---- wire it in ---- */
+  var os0 = orbStream;
+  orbStream = function(body, onEv){
+    if(!(body && body.voice && OV.on)) return os0(body, onEv);
+    vqStop(); ttsCheck();
+    VQ.active = true; VQ.done = false; VQ.said = ""; VQ.handled = false;
+    var g = VQ.gen;
+    setTimeout(function(){ if(g === VQ.gen) vBargeOn(); }, 600);
+    return os0(body, function(ev){
+      if(g === VQ.gen){
+        if(ev.t === "text") feed(ev.d);
+        else if(ev.t === "round") flush();
+        else if(ev.t === "error") say(String(ev.error || ""));
+      }
+      onEv(ev);
+    }).then(function(x){ if(g === VQ.gen){ flush(); VQ.handled = true; } return x; },
+            function(e){ if(g === VQ.gen){ flush(); VQ.handled = true; } throw e; });
+  };
+  orbSpeak = function(t, onEnd){
+    if(VQ.handled){
+      // this turn was already spoken as it streamed: add only what's new (the draft line), then wait for the end
+      VQ.handled = false;
+      var extra = / The draft is on screen, waiting for your OK\.$/.test(String(t || "")) ? "The draft is on screen, waiting for your OK." : "";
+      if(extra && VQ.said.indexOf(extra) < 0) say(extra);
+      if(!VQ.active){ if(onEnd) onEnd(); return; }
+      VQ.endCb = onEnd || null; VQ.done = true; finish();
+      return;
+    }
+    vqStop(); ttsCheck();
+    var clean = cleanSay(t); if(!clean){ if(onEnd) onEnd(); return; }
+    VQ.active = true; VQ.said = ""; VQ.endCb = onEnd || null;
+    feed(clean + " "); flush(); VQ.done = true;
+    if(OV.on){ var g = VQ.gen; setTimeout(function(){ if(g === VQ.gen) vBargeOn(); }, 600); }
+    finish();
+  };
+  var open0 = window.orbVoiceOpen;
+  window.orbVoiceOpen = function(){
+    ttsCheck();
+    // unlock audio playback on phones while we still have the tap
+    try{ VQ.audio = VQ.audio || new Audio(); VQ.audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"; VQ.audio.volume = 0; var p = VQ.audio.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
+    vMic();
+    return open0.apply(this, arguments);
+  };
+  var close0 = window.orbVoiceClose;
+  window.orbVoiceClose = function(){
+    vqStop(); vMicOff();
+    if(VB.timer){ clearInterval(VB.timer); VB.timer = null; }
+    return close0.apply(this, arguments);
+  };
+  var tap0 = window.ovTap;
+  window.ovTap = function(){
+    if(speakingNow()){ vqStop(); setTimeout(ovListen, 120); return; }
+    vqStop();
+    return tap0.apply(this, arguments);
+  };
+})();
+
 /* ============================================================
    4 Oct 2026 · New student accounts are paused (admission gate being built)
    ------------------------------------------------------------
@@ -34942,7 +35232,7 @@ window.psStart = async function(btn){
         if(fine) fine.innerHTML = '<span class="ps-spin"></span> Confirming your payment with Paystack…';
         btn.textContent = "Confirming…";
         psVerify(d.reference, function(st){
-          if(st === "paid"){ if(typeof ocDone === "function" && OC && OC.step === 2) ocDone(d.reference); else toast("Payment received — thank you."); return; }
+          if(st === "paid"){ if(typeof ocDone === "function" && OC && OC.step === 2) ocDone(d.reference, "confirmed"); else toast("Payment received — thank you."); return; }
           reset();
           if(fine) fine.textContent = st === "failed" ? "That payment did not go through. You can try again." : "Paystack is still confirming your transfer — this can take a few minutes. We will update your file automatically and your counsellor will tell you.";
         });
@@ -34972,18 +35262,32 @@ window.psStart = async function(btn){
       if(typeof sb === "undefined"){ if(tries < 20) return setTimeout(check, 1500); return; }
       var signedIn = typeof ME !== "undefined" && !!ME;
       if(!signedIn && tries < 6) return setTimeout(check, 1500);
-      var r = await sb.functions.invoke("paystack?verify=" + encodeURIComponent(ref), { method: "GET" });
-      var st = (r.data || {}).status;
-      if(st === "paid" || st === "success"){ toast(signedIn ? "Payment received — thank you. Your counsellor has been told." : "Payment received — thank you. Create your free account with the same email you paid with and your course opens.");  try{ orbTrack("purchase", { currency: "NGN" }); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){}
+      payOverlay("checking", "Paystack");
+      var st = await orbPayConfirm({ paystack: ref, onTick: function(ms){ payCheckTick("pay-ov-chk", ms); } });
+      if(st === "paid"){
+        payOverlay(null);
+        try{ orbTrack("purchase", { currency: "NGN" }); }catch(e){} try{ sessionStorage.removeItem("orb-ps-ref"); }catch(e){}
         try{ if(typeof window.orbThanks === "function") window.orbThanks({ pkg: (back && back.pkg) || "", hash: (back && back.hash) || "" }); }catch(e){}
-                return; }
-      if((st === "pending" || st === "ongoing" || !st) && tries < 8) return setTimeout(check, 5000);
-      if(st === "failed" || st === "abandoned") toast("That Paystack payment did not go through. You can try again from Services & fees.", true);
-      else toast("We are still waiting for Paystack to confirm your transfer. It usually takes a few minutes — we will update your file automatically.");
-    }catch(e){ if(tries < 8) setTimeout(check, 5000); }
+        return;
+      }
+      payOverlay(st, "Paystack");
+    }catch(e){ if(tries < 8) setTimeout(check, 5000); else payOverlay("waiting", "Paystack"); }
   }
-  setTimeout(check, 1200);
+  setTimeout(check, 900);
 })();
+/* One screen for "we're checking your payment" after coming back from Whop or
+   Paystack. It always ends: paid → the thank-you screen, declined → says so,
+   slow → says what happens next. Close works at every point. */
+function payOverlay(state, who){
+  who = who || "Whop";
+  var el = document.getElementById("pay-ov");
+  if(!state){ if(el) el.remove(); return; }
+  if(!el){ el = document.createElement("div"); el.id = "pay-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el); }
+  var inner = state === "checking" ? payCheckHtml("pay-ov-chk").replace("Whop is confirming", who + " is confirming").replace("Confirmed by Whop", "Confirmed by " + who)
+    : state === "failed" ? '<div class="paychk"><div class="ok bad">!</div><h3>That payment did not go through</h3><p>Nothing was charged and nothing has been switched on. You can try again with another card or method.</p></div>'
+    : '<div class="paychk"><div class="ok wait">…</div><h3>' + who + ' is still confirming</h3><p>Nothing is lost. Some banks take a few more minutes. The moment ' + who + ' confirms, everything switches on by itself and your receipt is emailed to you.</p></div>';
+  el.innerHTML = '<div class="pay-ov-card">' + inner + '<button class="wsx-go" onclick="payOverlay(null)">' + (state === "checking" ? "Hide — keep checking in the background" : "OK") + "</button></div>";
+}
 /* ==WHOP-JS-END== */
 /* ============================================================
    DETAIL SCREENS: OPEN AT THE TOP, GO BACK TO WHERE YOU WERE
@@ -35572,5 +35876,27 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
 </script>
 <!-- /ORB-MOTION -->
 
+<style id="paychk-css">
+.paychk{text-align:center;padding:8px 4px 4px}
+.paychk h3{font:800 21px/1.2 "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em;margin:10px 0 6px}
+.paychk p{color:var(--dim,#8a94a6);font-size:14px;line-height:1.55;margin:0 0 8px}
+.paychk-ring{width:64px;height:64px;margin:4px auto 6px}
+.paychk-ring svg{width:64px;height:64px;animation:pcspin 1.1s linear infinite}
+.paychk-ring circle{fill:none;stroke:#EE9B2F;stroke-width:4;stroke-linecap:round;stroke-dasharray:90 200}
+@keyframes pcspin{to{transform:rotate(360deg)}}
+.paychk-steps{list-style:none;margin:14px auto 6px;padding:0;display:grid;gap:8px;max-width:260px;text-align:left;font-size:14px}
+.paychk-steps li{display:flex;align-items:center;gap:10px;opacity:.55}
+.paychk-steps li::before{content:"";width:18px;height:18px;border-radius:50%;border:2px solid currentColor;flex:none;box-sizing:border-box}
+.paychk-steps li.ok{opacity:1}.paychk-steps li.ok::before{background:#3ED598;border-color:#3ED598}
+.paychk-steps li.now{opacity:1;font-weight:600}.paychk-steps li.now::before{border-color:#EE9B2F;border-right-color:transparent;animation:pcspin .9s linear infinite}
+.paychk-t{font-size:12.5px!important;min-height:1em}
+.paychk .ok,.wsx-done .ok.bad,.wsx-done .ok.wait{width:64px;height:64px;border-radius:50%;margin:0 auto;display:grid;place-items:center;font:800 28px/1 Inter,sans-serif}
+.ok.bad{background:rgba(240,80,80,.14);color:#e05252;border:2px solid #e05252}
+.ok.wait{background:rgba(238,155,47,.14);color:#EE9B2F;border:2px solid #EE9B2F}
+#pay-ov{position:fixed;inset:0;z-index:99998;display:grid;place-items:center;padding:18px;background:rgba(5,9,18,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#pay-ov .pay-ov-card{width:min(420px,100%);background:var(--card,#fff);color:var(--ink,#111);border-radius:24px;padding:26px 22px 20px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#pay-ov .wsx-go{width:100%;margin-top:14px;padding:14px;border:0;border-radius:99px;background:linear-gradient(100deg,#F2B544,#E08A33);color:#1A1204;font:700 15px Inter,sans-serif;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.paychk-ring svg,.paychk-steps li.now::before{animation:none}}
+</style>
 </body>
 </html>
