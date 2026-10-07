@@ -55,6 +55,13 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
   { key: "orbuni_welcome_btn", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Start with the free 2-minute assessment, or reply here with any question about universities, fees or scholarships.",
     link: { title: "Free assessment", url: "https://myorbuni.com/#start" } },
+  // 8 Oct 2026: sent seconds after the assessment / a booked call (lead-instant)
+  { key: "orbuni_required_docs", category: "UTILITY",
+    body: "Hi {{1}}, thank you for completing the Orbuni assessment. Here is the checklist of documents needed for a {{2}} application: {{3}} Keep it handy and reply here if you have any questions.",
+    vars: { "1": "Aisha", "2": "bachelor's degree", "3": "https://myorbuni.com/docs/Orbuni-Required-Documents-Bachelors.pdf" } },
+  { key: "orbuni_call_booked", category: "UTILITY",
+    body: "Hi {{1}}, your free call with Orbuni is booked for {{2}} (Türkiye time). Join with this Google Meet link: {{3}} Reply here if you need to change the time.",
+    vars: { "1": "Aisha", "2": "Mon 13 Oct, 14:00", "3": "https://meet.google.com/abc-defg-hij" } },
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
   if (t.quick) return { "twilio/quick-reply": { body: t.body, actions: t.quick.map((q) => ({ title: q.title, id: q.id || q.title })) } };

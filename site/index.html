@@ -8337,7 +8337,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       </div>
       <ol class="lp-steps">
         <li><span class="lp-ico lp-t-butter"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></span>
-          <b>Take the assessment</b><span>Eight questions, an honest result, and the path that fits you.</span></li>
+          <b>Take the assessment</b><span>Ten quick questions, an honest result, and the path that fits you.</span></li>
         <li><span class="lp-ico lp-t-sky"><svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></svg></span>
           <b>Apply for free</b><span>Up to three programmes, every fee and scholarship shown in writing.</span></li>
         <li><span class="lp-ico lp-t-mint"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
@@ -27330,7 +27330,7 @@ function lpPaint(){
 function lpQuizIntro(){
   var q = document.getElementById("lp-quiz"); if(!q) return;
   q.innerHTML = '<div class="lpq-intro"><span class="lp-eyebrow">The assessment</span>'
-    + '<h3 style="margin-top:12px">Eight questions. Two minutes. <em>An honest answer.</em></h3>'
+    + '<h3 style="margin-top:12px">Ten quick questions. Two minutes. <em>An honest answer.</em></h3>'
     + '<p class="lpq-help" style="max-width:52ch;margin:10px auto 0">No trick questions and no hard sell. Your answers tell us where you are, so we can say what makes sense next — '
     + "it will not be the same answer for everyone, and that is the point.</p>"
     + '<div class="lp-cta"><button class="lp-pill lp-pill-gold" onclick="lpStartQuiz(\'inline\')">Start the assessment <span aria-hidden="true">→</span></button></div></div>';
@@ -27437,7 +27437,7 @@ window.lpSubmit = async function(){
     else if(LPQ_STATE.raw[s.dim] != null) labels[s.dim] = s.opts[LPQ_STATE.raw[s.dim]][0];
   });
   var quiz = {}; Object.keys(LPQ_WEIGHTS).forEach(function(d){ quiz[d] = Number(A[d] || 0); });
-  quiz.v = 1; quiz.answers = labels; quiz.docs = docs; quiz.who = who;
+  quiz.v = 1; quiz.answers = labels; quiz.docs = docs; quiz.who = who; quiz.role = who; quiz.level = (typeof LPQ_ROLE !== "undefined" && LPQ_ROLE.level) || null; quiz.level_unsure = !!(typeof LPQ_ROLE !== "undefined" && LPQ_ROLE.levelUnsure); quiz.student_name = v("lpq-sn") || null;
   var row = {
     name: name, email: email || null, phone: phone, country: country,
     region: (typeof regionFromPhone === "function") ? regionFromPhone(phone) : null,
@@ -27445,7 +27445,7 @@ window.lpSubmit = async function(){
     budget_band: A.finance >= 3 ? "2500_plus" : A.finance === 2 ? "1500_2499" : A.finance === 1 ? "800_1499" : "under_800",
     urgency: A.timeline >= 3 ? "this_intake" : A.timeline === 2 ? "next_intake" : "exploring",
     decision_maker: who === "parent",
-    message: "Quiz: " + Object.keys(labels).map(function(k){ return k + " — " + labels[k]; }).join(" · "),
+    message: (who === "parent" ? "Parent/guardian" + (v("lpq-sn") ? " of " + v("lpq-sn") : "") + " · " : who === "helper" ? "Helping" + (v("lpq-sn") ? " " + v("lpq-sn") : " a student") + " apply · " : "") + "Quiz: " + Object.keys(labels).map(function(k){ return k + " — " + labels[k]; }).join(" · "),
     source: "quiz",
     utm_source: u.utm_source, utm_medium: u.utm_medium, utm_campaign: u.utm_campaign,
     landing_page: (u.landing_page || "/#start").slice(0, 490),
@@ -27729,7 +27729,7 @@ window.lpBack = function(){ history.back(); };
 function lpfVideo(P, pathway){
   return '<div class="lpf-vsl"><span class="lpr-vt">Watch this first · ' + esc(P.vtitle) + "</span>"
     + '<div class="lp-vsl lpr-vbox" id="lpr-video">'
-    + (orbVideoSrc(ORB_FUNNEL[P.vid]) ? "" : '<div class="lp-vsl-hold"><b>Your ' + esc(P.tag.toLowerCase()) + ' video is being recorded</b><span>Everything it covers is on this page below.</span></div>')
+    + (orbVideoSrc(ORB_FUNNEL[P.vid]) ? "" : '<div class="lp-vsl-hold"><b>Your personal video is being recorded</b><span>Everything it covers is on this page below.</span></div>')
     + "</div></div>";
 }
 function lpfMaster(res){
@@ -27815,6 +27815,149 @@ function lpfOnPage(){
 window.addEventListener("orbuni:page", lpfOnPage);
 window.addEventListener("hashchange", function(){ setTimeout(lpfOnPage, 40); });
 setTimeout(lpfOnPage, 450);
+
+/* ============================================================
+   8 Oct 2026 · The assessment knows WHO is answering
+   ------------------------------------------------------------
+   The first question asks who this is for — the student, a parent or
+   guardian, or someone helping (a relative, friend or agent) — and the
+   second asks the level (bachelor's / master's / PhD). Every question after
+   that is worded for that person ("your child's results"), the lead is
+   tagged with the role and level, and the result page offers the right
+   "Required documents" PDF, then "Start my application" (while new accounts
+   are paused, that reserves their place instead), then "Book a call".
+   ============================================================ */
+var LPQ_ROLE = { role: "student", level: null, levelUnsure: false };
+LPQ.unshift(
+  { dim:"who", meta:true, q:"Who is this for?", help:"So we can talk to the right person — the questions change to fit you.", opts:[
+      ["I am the student", "student"], ["I'm a parent or guardian", "parent"], ["I'm helping someone else apply (a relative, friend or agent)", "helper"] ] },
+  { dim:"level", meta:true, q:"What do you want to study?", opts:[
+      ["A bachelor's degree (undergraduate)", "bachelors"], ["A master's degree", "masters"], ["A PhD", "phd"], ["Not sure yet", "bachelors"] ] }
+);
+(function(){
+  var THEM = {
+    level:      ["What will your child study?", "What does the student want to study?"],
+    intent:     ["Where is your child with studying abroad right now?", "Where is the student with studying abroad right now?"],
+    timeline:   ["When should your child start their studies?", "When does the student want to start?"],
+    fit:        ["Does your child know what they want to study?", "Does the student know what they want to study?"],
+    academic:   ["What were your child's latest results like?", "What were the student's latest results like?"],
+    documents:  ["Which of these does your child already have?", "Which of these does the student already have?"],
+    finance:    ["How will the studies be paid for?", "How will the studies be paid for?"],
+    scholarship:["What scholarship are you hoping for?", "What scholarship is the student hoping for?"],
+    commitment: ["If we found the right programme this week, how soon could you send your child's documents?", "If we found the right programme this week, how soon could the student's documents be sent?"]
+  };
+  var OPTS = {
+    intent: [["Just looking around for them", "Just looking around for them"], ["Comparing countries and options", "Comparing countries and options"],
+             ["We have decided on Türkiye", "They have decided on Türkiye"], ["We are ready to apply now", "They are ready to apply now"]],
+    fit: [["Not yet", "Not yet"], ["They know the general field", "They know the general field"], ["They know the exact programme", "They know the exact programme"], ["They know the programme and the university", "They know the programme and the university"]],
+    finance: [["We need a free / fully funded place", "They need a free / fully funded place"], ["We will help, but we are not sure how much", "The family will help, but not sure how much"],
+              ["The budget for the first year is ready", "The budget for the first year is ready"], ["The budget for the whole programme is ready", "The budget for the whole programme is ready"]],
+    commitment: [["I am not sure we would go ahead", "Not sure they would go ahead"], ["Within a few months", "Within a few months"], ["Within two weeks", "Within two weeks"], ["Within 48 hours", "Within 48 hours"]]
+  };
+  LPQ.forEach(function(s){ s._q = s.q; s._opts = s.opts.map(function(o){ return o.slice(); }); });
+  window.lpApplyRole = function(role){
+    LPQ_ROLE.role = role;
+    var k = role === "parent" ? 0 : role === "helper" ? 1 : -1;
+    LPQ.forEach(function(s){
+      if(s.dim === "who") return;
+      s.q = k < 0 || !THEM[s.dim] ? s._q : THEM[s.dim][k];
+      s.opts = s._opts.map(function(o, i){ var alt = k >= 0 && OPTS[s.dim] && OPTS[s.dim][i]; return alt ? [alt[k], o[1]] : o.slice(); });
+    });
+  };
+  var pick0 = window.lpPick;
+  window.lpPick = function(k){
+    var s = LPQ[LPQ_STATE.i];
+    if(s && s.dim === "who"){ lpApplyRole(s.opts[k][1]); lpEvent("quiz_role", 0, s.opts[k][1]); }
+    if(s && s.dim === "level"){ LPQ_ROLE.level = s.opts[k][1]; LPQ_ROLE.levelUnsure = k === 3; }
+    return pick0.apply(this, arguments);
+  };
+  /* the contact screen: the role is already known, so the question goes; parents and helpers add the student's name */
+  var contact0 = lpContactStep;
+  lpContactStep = function(){
+    contact0.apply(this, arguments);
+    var sel = document.getElementById("lpq-w");
+    if(sel){ var lab = sel.closest("label"); var h = document.createElement("input"); h.type = "hidden"; h.id = "lpq-w"; h.value = LPQ_ROLE.role; if(lab) lab.replaceWith(h); }
+    if(LPQ_ROLE.role !== "student"){
+      var n = document.getElementById("lpq-n"); if(n && n.parentNode && n.parentNode.firstChild) n.parentNode.firstChild.textContent = "Your name *";
+      var s = document.getElementById("lpq-s"); if(s && s.parentNode) s.parentNode.firstChild.textContent = "What does the student want to study? (optional)";
+      var e = document.getElementById("lpq-e"); var row = e && e.closest("label");
+      if(row && !document.getElementById("lpq-sn")) row.insertAdjacentHTML("afterend", '<label>Student’s full name<input id="lpq-sn" autocomplete="off" maxlength="120" placeholder="As on their passport"></label>');
+    }
+  };
+})();
+
+/* ---- required documents: the right one for their level, viewable, screenshot-able, downloadable ---- */
+var LP_DOCS = { bachelors:["Bachelor's degree","Bachelors"], masters:["Master's degree","Masters"], phd:["PhD","Phd"] };
+window.lpDocsOpen = function(level){
+  level = LP_DOCS[level] ? level : (LPQ_ROLE.level || "bachelors");
+  lpEvent("cta_click", null, "docs_view_" + level);
+  var f = "/docs/Orbuni-Required-Documents-" + LP_DOCS[level][1];
+  var el = document.getElementById("lpd-ov");
+  if(!el){ el = document.createElement("div"); el.id = "lpd-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el);
+    el.addEventListener("click", function(e){ if(e.target === el) lpDocsClose(); }); }
+  el.innerHTML = '<div class="lpd-card"><div class="lpd-head"><b>Required documents</b><button class="lpd-x" onclick="lpDocsClose()" aria-label="Close">✕</button>'
+    + '<div class="lpd-tabs">' + Object.keys(LP_DOCS).map(function(k){ return '<button class="' + (k === level ? "on" : "") + '" onclick="lpDocsOpen(\'' + k + '\')">' + LP_DOCS[k][0] + "</button>"; }).join("") + "</div>"
+    + '</div>'
+    + '<div class="lpd-img"><img src="' + f + '.jpg" alt="Required documents for a ' + esc(LP_DOCS[level][0]) + ' in Türkiye — full checklist"></div>'
+    + '<div class="lpd-foot"><a class="lpd-b gold" href="' + f + '.pdf" download onclick="lpEvent(\'cta_click\',null,\'docs_download_' + level + '\')">Download the PDF</a>'
+    + '<button class="lpd-b ink" onclick="lpDocsClose();lpStartApp(\'docs\')">Start my application →</button></div></div>';
+  el.classList.add("on"); document.documentElement.style.overflow = "hidden";
+};
+window.lpDocsClose = function(){ var el = document.getElementById("lpd-ov"); if(el) el.classList.remove("on"); document.documentElement.style.overflow = ""; };
+
+/* ---- start my application: open account creation, or — while new accounts are paused — reserve their place ---- */
+window.lpStartApp = async function(from){
+  lpEvent("cta_click", null, "start_app_" + (from || ""));
+  var open = await orbSignupsOpen();
+  if(open){ openPortal("student-up"); return; }
+  var c = LPQ_STATE.contact || {};
+  try{ await sb.rpc("lead_reserve", { p_phone: c.phone || "", p_email: c.email || "" }); }catch(e){}
+  var el = document.getElementById("lpd-ov");
+  if(!el){ el = document.createElement("div"); el.id = "lpd-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el);
+    el.addEventListener("click", function(e){ if(e.target === el) lpDocsClose(); }); }
+  var first = esc(String(c.name || "").split(" ")[0]);
+  var kid = LPQ_ROLE.role === "parent" ? "your child's" : LPQ_ROLE.role === "helper" ? "the student's" : "your";
+  el.innerHTML = '<div class="lpd-card lpd-res"><div class="lpd-ok">✓</div><h3>Your place is reserved' + (first ? ", " + first : "") + '.</h3>'
+    + "<p>Most universities have closed applications for this intake, so new applications open for the next one very soon. You're on the priority list — we'll message you on WhatsApp"
+    + (c.email ? " and email" : "") + " the moment it opens, and you'll be among the first to apply.</p>"
+    + "<p><b>Get ahead now:</b> gather " + kid + " documents from the checklist, so the application can go in on day one.</p>"
+    + '<div class="lpd-foot"><button class="lpd-b gold" onclick="lpDocsOpen()">See the required documents</button>'
+    + '<button class="lpd-b ghost" onclick="lpDocsClose();lpCallOpen && (document.getElementById(\'lpr-call-wrap\') ? lpCallOpen(\'' + ((LPQ_STATE.result || {}).pathway || "medium") + '\') : lpScrollTo(\'lpr-call-card\'))">Prefer to talk? Book a call</button></div></div>';
+  el.classList.add("on"); document.documentElement.style.overflow = "hidden";
+};
+
+/* ---- the result screen: documents card + the new buttons, worded for the right person ---- */
+(function(){
+  var res0 = lpResult;
+  lpResult = function(res, name){
+    var out = res0.apply(this, arguments);
+    var box = document.getElementById("lp-quiz"); if(!box) return out;
+    var role = LPQ_ROLE.role, lvl = LPQ_ROLE.level || "bachelors";
+    var h = box.querySelector(".lpf-h");
+    if(h && role !== "student"){
+      var who = role === "parent" ? "Your child is" : "The student is";
+      h.innerHTML = h.innerHTML.replace(/^You are ready to apply/, who + " ready to apply").replace(/^You are close/, who + " close");
+      var sb2 = box.querySelector(".lpf-sub"); if(sb2) sb2.innerHTML = sb2.innerHTML.replace("Your answers put you among", "Your answers put " + (role === "parent" ? "your child" : "the student") + " among").replace("or start your application now", "or start the application now");
+    }
+    // every "create an account" button becomes Start my application (reserve while paused)
+    box.querySelectorAll("button").forEach(function(b){
+      var oc = b.getAttribute("onclick") || "";
+      if(oc.indexOf("student-up") > -1){ b.setAttribute("onclick", "lpStartApp('" + res.pathway + "')"); b.innerHTML = "Start my application →"; }
+    });
+    if(res.pathway !== "lower"){
+      var body = box.querySelector(".lpf-body");
+      var lab = LP_DOCS[lvl][0];
+      var card = '<div class="lpf-card lpd-teaser"><span class="lpr-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span><div><b>Required documents — ' + esc(lab) + "</b>"
+        + "<small>" + (LPQ_ROLE.levelUnsure ? "Not sure of the level yet? You can switch between bachelor's, master's and PhD. " : "")
+        + "The full checklist, clean and simple. View it here, screenshot it or download the PDF — have these ready before you start.</small></div>"
+        + '<button class="lp-pill lp-pill-gold" onclick="lpDocsOpen(\'' + lvl + '\')">View required documents</button></div>';
+      if(body) body.insertAdjacentHTML("afterbegin", card);
+      var acts = box.querySelector(".lpf-acts");
+      if(acts && !acts.querySelector(".lpd-btn")) acts.insertAdjacentHTML("afterbegin", '<button class="lp-pill lp-pill-ghost lpd-btn" onclick="lpDocsOpen(\'' + lvl + '\')">View required documents</button>');
+    }
+    return out;
+  };
+})();
 
 /* ============================================================
    CHECKOUT SHEET — pay without leaving myorbuni.com
@@ -35953,6 +36096,34 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
 #pay-ov .pay-ov-card{width:min(420px,100%);background:var(--card,#fff);color:var(--ink,#111);border-radius:24px;padding:26px 22px 20px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 #pay-ov .wsx-go{width:100%;margin-top:14px;padding:14px;border:0;border-radius:99px;background:linear-gradient(100deg,#F2B544,#E08A33);color:#1A1204;font:700 15px Inter,sans-serif;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.paychk-ring svg,.paychk-steps li.now::before{animation:none}}
+</style>
+<style id="lpd-css">
+#lpd-ov{position:fixed;inset:0;z-index:99990;display:none;place-items:center;padding:14px;background:rgba(5,9,18,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#lpd-ov.on{display:grid}
+.lpd-card{width:min(760px,100%);max-height:calc(100dvh - 28px);display:flex;flex-direction:column;background:#fff;color:#0E1626;border-radius:22px;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.5)}
+.lpd-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e8ecf3;flex-wrap:wrap}
+.lpd-head .lpd-x{margin-left:auto;order:2}.lpd-head .lpd-tabs{order:3}
+.lpd-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:99px;font:700 14px/1.2 Inter,sans-serif;cursor:pointer;text-decoration:none;border:1px solid transparent;white-space:nowrap}
+.lpd-b.gold{background:linear-gradient(100deg,#F2B544,#E08A33);color:#1A1204}
+.lpd-b.ink{background:#0E1626;color:#fff}
+.lpd-b.ghost{background:#fff;color:#0E1626;border-color:#d9dee8}
+.lpd-head b{font:800 15px/1 Inter,sans-serif}
+.lpd-tabs{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.lpd-tabs button{border:1px solid #e3e7ef;background:#f6f8fb;border-radius:99px;padding:7px 11px;font:600 12.5px Inter,sans-serif;cursor:pointer;color:#0E1626}
+.lpd-tabs button.on{background:#0E1626;color:#F2B544;border-color:#0E1626}
+.lpd-x{border:0;background:#f1f3f7;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;color:#0E1626}
+.lpd-img{overflow:auto;-webkit-overflow-scrolling:touch;background:#eef1f6}
+.lpd-img img{display:block;width:100%;height:auto}
+.lpd-foot{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid #e8ecf3;justify-content:flex-end}
+.lpd-foot .lp-pill{text-decoration:none}
+.lpd-res{padding:26px 22px 8px;text-align:center}
+.lpd-res h3{font:800 24px/1.2 "Bricolage Grotesque",Inter,sans-serif;margin:12px 0 8px}
+.lpd-res p{font:400 15px/1.6 Inter,sans-serif;color:#48566B;margin:0 0 10px}
+.lpd-res .lpd-foot{justify-content:center;border:0}
+.lpd-ok{width:64px;height:64px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:rgba(62,213,152,.15);border:2px solid #1FA971;color:#1FA971;font:800 28px/1 Inter,sans-serif}
+.lpd-teaser{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.lpd-teaser>div{flex:1;min-width:220px}.lpd-teaser b{display:block}.lpd-teaser small{display:block;margin-top:4px;line-height:1.5}
+@media (max-width:560px){.lpd-foot .lpd-b{flex:1 1 100%;white-space:normal}}
 </style>
 </body>
 </html>
