@@ -13351,7 +13351,7 @@ async function sTrack(){
   var R = READY || {};
   var sSteps = [
     { label:"Your details",    sub:"Name, contact, address", icon:NAVI.user,      done:!!R.personal_done,   go:"openLineup()" },
-    { label:"Passport",        sub:"Photo page, in colour",  icon:NAVI.fileText,  done:!!R.has_passport,    go:"sGo('docs')" },
+    { label:"Passport or national ID", sub:"Passport photo page, or NIN / Ghana Card to start",  icon:NAVI.fileText,  done:!!R.has_passport,    go:"sGo('docs')" },
     { label:"Academic records",sub:"Transcripts and results",icon:NAVI.cap,       done:!!R.has_academics,   go:"sGo('docs')" },
     { label:"Choose programmes",sub:"Up to three",           icon:NAVI.target,    done:(R.choice_count||0)>0, go:"openLineup()" }
   ];
