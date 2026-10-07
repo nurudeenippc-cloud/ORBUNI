@@ -3,6 +3,23 @@
 https://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
 http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
 
+
+# Short tracked links (bios, stories, WhatsApp). Each forwards to the video and the free
+# assessment with its source tag; ?go=start opens #start (see the script at the top of index.html).
+/ig  /?utm_source=instagram&utm_medium=bio&utm_campaign=always_on&go=start  302
+/tt  /?utm_source=tiktok&utm_medium=bio&utm_campaign=always_on&go=start  302
+/fb  /?utm_source=facebook&utm_medium=page&utm_campaign=always_on&go=start  302
+/yt  /?utm_source=youtube&utm_medium=description&utm_campaign=always_on&go=start  302
+/nm  /?utm_source=linkedin&utm_medium=nurudeen&utm_campaign=always_on&go=start  302
+/gw  /?utm_source=linkedin&utm_medium=godfrey&utm_campaign=always_on&go=start  302
+/wa  /?utm_source=whatsapp&utm_medium=community&utm_campaign=always_on&go=start  302
+/story  /?utm_source=instagram&utm_medium=story&utm_campaign=launch_oct26&go=start  302
+/dm  /?utm_source=instagram&utm_medium=dm&utm_campaign=launch_oct26&go=start  302
+/status  /?utm_source=whatsapp&utm_medium=status&utm_campaign=launch_oct26&go=start  302
+/go  /?utm_source=whatsapp&utm_medium=broadcast&utm_campaign=launch_oct26&go=start  302
+/live  /?utm_source=instagram&utm_medium=live&utm_campaign=launch_oct26&go=start  302
+/c/:name  /?utm_source=instagram&utm_medium=collab&utm_campaign=launch_oct26&utm_content=:name&go=start  302
+
 /.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200
 /housing/gozde-student-residence-avcilar-male/  /housing/men-residence-avcilar-1/  301
 /housing/piyano-student-residence-avcilar-male/  /housing/men-residence-avcilar-2/  301
