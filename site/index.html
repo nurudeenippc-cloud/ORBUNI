@@ -11210,6 +11210,7 @@ function boot(){
   });
   window.orbSB = sb;
   sb.auth.onAuthStateChange(function(evt, session){
+    if(session && typeof orbScrubAuthHash === "function") setTimeout(orbScrubAuthHash, 0);
     if(evt === "SIGNED_OUT"){ ME = null; PROF = null; }
     if(evt === "PASSWORD_RECOVERY"){ if(typeof askNewPassword === "function") askNewPassword(); }
     if(evt === "SIGNED_IN" && authLinkType() === "signup"){
@@ -11507,15 +11508,30 @@ function idleShowWarn(){
 })();
 
 /* Sign-in links put a one-time key in the address. Supabase reads it and
-   removes it; this makes sure it never lingers to be copied and shared. */
-setTimeout(function(){
+   removes it; this wipes it the moment the session exists, so it never
+   lingers to be copied and shared. */
+function orbScrubAuthHash(){
   try{
-    if(/(access_token|refresh_token|provider_token)=/.test(location.hash || "")){
-      var keep = /^#portal=/.test(location.hash) ? location.hash : "";
-      sb.auth.getSession().then(function(r){ if(r && r.data && r.data.session) history.replaceState(null, "", location.pathname + keep); });
-    }
-  }catch(e){}
-}, 4000);
+    if(!/(access_token|refresh_token|provider_token)=/.test(location.hash || "")) return true;
+    authLinkType();
+    var keep = /^#portal=/.test(location.hash) ? location.hash : "";
+    history.replaceState(null, "", location.pathname + location.search + keep);
+    return true;
+  }catch(e){ return false; }
+}
+(function(){
+  if(!/(access_token|refresh_token|provider_token)=/.test(location.hash || "")) return;
+  authLinkType();
+  setTimeout(function(){ window.__orbLinkType = ""; }, 30000);
+  var n = 0, iv = setInterval(function(){
+    n++;
+    if(n > 100){ clearInterval(iv); return; }
+    if(!sb || !sb.auth) return;
+    sb.auth.getSession().then(function(r){
+      if(r && r.data && r.data.session){ orbScrubAuthHash(); clearInterval(iv); }
+    }).catch(function(){});
+  }, 150);
+})();
 
 /* ============================================================
    AUTH — replaces the demo enter()
@@ -18587,8 +18603,11 @@ function authLinkType(){
     var h = (location.hash || "").replace(/^#/, "");
     var q = (location.search || "").replace(/^\?/, "");
     var p = new URLSearchParams(h + "&" + q);
-    return String(p.get("type") || "").toLowerCase();
-  }catch(e){ return ""; }
+    var t = String(p.get("type") || "").toLowerCase();
+    /* the key is wiped from the address as soon as it is read, so remember the type */
+    if(t) window.__orbLinkType = t;
+    return t || window.__orbLinkType || "";
+  }catch(e){ return window.__orbLinkType || ""; }
 }
 function showEmailConfirmed(){
   if(typeof openPortal === "function") openPortal("choose");

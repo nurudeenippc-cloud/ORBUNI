@@ -1,3 +1,8 @@
+# The Netlify default address serves the same site. Send it to the real domain
+# so Google treats myorbuni.com as the only copy.
+https://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
+http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
+
 /.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200
 /housing/gozde-student-residence-avcilar-male/  /housing/men-residence-avcilar-1/  301
 /housing/piyano-student-residence-avcilar-male/  /housing/men-residence-avcilar-2/  301
