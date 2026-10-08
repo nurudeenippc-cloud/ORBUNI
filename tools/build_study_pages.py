@@ -222,7 +222,7 @@ def build():
         cities = sorted({r[1] for r in hits if r[1]})
         path = f"/study/{slug}-in-turkey/"
         url = BASE + path
-        ttl = f"Study {title} in Turkey (Türkiye) for international students: fees at {len(by_uni)} universities | Orbuni"
+        ttl = f"Study {title} in Turkey: {len(by_uni)} Universities & Fees | Orbuni"
         desc = (f"Study {title} in Turkey: {len(by_uni)} universities"
                 + (f", from {usd(cheapest)} a year after discount" if cheapest else "")
                 + f", {english} in English. Published fees and scholarships for students from Africa, the Middle East and Asia. Apply free.")
