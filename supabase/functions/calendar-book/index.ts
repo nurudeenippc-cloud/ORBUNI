@@ -13,17 +13,14 @@ const CORS = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 
-// The client secret lives in Vault (connector_providers.client_secret_id) since
-// 12 Sep. This function used to read only the old plain column, which is now
-// empty, so every hourly token refresh failed and connections were wrongly
-// marked "expired". Read Vault first, the plain column only as a fallback.
-async function providerSecret(row: { client_secret: string | null; client_secret_id: string | null }) {
-  if (row.client_secret_id) {
-    const { data } = await admin.schema("vault").from("decrypted_secrets")
-      .select("decrypted_secret").eq("id", row.client_secret_id).maybeSingle();
-    if (data?.decrypted_secret) return data.decrypted_secret as string;
-  }
-  return row.client_secret ?? null;
+// The client secret lives in Vault (connector_providers.client_secret_id). The vault
+// schema is not reachable through the API, so it is read through the service-role-only
+// database function connector_client_secret(); reading vault.decrypted_secrets directly
+// returned nothing, every hourly token refresh failed and connections were marked "expired".
+async function providerSecret(provider: string) {
+  const { data, error } = await admin.rpc("connector_client_secret", { p_provider: provider });
+  if (error) console.error("connector secret", error.message);
+  return (data as string | null) || null;
 }
 
 async function freshToken(connectionId: string, provider: string) {
@@ -35,7 +32,7 @@ async function freshToken(connectionId: string, provider: string) {
   if (!tok.refresh_token) return null;
   const { data: prov } = await admin.from("connector_providers")
     .select("client_id, client_secret, client_secret_id").eq("id", provider).maybeSingle();
-  const secret = prov ? await providerSecret(prov) : null;
+  const secret = prov ? await providerSecret(provider) : null;
   if (!prov?.client_id || !secret) return null;
   const endpoint = provider === "google" ? "https://oauth2.googleapis.com/token" : "https://zoom.us/oauth/token";
   const form = new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token });

@@ -49,13 +49,11 @@ async function freshToken(connectionId: string) {
   const stillGood = !tok.expires_at || new Date(tok.expires_at).getTime() - Date.now() > 120_000;
   if (stillGood) return tok.access_token as string;
   if (!tok.refresh_token) return null;
-  // The secret lives in Vault (client_secret_id) since 12 Sep; the plain column is empty.
-  const { data: prov } = await admin.from("connector_providers").select("client_id, client_secret, client_secret_id").eq("id", "google").maybeSingle();
-  let secret: string | null = prov?.client_secret ?? null;
-  if (prov?.client_secret_id) {
-    const { data: v } = await admin.schema("vault").from("decrypted_secrets").select("decrypted_secret").eq("id", prov.client_secret_id).maybeSingle();
-    if (v?.decrypted_secret) secret = v.decrypted_secret as string;
-  }
+  // The secret lives in Vault; the vault schema is not reachable through the API, so it
+  // comes through the service-role-only database function connector_client_secret().
+  const { data: prov } = await admin.from("connector_providers").select("client_id").eq("id", "google").maybeSingle();
+  const { data: sec } = await admin.rpc("connector_client_secret", { p_provider: "google" });
+  const secret = (sec as string | null) || null;
   if (!prov?.client_id || !secret) return null;
   const form = new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token,
     client_id: String(prov.client_id).replace(/\s+/g, ""), client_secret: String(secret).replace(/\s+/g, "") });
