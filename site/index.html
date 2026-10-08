@@ -95,7 +95,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1220px;margin:0 auto;padding:0 20px}
 h1,h2,h3{font-family:var(--disp);font-weight:800;letter-spacing:-.04em;line-height:1.04;text-wrap:balance}
-h1{font-size:clamp(32px,6vw,62px)} h2{font-size:clamp(25px,4.2vw,42px)} h3{font-size:18px;letter-spacing:-.025em}
+h1,.h1x{font-size:clamp(32px,6vw,62px)} h2{font-size:clamp(25px,4.2vw,42px)} h3{font-size:18px;letter-spacing:-.025em}
 .lead{color:var(--dim);font-size:clamp(15px,1.9vw,17.5px);max-width:60ch}
 .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
   display:inline-flex;align-items:center;gap:9px}
@@ -664,7 +664,7 @@ nav{position:sticky;top:16px;z-index:70;padding:0 16px}
 #pg-careers.job-open > section:not(:last-of-type){display:none}
 /* ---- Careers page ---- */
 .cr-hero{padding-bottom:30px}
-.cr-hero h1{font-family:var(--disp);font-size:clamp(34px,5.6vw,64px);line-height:1.04;letter-spacing:-.04em;margin:14px 0 16px;text-wrap:balance}
+.cr-hero h1,.cr-hero .h1x{font-family:var(--disp);font-size:clamp(34px,5.6vw,64px);line-height:1.04;letter-spacing:-.04em;margin:14px 0 16px;text-wrap:balance}
 .cr-hero .lead{max-width:62ch}
 .cr-hero .hcta{margin-top:24px}
 .cr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:40px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -1074,7 +1074,7 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
   background:rgba(14,22,38,.94);backdrop-filter:blur(20px);
   border:1px solid var(--line);border-radius:999px;box-shadow:0 18px 40px rgba(0,0,0,.4);
   padding:0 24px;height:62px;display:flex;align-items:center;gap:16px}
-#portal header.app h1{font-size:19px}
+#portal header.app h1,#portal header.app .h1x{font-size:19px}
 #portal header.app .sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
 #portal .hr{margin-left:auto;display:flex;align-items:center;gap:9px}
 #portal .icb{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;position:relative;font-size:14px}
@@ -1176,7 +1176,7 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
 #portal{--bnav-h:calc(96px + env(safe-area-inset-bottom,0px))}
 #portal .body{padding:18px 16px var(--bnav-h)}
 #portal header.app{margin:10px 12px 6px;border-radius:999px;padding:0 18px;height:58px;gap:11px}
-  #portal header.app h1{font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #portal header.app h1,#portal header.app .h1x{font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #portal header.app .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
   #portal header.app>div:not(.hr){min-width:0;flex:1}
   #portal .hr{gap:7px}
@@ -1186,7 +1186,7 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
   /* the bottom tab bar — the portal's real primary navigation on mobile */
   #portal, #portal input, #portal button, #portal select, #portal textarea{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif}
-  #portal h1{font-weight:600;letter-spacing:-.01em}
+  #portal h1,#portal .h1x{font-weight:600;letter-spacing:-.01em}
   #portal h2, #portal h3{font-weight:600}
   #portal .sb-i, #portal p, #portal .sub, #portal td, #portal th{font-weight:400}
   /* The whole pill lifts above the home indicator rather than growing a
@@ -3381,7 +3381,7 @@ html.th7-swap *,html.th7-swap *::before,html.th7-swap *::after{transition:backgr
 @media (max-width:480px){
   #portal header.app .whop-btn span{display:none}
   #portal header.app .whop-btn{padding:0;width:38px;min-width:38px;height:38px;justify-content:center}
-  #portal header.app h1{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:17px!important;line-height:1.15!important}
+  #portal header.app h1,#portal header.app .h1x{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:17px!important;line-height:1.15!important}
   #portal header.app .sub{display:none}
   #portal header.app .th7-btn{width:34px;height:34px}
 }
@@ -4026,7 +4026,7 @@ html[data-theme="light"] [style*="color:var(--gold)"]:not([style*="background"])
     margin:max(6px,env(safe-area-inset-top,0px)) 10px 8px;
     border-radius:16px;padding:0 12px;
   }
-  #portal header.app h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #portal header.app h1,#portal header.app .h1x{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #portal .body{padding-left:12px;padding-right:12px}
   #portal .panel{overflow:hidden;max-width:100%}
   #portal .dfx,#portal .view.on{animation:none!important}
@@ -7444,29 +7444,29 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <li class="hw2-step on" data-i="0">
           <span class="hw2-n" aria-hidden="true">1</span>
           <div class="hw2-tx"><b>Tell us your course</b><p>One field — whatever you want to study. We come back with the universities that teach it.</p></div>
-          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/home/hero-5-m.webp"><img src="photos/home/hero-5.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/home/hero-5-m.webp"><img src="photos/home/hero-5.jpg" alt="Sabancı University main building in Istanbul" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
         </li>
         <li class="hw2-step" data-i="1">
           <span class="hw2-n" aria-hidden="true">2</span>
           <div class="hw2-tx"><b>See your scholarship</b><p>The published fee at each one, and the scholarship band your grades open up.</p></div>
-          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/u011-istanbul-medipol-university/01-card.webp"><img src="photos/u011-istanbul-medipol-university/01-card.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/u011-istanbul-medipol-university/01-card.webp"><img src="photos/u011-istanbul-medipol-university/01-card.jpg" alt="Istanbul Medipol University campus" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
         </li>
         <li class="hw2-step" data-i="2">
           <span class="hw2-n" aria-hidden="true">3</span>
           <div class="hw2-tx"><b>Apply, and get your offer</b><p>Your counsellor checks every document, submits it, and the university answers us directly.</p></div>
-          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/u007-cyprus-aydin-university/01-card.webp"><img src="photos/u007-cyprus-aydin-university/01-card.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/u007-cyprus-aydin-university/01-card.webp"><img src="photos/u007-cyprus-aydin-university/01-card.jpg" alt="Cyprus Aydın University campus" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
         </li>
         <li class="hw2-step" data-i="3">
           <span class="hw2-n" aria-hidden="true">4</span>
           <div class="hw2-tx"><b>Land in Türkiye</b><p>Visa file handled, someone at the airport, and your room ready before you fly.</p></div>
-          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/home/footer-student.webp"><img src="photos/home/footer-student.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+          <figure class="hw2-ph"><picture><source type="image/webp" srcset="photos/home/footer-student.webp"><img src="photos/home/footer-student.jpg" alt="International student holding her application folder" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
         </li>
       </ol>
       <div class="hw2-stage" aria-hidden="true">
-      <figure class="hw2-shot on" data-i="0"><picture><source type="image/webp" srcset="photos/home/hero-5.webp"><img src="photos/home/hero-5.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
-      <figure class="hw2-shot" data-i="1"><picture><source type="image/webp" srcset="photos/u011-istanbul-medipol-university/01-hero.webp"><img src="photos/u011-istanbul-medipol-university/01-card.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
-      <figure class="hw2-shot" data-i="2"><picture><source type="image/webp" srcset="photos/u007-cyprus-aydin-university/01-hero.webp"><img src="photos/u007-cyprus-aydin-university/01-card.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
-      <figure class="hw2-shot" data-i="3"><picture><source type="image/webp" srcset="photos/home/footer-student.webp"><img src="photos/home/footer-student.jpg" alt="" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+      <figure class="hw2-shot on" data-i="0"><picture><source type="image/webp" srcset="photos/home/hero-5.webp"><img src="photos/home/hero-5.jpg" alt="Sabancı University main building in Istanbul" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+      <figure class="hw2-shot" data-i="1"><picture><source type="image/webp" srcset="photos/u011-istanbul-medipol-university/01-hero.webp"><img src="photos/u011-istanbul-medipol-university/01-card.jpg" alt="Istanbul Medipol University campus" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+      <figure class="hw2-shot" data-i="2"><picture><source type="image/webp" srcset="photos/u007-cyprus-aydin-university/01-hero.webp"><img src="photos/u007-cyprus-aydin-university/01-card.jpg" alt="Cyprus Aydın University campus" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
+      <figure class="hw2-shot" data-i="3"><picture><source type="image/webp" srcset="photos/home/footer-student.webp"><img src="photos/home/footer-student.jpg" alt="International student holding her application folder" loading="lazy" decoding="async" width="800" height="500"></picture></figure>
         <div class="hw2-count" id="hwCount">Step 1 of 4</div>
       </div>
     </div>
@@ -7600,7 +7600,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 <main class="page" id="pg-progs">
   <div class="fh"><div class="wrap">
     <span class="eyebrow">Program finder</span>
-    <h1 style="font-size:clamp(26px,4vw,40px);margin:12px 0 10px">What do you want to study?</h1>
+    <h2 class="h1x" style="font-size:clamp(26px,4vw,40px);margin:12px 0 10px">What do you want to study?</h2>
     <p class="lead" style="margin-bottom:20px">Every programme our partner network offers, with the published fee, the discount already applied, and what you actually pay. Search by course, or filter your way down.</p>
     <div class="cbar">
       <input id="q" aria-label="Search programmes by course name" placeholder="e.g. Nursing, Medicine, Computer Engineering…" autocomplete="off">
@@ -7805,7 +7805,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 <main class="page" id="pg-careers">
   <section class="cr-hero"><div class="wrap">
     <span class="eyebrow">Careers at Orbuni</span>
-    <h1>Do the work that gets a student<br><span class="grad">from a dream to a lecture hall.</span></h1>
+    <h2 class="h1x">Do the work that gets a student<br><span class="grad">from a dream to a lecture hall.</span></h2>
     <p class="lead">We are a small team in İstanbul and remote across Africa, building the study-abroad agency we wished existed: published fees, honest answers, and one named person beside every student.</p>
     <div class="hcta"><button class="btn btn-p" onclick="document.getElementById('job-list').scrollIntoView({behavior:'smooth'})">See open roles ↓</button>
       <button class="btn btn-o" onclick="go('team')">Our story</button></div>
@@ -8315,7 +8315,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <section class="lp-hero">
     <div class="lp-w lp-hero-in">
       <span class="lp-badge"><i></i>2026/27 intake · Study in Türkiye</span>
-      <h1 class="lp-h1">Find out where you <em>really</em> stand in two minutes</h1>
+      <h2 class="lp-h1 h1x">Find out where you <em>really</em> stand in two minutes</h2>
       <p class="lp-lead">Answer eight honest questions and it tells you which path fits you, before you ask anyone. It's free.</p>
 
       <!-- The VSL comes straight after the promise, and the assessment
@@ -8596,7 +8596,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <main class="app">
     <header class="app">
       <button class="burger2" id="s-burger" aria-label="Open the portal menu" onclick="toggleAside('sb-s')"><i></i><i></i><i></i></button>
-      <div><div class="sub" id="s-crumb">Orbuni Portal</div><h1 id="s-title">My application</h1></div>
+      <div><div class="sub" id="s-crumb">Orbuni Portal</div><h2 class="h1x" id="s-title">My application</h2></div>
       <div class="hr"><div class="icb" onclick="bellClick('s', event)" title="Notifications">🔔<i class="dot" id="s-dot"></i><div class="ndrop" id="s-ndrop" onclick="event.stopPropagation()"></div></div><div class="icb" onclick="sGo('help')" title="Talk to my counsellor">💬</div><div class="whochip" id="s-whochip" onclick="meMenu('s', event)" title="Your account"></div><div class="mewrap"><div class="av sm hdr-av" id="s-av-h" onclick="meMenu('s', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="s-memenu" onclick="event.stopPropagation()"></div></div></div>
     </header>
     <div class="body" id="s-body"></div>
@@ -8622,7 +8622,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <main class="app">
     <header class="app">
       <button class="burger2" id="p-burger" aria-label="Open the portal menu" onclick="toggleAside('sb-p')"><i></i><i></i><i></i></button>
-      <div><div class="sub" id="p-crumb">Orbuni Portal</div><h1 id="p-title">Dashboard</h1></div>
+      <div><div class="sub" id="p-crumb">Orbuni Portal</div><h2 class="h1x" id="p-title">Dashboard</h2></div>
       <div class="hr"><div class="icb" onclick="bellClick('p', event)" title="Notifications">🔔<i class="dot" id="p-dot"></i><div class="ndrop" id="p-ndrop" onclick="event.stopPropagation()"></div></div><div class="whochip" id="p-whochip" onclick="meMenu('p', event)" title="Your account"></div><div class="mewrap"><div class="av sm hdr-av" id="p-av-h" onclick="meMenu('p', event)" title="You" role="button" aria-haspopup="menu">··</div><div class="memenu" id="p-memenu" onclick="event.stopPropagation()"></div></div></div>
     </header>
     <div class="body" id="p-body"></div>
@@ -8649,7 +8649,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <main class="app">
     <header class="app">
       <button class="burger2" id="a-burger" aria-label="Open the portal menu" onclick="toggleAside('sb-a')"><i></i><i></i><i></i></button>
-      <div><div class="sub" id="a-crumb">Orbuni Portal</div><h1 id="a-title">Today</h1></div>
+      <div><div class="sub" id="a-crumb">Orbuni Portal</div><h2 class="h1x" id="a-title">Today</h2></div>
       <div class="hr">
         <div class="icb" onclick="bellClick('a', event)" title="Notifications">🔔<i class="dot" id="a-dot"></i><div class="ndrop" id="a-ndrop" onclick="event.stopPropagation()"></div></div>
         <!-- Tapping your own face opens a small menu rather than jumping
@@ -26789,7 +26789,7 @@ window.artCoverPicked = async function(input){
     var prev = $("ar-cover-prev");
     if(prev){
       var url = sb.storage.from("article-images").getPublicUrl(path).data.publicUrl;
-      prev.innerHTML = '<img src="' + esc(url) + '" style="width:100%;height:100%;object-fit:cover">';
+      prev.innerHTML = '<img src="' + esc(url) + '" alt="Preview" style="width:100%;height:100%;object-fit:cover">';
     }
     toast("Cover image set. Save the guide to publish it.");
   }catch(e){ toast(friendly(e), true); }
@@ -28047,6 +28047,7 @@ function wcoClear(){
   WCO.timers.forEach(clearTimeout); WCO.timers = [];
   if(WCO.onMsg){ window.removeEventListener("message", WCO.onMsg); WCO.onMsg = null; }
   WCO.frame = null;
+  welDestroy();
 }
 function ocLog(what){ try{ lpEvent("checkout_state", null, String(what).slice(0, 180)); }catch(e){} }
 
@@ -28093,7 +28094,7 @@ window.orbCheckout = function(opts){
     document.getElementById("wsx").classList.add("on");
   });
   document.addEventListener("keydown", ocEsc);
-  wcoLoad();
+  welLoad();
   if(OC.previewPlan || OC.skipTerms) ocStep2(); else ocStep1();
 };
 function ocEsc(e){ if(e.key === "Escape") orbCheckoutClose(); }
@@ -28227,16 +28228,74 @@ async function ocStep2(){
   var el = document.getElementById("wsx-embed");
   var box = document.createElement("div");
   box.id = "wsx-wco"; box.className = "wsx-wco";
+  el.appendChild(box);
+  orbTrack("checkout_start", { value: OC.amount, currency: "USD" });
+  lpEvent("checkout_open", null, OC.tier || OC.product || OC.kind || null);
+  /* Whop Elements first (Whop retires the old embedded checkout on 21 Oct 2026); the old embed
+     only while it still works and only if Elements cannot load; Whop's own page always as the way out. */
+  var me = OC;
+  welMount(box, OC.wco).then(function(ok){
+    if(OC !== me || OC.step !== 2) return;
+    if(ok){ ocWatchElements(); return; }
+    ocLog("elements:unavailable");
+    if(Date.now() < Date.UTC(2026, 9, 21)) ocLegacyMount(box, plan, session, ret);
+    else ocSlow();
+  });
+}
+function ocLegacyMount(box, plan, session, ret){
   var a = { "plan-id":plan, "return-url":ret, "skip-redirect":"true", "theme":"light", "theme-accent-color":"#EE9B2F",
             "theme-border-radius":"12", "adaptive-pricing":"true", "style-container-padding-x":"0",
             "on-complete":"orbWhopComplete", "on-state-change":"orbWhopState", "on-payment-error":"orbWhopError" };
   if(session) a.session = session;
   if(OC.wco.email) a["prefill-email"] = OC.wco.email;
   Object.keys(a).forEach(function(k){ box.setAttribute("data-whop-checkout-" + k, a[k]); });
-  el.appendChild(box);
-  orbTrack("checkout_start", { value: OC.amount, currency: "USD" });
-  lpEvent("checkout_open", null, OC.tier || OC.product || OC.kind || null);
+  wcoLoad();
   ocWatch();
+}
+/* ---------- Whop Elements: the current embedded checkout ---------- */
+var WEL = { p:null, handle:null };
+function welLoad(){
+  if(window.WhopElements) return Promise.resolve(true);
+  if(WEL.p) return WEL.p;
+  WEL.p = new Promise(function(res){
+    var s = document.createElement("script");
+    s.src = "https://cdn.whop.com/elements/amber/elements.js"; s.async = true; s.setAttribute("data-whop-elements", "");
+    var t0 = Date.now();
+    (function wait(){ if(window.WhopElements) return res(true); if(Date.now() - t0 > 9000) return res(false); setTimeout(wait, 120); })();
+    s.onerror = function(){ WEL.p = null; res(false); };
+    document.head.appendChild(s);
+  });
+  return WEL.p;
+}
+function welDestroy(){ try{ if(WEL.handle) WEL.handle.destroy(); }catch(e){} WEL.handle = null; }
+async function welMount(box, w){
+  if(!(await welLoad())) return false;
+  try{
+    welDestroy();
+    var opts = { returnUrl: w.ret,
+      onComplete: function(r){ if(r && r.result === "payment") orbWhopComplete(null, r.paymentId); },
+      onLoadingChange: function(loading){ if(!loading) ocShown(); } };
+    if(w.session) opts.checkoutConfiguration = w.session; else opts.plan = w.plan;
+    var h = window.WhopElements().checkout.create(opts);
+    WEL.handle = h;
+    var el = h.create("checkout", { buyerEmail: w.email || "",
+      onReady: function(){ ocShown(); },
+      onError: function(e){ ocLog("elements:error:" + ((e && (e.code || e.message)) || "").slice(0, 80)); } });
+    el.mount(box);
+    return true;
+  }catch(e){ ocLog("elements:mount_failed:" + String(e && e.message || e).slice(0, 80)); welDestroy(); return false; }
+}
+/* the skeleton goes when Elements reports it is ready; if it never does, offer Whop's own page */
+function ocWatchElements(){
+  var t0 = Date.now();
+  (function tick(){
+    if(!OC || OC.step !== 2) return;
+    var box = document.getElementById("wsx-wco"); if(!box) return;
+    if(box.classList.contains("ready")) return;
+    if(box.querySelector("iframe") && Date.now() - t0 > 6000){ ocShown(); return; }
+    if(Date.now() - t0 > 16000 && document.getElementById("wsx-load")){ ocSlow(); return; }
+    WCO.timers.push(setTimeout(tick, 300));
+  })();
 }
 /* Watch the checkout come up. Whop's script (or our copy of it) mounts the frame;
    if neither has after a few seconds, we mount it ourselves. The skeleton goes
@@ -29013,7 +29072,8 @@ async function whopOrdersPanel(){
   if(fin) fin.insertAdjacentHTML("afterend", html); else box.insertAdjacentHTML("afterbegin", html);
 }
 
-/* Back from a Whop redirect (bank transfer, 3-D Secure…): ?whop=paid[&status=success|error] */
+/* Back from a Whop redirect (bank transfer, 3-D Secure…): ?whop=paid[&status=success|error]
+   Whop Elements adds &payment=pay_…&status=succeeded|failed|canceled */
 (function(){
   var q; try{ q = new URLSearchParams(location.search); }catch(e){ return; }
   if(q.get("whop") !== "paid" && !q.get("status")) return;
@@ -29021,14 +29081,14 @@ async function whopOrdersPanel(){
   window.__orbPayReturn = true; setTimeout(function(){ window.__orbPayReturn = false; }, 10 * 60000);
   try{ localStorage.setItem("orb-last-active", String(Date.now())); }catch(e){}
   var pkg = q.get("pkg") || "", status = q.get("status") || "success";
-  var receipt = q.get("receipt_id") || q.get("payment_id") || "";
+  var receipt = q.get("receipt_id") || q.get("payment_id") || q.get("payment") || "";
   var back = q.get("back") || ""; if(!/^#portal=/.test(back)){ try{ back = sessionStorage.getItem("orb-pay-back") || ""; }catch(e){} }
   try{ sessionStorage.removeItem("orb-pay-back"); }catch(e){}
   var hash = /^#portal=/.test(location.hash || "") ? location.hash : (/^#portal=/.test(back) ? back : location.hash);
-  try{ ["whop","pkg","status","receipt_id","payment_id","plan_id","back"].forEach(function(k){ q.delete(k); });
+  try{ ["whop","pkg","status","receipt_id","payment_id","payment","plan_id","back"].forEach(function(k){ q.delete(k); });
        history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + (hash || "")); }catch(e){}
   setTimeout(async function(){
-    if(status === "error"){ payOverlay("failed"); return; }
+    if(status === "error" || status === "failed" || status === "canceled"){ payOverlay("failed"); return; }
     payOverlay("checking");
     var st = await orbPayConfirm({ receipt: receipt, onTick: function(ms){ payCheckTick("pay-ov-chk", ms); } });
     if(st === "paid"){
@@ -34303,7 +34363,12 @@ window.olToggle = function(on){
 };
 window.olGo = function(i){ var it = OL.items && OL.items[i]; olToggle(false); if(it) try{ it.go(); }catch(e){ console.warn(e); } };
 function olSync(){
-  var P = $("portal"), inPortal = !!(P && P.classList.contains("on")), role = olWho();
+  /* only inside the person's own portal: signed in, a portal shell open, the sign-in card gone.
+     The #portal overlay also holds the sign-in screen, so "#portal.on" alone is not enough. */
+  var P = $("portal"), A = $("auth"), role = olWho();
+  var signedIn = typeof ME !== "undefined" && !!ME;
+  var authShown = !!(A && A.style.display !== "none" && getComputedStyle(A).display !== "none");
+  var inPortal = !!(P && P.classList.contains("on")) && signedIn && !authShown && !!document.querySelector("#portal .shell.on");
   var panel = $("askuni-panel"), busy = (panel && panel.classList.contains("on")) || !!document.querySelector("#orbcard.on, .wsx.on");
   var show = inPortal && !!role && olItems().length > 0;
   if(!show && !$("ol-root")) return;
