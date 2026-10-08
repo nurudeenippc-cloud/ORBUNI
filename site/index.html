@@ -28168,6 +28168,8 @@ function ocSteps(n){
 function ocMoney(n){ return "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: (Number(n) % 1 ? 2 : 0), maximumFractionDigits: 2 }); }
 
 /* opts: { kind:"service"|"course"|"extra", order?, booking?, product?, tier?, title, sub, amount, parts?, meta?, name?, email?, onDone? } */
+/* buttons written into the page as text (Try again, OK, document download) can only call global functions */
+window.ocStep2 = ocStep2; window.payOverlay = payOverlay; window.orbTrack = orbTrack;
 window.orbCheckout = function(opts){
   wcoClear();
   OC = Object.assign({ step:1 }, opts || {});
