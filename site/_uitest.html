@@ -33149,7 +33149,26 @@ function orbSpeak(t){
   }catch(e){}
 }
 try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = function(){}; }catch(e){}
+/* iPhone home-screen app (added to the Home Screen): iOS forgets the microphone permission, reloads the
+   app when it is granted and has no working speech recognition there. So in that one place we never
+   open the microphone; the keyboard's own dictation button does the listening instead. */
+window.ORB_IOS_APP = (function(){
+  try{
+    var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var app = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    return !!(ios && app);
+  }catch(e){ return false; }
+})();
+window.orbDictateHint = function(){
+  var input = $("ask-input");
+  try{ if(typeof askOpen === "function" && !(($("askuni-panel") || {}).classList || { contains:function(){ return true; } }).contains("on")) askOpen(ASK.section || "general"); }catch(e){}
+  input = $("ask-input");
+  if(input){ try{ input.focus(); }catch(e){} }
+  ASK.dictate = true;
+  toast("On the iPhone app, tap the 🎤 on your keyboard, say it, then press send. Orbuni will answer out loud. For full hands-free, open myorbuni.com in Safari.");
+};
 window.orbMic = function(){
+  if(window.ORB_IOS_APP){ orbDictateHint(); return; }
   try{ if(window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)){ speechSynthesis.cancel(); orbMicPaint(); return; } }catch(e){}
   if(ORB_SR_ON){ try{ ORB_SR.stop(); }catch(e){} return; }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -33666,7 +33685,7 @@ window.ovSettings = function(){
 var WAKE = { on:false, rec:null, timer:0 };
 try{ WAKE.on = localStorage.getItem("orb-wake") === "1"; }catch(e){}
 var WAKE_RE = /\b(?:hey|hi|hello|okay|ok|yo)[\s,.!]*(?:or[\s-]?b[ouoa]{1,2}n+[iyie]{1,2}|or[\s-]?bunny|orbani|orbuni|urbani|urbuni|orboni|orbony|all bunny|or bonnie|orbiting|or bunni|orbunny)\b[\s,.!]*/i;
-function wakeOk(){ return WAKE.on && !OV.on && !document.hidden && typeof PROF !== "undefined" && PROF && (PROF.role === "staff" || PROF.role === "admin") && !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function wakeOk(){ return WAKE.on && !window.ORB_IOS_APP && !OV.on && !document.hidden && typeof PROF !== "undefined" && PROF && (PROF.role === "staff" || PROF.role === "admin") && !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 function wakePaint(){ document.querySelectorAll("#portal .ask-spark").forEach(function(b){ b.classList.toggle("wake", !!WAKE.rec); b.title = WAKE.rec ? "Orbuni — listening for “Hey Orbuni”" : "Ask Orbuni (Ctrl+K)"; }); }
 function wakeStart(){
   clearTimeout(WAKE.timer);
@@ -33750,7 +33769,7 @@ function bargeIsEcho(heard){
 function bargeStart(text){
   BARGE.said = text; BARGE.on = true;
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR || !OV.on || BARGE.rec) return;
+  if(!SR || window.ORB_IOS_APP || !OV.on || BARGE.rec) return;
   var rec = new SR(); BARGE.rec = rec;
   rec.lang = navigator.language || "en-US"; rec.continuous = true; rec.interimResults = true;
   var cut = false;
@@ -33962,7 +33981,7 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
       if(VB.loud >= 700){ VB.loud = 0; cutIn(""); setTimeout(function(){ if(OV.on && !OV.rec && !VB.rec) ovListen(); }, 120); }
     }, 50);
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR || VB.rec) return;
+    if(!SR || window.ORB_IOS_APP || VB.rec) return;
     var rec = new SR(); VB.rec = rec;
     rec.lang = navigator.language || "en-US"; rec.continuous = true; rec.interimResults = true;
     var cut = false;
@@ -34055,6 +34074,12 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
   }
   window.orbVoiceOpen = async function(){
     var args = arguments;
+    if(window.ORB_IOS_APP){
+      var o = args[0];
+      if(o && o.question){ ttsCheck(); kkLoad(); return open0.apply(this, args); }   // a spoken briefing needs no microphone
+      try{ var vv = $("ask-voice"); if(vv) vv.className = "st-idle"; }catch(e){}
+      orbDictateHint(); return;
+    }
     ttsCheck(); kkLoad();
     // unlock audio playback on phones while we still have the tap
     try{ VQ.audio = VQ.audio || new Audio(); VQ.audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"; VQ.audio.volume = 0; var p = VQ.audio.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
@@ -34071,6 +34096,16 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
     vqStop(); vMicOff();
     if(VB.timer){ clearInterval(VB.timer); VB.timer = null; }
     return close0.apply(this, arguments);
+  };
+  var sd0 = window.orbuniSend;
+  window.orbuniSend = function(){
+    if(window.ORB_IOS_APP && ASK.dictate){ ASK.dictate = false; ASK.voiceTurn = true; }   // a dictated question is answered out loud
+    return sd0.apply(this, arguments);
+  };
+  var ovl0 = ovListen;
+  ovListen = function(){
+    if(window.ORB_IOS_APP){ ovSet("idle", "Use your keyboard mic to reply"); return; }
+    return ovl0.apply(this, arguments);
   };
   var tap0 = window.ovTap;
   window.ovTap = function(){
