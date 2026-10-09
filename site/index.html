@@ -33149,14 +33149,18 @@ function orbSpeak(t){
   }catch(e){}
 }
 try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = function(){}; }catch(e){}
-/* iPhone home-screen app (added to the Home Screen): iOS forgets the microphone permission, reloads the
-   app when it is granted and has no working speech recognition there. So in that one place we never
-   open the microphone; the keyboard's own dictation button does the listening instead. */
+/* iPhone home-screen app: if the app ever reloads while the microphone is starting (iOS does that to some
+   home-screen apps), remember it on this phone and from then on use the keyboard's own dictation button
+   instead, so it can never get stuck in a reload loop. Normal talking is untouched. */
 window.ORB_IOS_APP = (function(){
   try{
     var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     var app = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
-    return !!(ios && app);
+    if(!(ios && app)) return false;
+    var t = +localStorage.getItem("orb-voice-start") || 0;
+    if(t && Date.now() - t < 120000){ localStorage.setItem("orb-voice-crash", "1"); }
+    localStorage.removeItem("orb-voice-start");
+    return localStorage.getItem("orb-voice-crash") === "1";
   }catch(e){ return false; }
 })();
 window.orbDictateHint = function(){
@@ -34052,13 +34056,13 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
      speech recognition), so phones showed the Allow box again and again. */
   async function ovMicReady(){
     try{
-      if(navigator.permissions && navigator.permissions.query){
+      if(!IS_IOS && navigator.permissions && navigator.permissions.query){
         var st = await navigator.permissions.query({ name:"microphone" });
         if(st.state === "granted") return true;
         if(st.state === "denied") return false;
       }
     }catch(e){}
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;   // let speech recognition ask for itself
+    if(IS_IOS || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;   // iPhone: speech recognition asks for itself
     try{
       var s = await navigator.mediaDevices.getUserMedia({ audio:true });
       s.getTracks().forEach(function(t){ t.stop(); });
@@ -34086,6 +34090,9 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
     try{ var u1 = new SpeechSynthesisUtterance(" "); u1.volume = 0; speechSynthesis.speak(u1); }catch(e){}
     wakeStop();                       // the "Hey Orbuni" listener must not hold the mic while we ask
     OV.blocked = false;
+    var iosApp = false;
+    try{ iosApp = IS_IOS && (navigator.standalone === true || matchMedia("(display-mode: standalone)").matches); }catch(e){}
+    if(iosApp){ try{ localStorage.setItem("orb-voice-start", String(Date.now())); }catch(e){} setTimeout(function(){ try{ localStorage.removeItem("orb-voice-start"); }catch(e){} }, 15000); }
     var ok = await ovMicReady();
     if(!ok){ ovBlockedScreen(); return; }
     vMic();                           // desktop only; phones skip it
