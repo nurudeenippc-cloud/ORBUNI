@@ -33418,7 +33418,7 @@ orbSpeak = function(t, onEnd){
 };
 
 /* ---------- voice mode ---------- */
-var OV = { on:false, rec:null };
+var OV = { on:false, rec:null, blocked:false };
 var OV_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 function ovEnsure(){
   var p = $("askuni-panel"); if(!p || $("ask-voice")) return;
@@ -33564,6 +33564,7 @@ window.orbComposeState = function(){
 /* ---- the level meter that drives the glow ---- */
 var LV = { v:0, t:0, raf:0, ana:null, buf:null, stream:null, ctx:null, talk:0 };
 var IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+var IS_PHONE = IS_IOS || /Android/i.test(navigator.userAgent);   // on phones a second open mic fights speech recognition and re-asks for permission
 function lvLoop(){
   LV.raf = requestAnimationFrame(lvLoop);
   if(LV.ana){
@@ -33576,7 +33577,7 @@ function lvLoop(){
   var el = $("ask-voice"); if(el) el.style.setProperty("--lvl", LV.v.toFixed(3));
 }
 async function lvMic(on){
-  if(!on || IS_IOS){   // on iPhone the meter would fight speech recognition for the mic
+  if(!on || IS_PHONE){   // on phones the meter would fight speech recognition for the mic
     if(LV.stream){ LV.stream.getTracks().forEach(function(t){ t.stop(); }); LV.stream = null; }
     LV.ana = null; return;
   }
@@ -33924,7 +33925,7 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
   /* ---- interrupting: an open, echo-cancelled mic + speech recognition ---- */
   var VB = { stream:null, ctx:null, an:null, floor:0.012, loud:0, timer:null, rec:null, on:false };
   async function vMic(){
-    if(VB.stream || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    if(VB.stream || IS_PHONE || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
     try{
       VB.stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
       var AC = window.AudioContext || window.webkitAudioContext; VB.ctx = new AC();
@@ -34027,12 +34028,43 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
     finish();
   };
   var open0 = window.orbVoiceOpen;
-  window.orbVoiceOpen = function(){
+  /* Ask for the microphone ONCE and wait for the answer before anything starts listening.
+     Before, three things asked at the same moment (the level meter, the interrupt mic and
+     speech recognition), so phones showed the Allow box again and again. */
+  async function ovMicReady(){
+    try{
+      if(navigator.permissions && navigator.permissions.query){
+        var st = await navigator.permissions.query({ name:"microphone" });
+        if(st.state === "granted") return true;
+        if(st.state === "denied") return false;
+      }
+    }catch(e){}
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;   // let speech recognition ask for itself
+    try{
+      var s = await navigator.mediaDevices.getUserMedia({ audio:true });
+      s.getTracks().forEach(function(t){ t.stop(); });
+      return true;
+    }catch(e){ return !(e && /NotAllowed|Permission|Security/i.test(e.name || "")); }
+  }
+  function ovBlockedScreen(){
+    ovEnsure(); OV.on = false; OV.blocked = true;
+    var v = $("ask-voice"); if(v) v.classList.add("on");
+    ovSet("idle", "Microphone is off");
+    var c = $("ov-cap");
+    if(c) c.innerHTML = '<span class="ai">Orbuni can\u2019t hear you yet. Tap the lock icon next to the address, set Microphone to Allow, then tap the mic button.</span>';
+  }
+  window.orbVoiceOpen = async function(){
+    var args = arguments;
     ttsCheck(); kkLoad();
     // unlock audio playback on phones while we still have the tap
-    try{ VQ.audio = VQ.audio || new Audio(); VQ.audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"; VQ.audio.volume = 0; var p = VQ.audio.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
-    vMic();
-    return open0.apply(this, arguments);
+    try{ VQ.audio = VQ.audio || new Audio(); VQ.audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"; VQ.audio.volume = 0; var p = VQ.audio.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
+    try{ var u1 = new SpeechSynthesisUtterance(" "); u1.volume = 0; speechSynthesis.speak(u1); }catch(e){}
+    wakeStop();                       // the "Hey Orbuni" listener must not hold the mic while we ask
+    OV.blocked = false;
+    var ok = await ovMicReady();
+    if(!ok){ ovBlockedScreen(); return; }
+    vMic();                           // desktop only; phones skip it
+    return open0.apply(this, args);
   };
   var close0 = window.orbVoiceClose;
   window.orbVoiceClose = function(){
@@ -34042,6 +34074,7 @@ function bargeStop(){ BARGE.on = false; var r = BARGE.rec; BARGE.rec = null; if(
   };
   var tap0 = window.ovTap;
   window.ovTap = function(){
+    if(OV.blocked){ window.orbVoiceOpen(); return; }
     if(speakingNow()){ vqStop(); setTimeout(ovListen, 120); return; }
     vqStop();
     return tap0.apply(this, arguments);
