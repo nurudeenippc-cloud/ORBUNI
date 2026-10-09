@@ -28012,11 +28012,31 @@ window.lpStartApp = async function(from){
   var open = await orbSignupsOpen();
   if(open){ openPortal("student-up"); return; }
   var c = LPQ_STATE.contact || {};
-  try{ await sb.rpc("lead_reserve", { p_phone: c.phone || "", p_email: c.email || "" }); }catch(e){}
-  orbTrack("submit_application", { email: c.email || undefined, phone: c.phone || undefined, name: c.name || undefined });
+  var saved = false;
+  if(c.phone || c.email){
+    try{ var rr = await sb.rpc("lead_reserve", { p_phone: c.phone || "", p_email: c.email || "" }); saved = !!(rr && !rr.error && rr.data === true); }catch(e){}
+    if(!saved) saved = await lpWaitlistSave(c, from);
+  }
   var el = document.getElementById("lpd-ov");
   if(!el){ el = document.createElement("div"); el.id = "lpd-ov"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); document.body.appendChild(el);
     el.addEventListener("click", function(e){ if(e.target === el) lpDocsClose(); }); }
+  if(!saved){ lpWaitlistForm(el, c); return; }
+  orbTrack("submit_application", { email: c.email || undefined, phone: c.phone || undefined, name: c.name || undefined });
+  lpReservedCard(el, c);
+};
+/* save a waitlist lead when the quiz lead can't be matched (older than 12 hours, another device, or the quiz was skipped) */
+window.lpWaitlistSave = async function(c, from){
+  try{
+    var utm = (typeof orbUTM === "function") ? orbUTM() : {};
+    var ph = String(c.phone || "").trim(), em = String(c.email || "").trim();
+    var r = await sb.from("leads").insert({ name: String(c.name || "").trim() || "Website visitor", email: em || null, phone: ph || null,
+      region: (typeof regionFromPhone === "function" ? regionFromPhone(ph) : null),
+      message: "Waitlist: pressed Start my application (" + (from || "site") + ") while sign-ups are paused", source: "website",
+      utm_source: utm.utm_source || null, utm_medium: utm.utm_medium || null, utm_campaign: utm.utm_campaign || null, landing_page: utm.landing_page || null });
+    return !r.error;
+  }catch(e){ return false; }
+};
+window.lpReservedCard = function(el, c){
   var first = esc(String(c.name || "").split(" ")[0]);
   var kid = LPQ_ROLE.role === "parent" ? "your child's" : LPQ_ROLE.role === "helper" ? "the student's" : "your";
   el.innerHTML = '<div class="lpd-card lpd-res"><div class="lpd-ok">✓</div><h3>Your place is reserved' + (first ? ", " + first : "") + '.</h3>'
@@ -28026,6 +28046,36 @@ window.lpStartApp = async function(from){
     + '<div class="lpd-foot"><button class="lpd-b gold" onclick="lpDocsOpen()">See the required documents</button>'
     + '<button class="lpd-b ghost" onclick="lpDocsClose();lpCallOpen && (document.getElementById(\'lpr-call-wrap\') ? lpCallOpen(\'' + ((LPQ_STATE.result || {}).pathway || "medium") + '\') : lpScrollTo(\'lpr-call-card\'))">Prefer to talk? Book a call</button></div></div>';
   el.classList.add("on"); document.documentElement.style.overflow = "hidden";
+};
+/* no contact details on hand: ask for them, so a place is only ever called "reserved" once it is really saved */
+window.lpWaitlistForm = function(el, c){
+  el.innerHTML = '<div class="lpd-card lpd-res"><h3>Reserve your place</h3>'
+    + "<p>New applications open very soon. Leave your details and we'll message you on WhatsApp the moment they open — you'll be among the first to apply.</p>"
+    + '<div style="display:grid;gap:10px;margin:14px 0 4px;text-align:left">'
+    + '<input id="lpw-n" autocomplete="name" placeholder="Your name" style="padding:12px;border:1px solid #d2d2d7;border-radius:10px;font:inherit;width:100%;box-sizing:border-box">'
+    + '<input id="lpw-p" type="tel" autocomplete="tel" placeholder="WhatsApp number, e.g. +234 …" style="padding:12px;border:1px solid #d2d2d7;border-radius:10px;font:inherit;width:100%;box-sizing:border-box">'
+    + '<input id="lpw-e" type="email" autocomplete="email" placeholder="Email (optional)" style="padding:12px;border:1px solid #d2d2d7;border-radius:10px;font:inherit;width:100%;box-sizing:border-box">'
+    + '<div id="lpw-msg" role="alert" style="color:#b3261e;font-size:13px;min-height:16px"></div></div>'
+    + '<div class="lpd-foot"><button class="lpd-b gold" id="lpw-go" onclick="lpWaitlistSubmit()">Reserve my place</button>'
+    + '<button class="lpd-b ghost" onclick="lpDocsClose()">Not now</button></div></div>';
+  var n = document.getElementById("lpw-n"); if(n && c && c.name) n.value = c.name;
+  var p = document.getElementById("lpw-p"); if(p && c && c.phone) p.value = c.phone;
+  var e = document.getElementById("lpw-e"); if(e && c && c.email) e.value = c.email;
+  el.classList.add("on"); document.documentElement.style.overflow = "hidden";
+};
+window.lpWaitlistSubmit = async function(){
+  var g = function(i){ return ((document.getElementById(i) || {}).value || "").trim(); };
+  var n = g("lpw-n"), p = g("lpw-p"), e = g("lpw-e"), m = document.getElementById("lpw-msg"), b = document.getElementById("lpw-go");
+  var okMail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e), okTel = p.replace(/\D/g, "").length >= 8;
+  if(!n){ m.textContent = "Please add your name."; return; }
+  if(!okTel && !okMail){ m.textContent = "Add a WhatsApp number (with country code) or an email so we can reach you."; return; }
+  if(b){ b.disabled = true; b.textContent = "Saving…"; }
+  var c = { name: n, phone: okTel ? p : "", email: okMail ? e : "" };
+  var saved = await lpWaitlistSave(c, "form");
+  if(!saved){ if(b){ b.disabled = false; b.textContent = "Reserve my place"; } m.textContent = "We couldn't save that just now. Please check your connection and try again."; return; }
+  LPQ_STATE.contact = c;
+  orbTrack("submit_application", { email: c.email || undefined, phone: c.phone || undefined, name: c.name || undefined });
+  lpReservedCard(document.getElementById("lpd-ov"), c);
 };
 
 /* ---- the result screen: documents card + the new buttons, worded for the right person ---- */
