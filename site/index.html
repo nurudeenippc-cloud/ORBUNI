@@ -10552,7 +10552,13 @@ function bnavRender(){
   // to clear the tab bar the same way, or the bar sits on top of the message
   // composer with no back arrow anywhere.
   if(window.isChatView ? window.isChatView(cur) : cur === "chat"){ bar.innerHTML=""; return; }
-  bar.innerHTML = def.tabs.map(function(t){
+  // The Finance tab is only for people who may open Finance; everyone else gets Projects in its place.
+  var tabsNow = def.tabs.map(function(t){
+    if(role === "admin" && t[0] === "finance" && !(typeof PROF !== "undefined" && PROF && PROF.is_owner) && !(typeof canOpenSec === "function" && canOpenSec("finance")))
+      return ["projects", NAVICON.folder, "Projects"];
+    return t;
+  });
+  bar.innerHTML = tabsNow.map(function(t){
     var id=t[0], ic=t[1], label=t[2], on = cur===id;
     return '<button class="'+(on?"on":"")+'" data-go="'+id+'"><span class="bic">'+ic+'</span><span class="bl">'+label+'</span></button>';
   }).join("") + '<button data-side="'+def.side+'"><span class="bic">'+NAVICON.menu+'</span><span class="bl">'+(def.menu||"Manage")+'</span></button>';
@@ -10629,13 +10635,13 @@ const SCREENS={
    <a class="aback" onclick="setAuth('choose')">← Choose a different account type</a>
    ${atrust}`,
 
- 'team-link':()=>`${crumb(NAVICON.briefcase,'Team login')}
-   <h2>Welcome to the team</h2>
-   <p class="sub">Type the email address you were added with. We will email you a link to choose your own password.</p>
+ 'team-link':()=>`${crumb(NAVICON.briefcase,'Sign in')}
+   <h2>Get your login link</h2>
+   <p class="sub">First time here, or your link expired? Type the email address you were added with and we will email you a link to choose your own password. After that you always sign in with Partner login.</p>
    <div class="fld"><label>Your email</label><input type="email" id="tl-e" placeholder="you@email.com" autocomplete="email"></div>
    <button class="btn btn-p btn-w" onclick="orbTeamLink(event)">Email me my login link →</button>
    <div id="tl-out"></div>
-   <p class="aswap">Already chose your password? <b onclick="setAuth('partner-in')">Sign in</b></p>
+   <p class="aswap">Already chose your password? <b onclick="setAuth('partner-in')">Back to sign in</b></p>
    <a class="aback" onclick="setAuth('choose')">← Back</a>`,
 
  'student-up':()=>`${crumb(NAVICON.cap,'Create account')}
@@ -14089,20 +14095,20 @@ var A_NAV_ALL = [
       bell still opens the same list as a dropdown, and aGo("alerts") still
       works for anything that routes there directly (a push, a deep link). */
    { id:"chat",   ic:NAVI.message, l:"Spaces" },
-   { id:"wa",     ic:NAVI.reply,   l:"WhatsApp" },
+   { id:"wa",     ic:NAVI.reply,   l:"WhatsApp", gate:true },
    { id:"chall",  ic:NAVI.trophy,  l:"Challenges" }]},
  { g:"Students", items:[
    { id:"students", ic:NAVI.users, l:"Students" },
    { id:"create",   ic:NAVI.plus, l:"Create a student" },
    { id:"apps",     ic:NAVI.clipboard, l:"Applications" },
-   { id:"askuni",   ic:NAVI.cap || NAVI.clipboard, l:"AskUni pipeline" },
-   { id:"docs",     ic:NAVI.fileText, l:"Documents to check" }]},
+   { id:"askuni",   ic:NAVI.cap || NAVI.clipboard, l:"AskUni pipeline", gate:true },
+   { id:"docs",     ic:NAVI.fileText, l:"Documents to check", gate:true }]},
  { g:"Business", items:[
    { id:"partners", ic:NAVI.userCheck, l:"Partner requests", owner:true },
    { id:"enq",      ic:NAVI.mail, l:"Enquiries",       owner:true },
    { id:"jobs",     ic:NAVI.briefcase, l:"Careers",         owner:true }]},
  { g:"Operations", items:[
-   { id:"ops",      ic:NAVI.layers, l:"The stack" }]},
+   { id:"ops",      ic:NAVI.layers, l:"The stack", owner:true }]},
  // Leads and Projects are deliberately not owner-gated: every person on the
  // admissions team is in the lead rotation and holds tasks inside projects,
  // so they must be able to reach their own work without being granted it.
@@ -14120,7 +14126,7 @@ var A_NAV_ALL = [
    { id:"finance", ic:NAVI.barChart, l:"Finance",     owner:true },
    { id:"earn",    ic:NAVI.wallet, l:"My earnings" }]},
  { g:"Settings", items:[
-   { id:"team",     ic:NAVI.sliders, l:"Team & alerts" },
+   { id:"team",     ic:NAVI.sliders, l:"Team & alerts", gate:true },
    { id:"settings", ic:NAVI.settings, l:"Settings" }]}
 ];
 var A_TITLE = { today:"Today", alerts:"Notifications", chat:"Spaces", wa:"WhatsApp inbox", askuni:"AskUni pipeline", chall:"Challenges", students:"Students",
@@ -14186,6 +14192,9 @@ var SECTIONS = [
   { id:"content",  l:"Content & ads",    d:"Content assets and ad spend, and the conversion data feeding back into both" },
   { id:"schol",    l:"100% places",      d:"The scholarship places and what they cost" },
   { id:"arts",     l:"Guides",           d:"The articles students read before they trust you" },
+  { id:"wa",       l:"WhatsApp inbox",   d:"Every student and lead conversation on the Orbuni WhatsApp number" },
+  { id:"askuni",   l:"AskUni pipeline",  d:"Applications and commissions synced from AskUni" },
+  { id:"docs",     l:"Student documents", d:"Passports, transcripts and the review queue. Admins always have it" },
   { id:"finance",       l:"Finance",         d:"The ledger — income, commission payouts and salaries" },
   { id:"finance-rules", l:"Commission rules", d:"Who can set the commission percentage tiers" }
 ];
@@ -14206,9 +14215,18 @@ function secBtnObj(id){
 
 function aNav(){
   $("nav-a").innerHTML = A_NAV_ALL.map(function(g){
-    var items = g.items.filter(function(i){ return !i.owner || (PROF && PROF.is_owner) || canOpenSec(i.id); });
+    var items = g.items.filter(function(i){
+      // owner: the owner, or someone the owner opened it for.
+      // gate: also open to admins; staff need the owner to open it (WhatsApp, AskUni, documents, team settings).
+      if(!i.owner && !i.gate) return true;
+      if(PROF && PROF.is_owner) return true;
+      if(i.gate && PROF && PROF.role === "admin") return true;
+      return canOpenSec(i.id);
+    });
     if(!items.length) return "";
-    return '<div class="sb-grp">' + g.g + "</div>" + items.map(function(i){
+    // People who cannot open Finance still have Whop and My earnings in this group; do not label it "Finance".
+    var gTitle = (g.g === "Finance" && !(PROF && PROF.is_owner) && !canOpenSec("finance")) ? "Whop & earnings" : g.g;
+    return '<div class="sb-grp">' + gTitle + "</div>" + items.map(function(i){
       var b = "";
       if(i.id === "alerts" && A_UNREAD) b = '<span class="bdg">' + A_UNREAD + "</span>";
       if(i.id === "chat"){ var cu = chatUnread(); if(cu) b = '<span class="bdg">' + cu + "</span>"; }
@@ -14287,7 +14305,9 @@ window.aGo = function(v){
   // merged page with that tab already showing rather than at a dead view.
   if(v === "ads"){ CONTENT_TAB = "ads"; v = "content"; AV = v; window.AV = v; aNav(); $("a-title").textContent = A_TITLE[v] || v; }
   var gated = { partners:1, enq:1, jobs:1, ops:1, marketing:1, content:1, schol:1, arts:1, finance:1, housing:1 };
-  if(gated[v] && !(PROF && PROF.is_owner) && !canOpenSec(v)){
+  var gatedAdmin = { wa:1, askuni:1, docs:1, team:1, extras:1 };   // admins too, but not plain staff unless opened for them
+  var isAdm = !!(PROF && (PROF.is_owner || PROF.role === "admin"));
+  if(((gated[v] && !(PROF && PROF.is_owner)) || (gatedAdmin[v] && !isAdm)) && !canOpenSec(v)){
     $("a-live").innerHTML = '<div class="panel"><div class="empty">This part of the portal has not been '
       + "opened for you yet. Ask Nurudeen to add you to it.</div></div>";
     return;
@@ -15403,16 +15423,17 @@ async function aToday(){
     // Finance is gated; everyone else gets their own earnings instead of a door that does not open for them.
     canOpenSec("finance")
       ? { label:"Finance",      icon:NAVI.barChart,  ac:"mint",   go:"aGo('finance')" }
-      : { label:"My earnings",  icon:NAVI.wallet,    ac:"mint",   go:"aGo('earn')" }
+      : { label:"Projects",     icon:NAVI.folder,    ac:"mint",   go:"aGo('projects')" }
   ]);
 
+  var canSeeDocs = !!(PROF && (PROF.is_owner || PROF.role === "admin" || canOpenSec("docs")));
   var stats = dashStats([
     { label:"Students", icon:NAVI.users, value:counts[0].count || 0,
       foot: { label:"View all", go:"aGo('students')" } },
     { label:"Live applications", icon:NAVI.clipboard, value:liveCount,
       foot: { label: wkApps ? "+" + wkApps + " this week" : "No new ones this week" } },
-    { label:"Documents to check", icon:NAVI.fileText, value:docCount,
-      foot: docCount ? { label:"Review now", go:"aGo('docs')" } : { label:"All clear" } },
+    canSeeDocs ? { label:"Documents to check", icon:NAVI.fileText, value:docCount,
+      foot: docCount ? { label:"Review now", go:"aGo('docs')" } : { label:"All clear" } } : null,
     { label:"Incomplete files", icon:NAVI.folder, value:stallCount,
       foot: stallCount ? { label:"Chase these", go:"aGo('students')" } : { label:"Nothing chasing" } }
   ]);
@@ -15435,11 +15456,12 @@ async function aToday(){
     { label:"Publish a guide", sub:"Answer a question once", icon:NAVI.bookOpen,
       done:(setup[1].count || 0) > 0, go:"aGo('arts')" }
   ];
-  var next = steps.every(function(s){ return s.done; }) ? "" : dashNext(steps);
+  // the set-up checklist is for the people who run the portal, not for every teammate
+  var next = (!canSeeDocs || steps.every(function(s){ return s.done; })) ? "" : dashNext(steps);
 
   box.innerHTML =
     dashPage([
-      dashHello(PROF && PROF.first_name, todayGreetingSub(myLate.length, docCount, stallCount),
+      dashHello(PROF && PROF.first_name, todayGreetingSub(myLate.length, canSeeDocs ? docCount : 0, stallCount),
         { label:"View the public site", icon:NAVI.globe, go:"closePortal()" }),
       acts,
       stats,
@@ -15467,7 +15489,7 @@ async function aToday(){
     + '<div class="grid g3" style="padding:0 22px 20px;gap:12px">'
     + weekStat(NAVI.users, wkStudents, "new student" + (wkStudents === 1 ? "" : "s"))
     + weekStat(NAVI.clipboard, wkApps, "application" + (wkApps === 1 ? "" : "s") + " submitted")
-    + weekStat(NAVI.fileText, wkDocs, "document" + (wkDocs === 1 ? "" : "s") + " uploaded")
+    + (canSeeDocs ? weekStat(NAVI.fileText, wkDocs, "document" + (wkDocs === 1 ? "" : "s") + " uploaded") : "")
     + "</div></div>"
     + '<div class="panel"><div class="ph"><div><h3>Recent activity</h3>'
     + '<div class="s">Live — this updates itself</div></div>'
@@ -15778,7 +15800,7 @@ function dashActs(actions){
 /* The numbers row. Each stat: {label, icon, value, cur, foot}
    — foot may carry one button, given as {label, go}. */
 function dashStats(stats){
-  return '<div class="dstats">' + stats.map(function(s){
+  return '<div class="dstats">' + stats.filter(Boolean).map(function(s){
     var zero = !s.value || s.value === "0";
     return '<div class="dstat' + (zero ? " is-zero" : "") + '">'
       + '<div class="dstat-l">' + (s.icon || "") + "<span>" + esc(s.label) + "</span></div>"
@@ -29785,7 +29807,7 @@ function r6Rebuild(nav, groups){
     if(typeof A_NAV_ALL !== "undefined" && !A_NAV_ALL.__r6){
       A_NAV_ALL.forEach(function(g){
         g.items = (g.items || []).filter(function(i){ return i.id !== "enq"; });
-        g.items.forEach(function(i){ if(i.id === "extras"){ i.l = "Services & fees"; i.ic = NI_.wallet || i.ic; } });
+        g.items.forEach(function(i){ if(i.id === "extras"){ i.l = "Services & fees"; i.ic = NI_.wallet || i.ic; i.gate = true; } });
       });
       A_NAV_ALL.__r6 = true;
     }
