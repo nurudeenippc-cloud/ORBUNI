@@ -196,13 +196,13 @@ def build():
            "mainEntity": {"@type": "EducationalOrganization", "@id": BASE + "/#org", "name": "Orbuni",
                           "founder": [{"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director"},
                                       {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer"}],
-                          "employee": [{"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director"}],
+                          "employee": [{"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)"}],
                           "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"}}},
           faq_ld([FAQ[3], FAQ[2], FAQ[4]])]
     body = hero("About", "About Orbuni · and how to check us", 'Who we are, <span class="grad">and how to verify it</span>',
                 "Families in our market have been robbed by fake agents often enough that suspicion is the right starting point. Here is exactly who we are, and how you can check every line.") + f"""
 <section class="s"><div class="wrap two">
-<div class="box"><h3>Who we are</h3><p style="color:var(--dim)">Orbuni is run by two founders, <b>Nurudeen Muhammad Abdulkareem</b> (Founder &amp; Managing Director) and <b>Godfrey Emmanuel Wudaba</b> (COO), working from Istanbul, with <b>Lenns Wordjy Coutilien</b> as Creative Director. Applications go through <b>AskUni</b>'s partner channel, the university application platform that holds our access to partner universities. We are small on purpose, and we tell you that on purpose.</p>
+<div class="box"><h3>Who we are</h3><p style="color:var(--dim)">Orbuni is run by two founders, <b>Nurudeen Muhammad Abdulkareem</b> (Founder &amp; Managing Director) and <b>Godfrey Emmanuel Wudaba</b> (COO), working from Istanbul, with <b>Lenns Wordjy Coutilien</b> as Creative Director, in charge of creativity, VSL videos and marketing. Applications go through <b>AskUni</b>'s partner channel, the university application platform that holds our access to partner universities. We are small on purpose, and we tell you that on purpose.</p>
 <p style="color:var(--dim)">We started Orbuni because we watched friends and family pay agents up front for admissions that never came. So we built the opposite: published fees, a published process, and a named person on your file.</p></div>
 <div class="box ok"><h3>Seven ways to check us</h3><ul>
 <li>You never pay Orbuni before a university's offer letter</li>
