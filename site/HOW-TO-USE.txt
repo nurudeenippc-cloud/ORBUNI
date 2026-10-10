@@ -1,0 +1,139 @@
+ORBUNI — COMPLETE SITE FOLDER
+=============================
+
+This is the whole site, one zip. Unzip it, then drag the folder straight
+into Netlify (or into the Netlify "Deploys" drop zone on your existing
+site).
+
+WHAT IS IN HERE
+  index.html    the site, including this round's home page changes (below)
+  photos/       every university, home, careers and housing photo
+  video/        the two home-page product-demo clips (housing + programmes)
+  _headers, _redirects, manifest.json, robots.txt, sitemap.xml, sw.js
+  badge-96.png, icon-192.png, share.png
+
+
+ONE FILE TO COPY FROM YOUR OWN FOLDER BEFORE YOU DEPLOY
+--------------------------------------------------------
+     videos/hafsat-aman.mp4      (note: "videos", plural — a different
+                                   folder from "video" above)
+
+This is the tester-review video used elsewhere on the site (not part of this
+round's work) and isn't in this zip. Copy it from your current live site's
+folder into this one, keeping the same "videos/hafsat-aman.mp4" path, before
+you deploy. If you forget, nothing breaks visibly — that page already
+degrades gracefully when this file is missing.
+
+(The Fenerbahçe University photo folder mentioned in an older version of
+this note is no longer needed — that code path was cleaned up this round,
+see below.)
+
+
+WHAT CHANGED THIS ROUND (r26, 3 Oct 2026) — includes r24 and r25
+---------------------------------------------------------------------
+  - Subjects (on /study/ and in "What do you want to study in Turkey?" on
+    /universities/): plain text boxes replaced with photo tiles — a
+    different real campus photo for each of the 19 subjects, an icon and
+    the starting price.
+  - Subject pages: the four number boxes at the top are now one slim strip.
+
+PREVIOUS ROUND (r25, 3 Oct 2026) — includes everything in r24
+---------------------------------------------------------------------------
+  - Housing: 8 real Istanbul student-residence room photos (photos/
+    housing-real/, taken from university and residence listing pages) now
+    lead every housing page and every card on the housing list, mixed with
+    the example photos. The note under each gallery says they are rooms in
+    residences like this one, and that the counsellor sends the exact
+    residence's photos with its name and rent.
+
+PREVIOUS ROUND (r24, 3 Oct 2026)
+------------------------------------------
+  - Phones: the menu on the university / subject / housing / guide pages no
+    longer slides sideways. Logo and "Apply free" on top, all five links in
+    one row underneath.
+  - Ankara Medipol University now has its campus photo (from the
+    university's own website) on its page, in the universities list and in
+    the home page app.
+  - Subject pages: new addresses with "Turkey" (what students search for),
+    e.g. /study/medicine-in-turkey/ (the old -in-turkiye addresses redirect).
+    Each page now has a campus photo at the top and a photo card for every
+    university, plus a question for students from Africa, the Middle East
+    and Asia.
+  - /universities/ (the main SEO page) now has a "What do you want to study
+    in Turkey?" section linking all 19 subject pages.
+  - Housing: example photos now look like student rooms (bunk beds, loft
+    beds, simple rooms) mixed with Orbuni's own three, and the housing list
+    page shows each residence's own photo.
+
+PREVIOUS ROUND (r23, 3 Oct 2026)
+------------------------------------------
+  - Menu back to how it was: Universities and Find your programme only
+    (the Scholarships / Housing / Guides links added in r21 are removed).
+  - University pages: 47 now show the university's own campus film
+    (from its YouTube channel) in a new "Campus video" section.
+  - Housing pages: each of the 35 pages has its own mix of three example
+    room photos (from Unsplash, loaded from Unsplash) instead of the same
+    three everywhere. They stay labelled as example rooms; residence names
+    and real photos are still only shared by your counsellor.
+  Rebuilt with tools/enrich_media.py in the GitHub repo.
+
+PREVIOUS ROUND (r22, 3 Oct 2026)
+------------------------------------------
+  - Hero photo slideshow: the slow zoom now grows from the top-right corner,
+    where each university's logo sits, so the logo (e.g. "Antalya Bilim
+    University") is never cut off, on desktop or phone.
+  - "See it for yourself" > Programmes: the still picture shown before the
+    clip plays was a copy of the home page itself (with the old "Find your
+    program" menu). It is now a frame from the same clip showing the
+    programme finder with real results. Its address has a new ?v= tag so
+    returning visitors get the new picture.
+
+PREVIOUS ROUND (r21, 3 Oct 2026)
+------------------------------------------
+  - New: "Study by subject" pages (/study/ and 19 subject pages such as
+    /study/medicine-in-turkiye/). Each lists every partner university in
+    Türkiye that teaches the subject, with language, length and published
+    fee, plus common questions. Linked from every page's menu and footer
+    and listed in sitemap.xml. Rebuilt with tools/build_study_pages.py
+    in the GitHub repo.
+  - Menu: Scholarships, Housing and Guides added next to Universities and
+    Find your programme, on desktop and in the phone menu. "Find your
+    program" now reads "Find your programme" like the rest of the site.
+  - Phones: the university logo in the top-right of each hero photo is no
+    longer cut off; the two demo clips run edge to edge, and on data-saver
+    or slow mobile data they stay as a still picture (about 6 MB saved).
+  - Footer: removed the duplicate "Articles" link (Study guides is the
+    same page); added "Study by subject".
+  - University pages: 45 misspelled programme names corrected (e.g.
+    "Computer Enginering", "Physiotheraphy") and "1.5 year" now reads
+    "1.5 years", matching the database.
+
+Everything from r20 is still here, unchanged.
+
+
+PREVIOUS ROUND (r20)
+--------------------
+  - Hero search bar fixed — it was rendering far too large because of a
+    CSS class-name collision (a scroll-animation class was accidentally
+    colliding with the hero's own layout rule); now a normal-sized pill.
+  - Added a "See it for yourself" section: two real, silent, autoplaying
+    product-demo clips (Housing search, and finding + applying to a
+    programme), styled to blend into the page rather than sit in a hard
+    box, and fully non-interactive — no pause button, no click-to-pause,
+    they just run.
+  - Removed the bold yellow closing panel near the bottom of the page;
+    replaced with a quieter dark card and new copy.
+  - Fixed a real data bug: university #49 (Ankara Medipol University) had
+    old leftover code pointing it at a photo folder for a university that
+    no longer exists in the catalogue. It now correctly shows the normal
+    "no photo yet" icon instead, like any other university without a
+    photo on file.
+  - The two demo clips now ship as plain .mp4 only (dropped a .webm copy
+    of each that was only ever needed for testing on my end, not for real
+    visitors — every real browser plays the .mp4 natively) so the whole
+    site fits in one zip. Every photo's .webp version was also
+    re-compressed a little to fit — same resolution, no visible
+    difference, just a smaller file.
+
+Nothing else was touched. Every earlier fix and every animation the site
+already had is still there.

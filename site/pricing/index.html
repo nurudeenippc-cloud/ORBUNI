@@ -1,0 +1,203 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><style>:root{--bg:#070C16;--p1:#0E1626;--p2:#152032;--p3:#1B2740;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.18);--txt:#EEF3FA;--dim:#9BABC3;--gold:#F2B544;--amber:#E08A33;--mint:#3ED598;--violet:#A98BF0;--cyan:#5CC8F5;--r:14px;--rl:22px;--disp:'Bricolage Grotesque','Inter',system-ui,sans-serif;--sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.65 var(--sans);overflow-x:hidden}
+a{color:var(--gold)}img,video{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--disp);font-weight:800;letter-spacing:-.035em;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,6vw,58px)}h2{font-size:clamp(24px,3.6vw,34px);margin:0 0 14px}h3{font-size:19px;letter-spacing:-.02em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+.eyebrow{font:500 11px/1 ui-monospace,'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+.grad{background:linear-gradient(100deg,var(--gold),var(--amber) 45%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hd{position:sticky;top:0;z-index:20;background:rgba(7,12,22,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hd .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:11px;padding-bottom:11px}
+.brand{display:flex;align-items:center;gap:10px;font:800 20px var(--disp);letter-spacing:-.03em;color:var(--txt);text-decoration:none}
+.orb{width:30px;height:30px;border-radius:50%;background:conic-gradient(from 200deg,var(--gold),var(--violet),var(--mint),var(--gold));position:relative;flex:none}
+.orb::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--bg)}
+.nav{display:flex;gap:4px;align-items:center;overflow-x:auto;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+.nav a{color:var(--dim);text-decoration:none;font-size:14px;padding:7px 11px;border-radius:99px;white-space:nowrap}.nav a:hover{color:var(--txt);background:var(--p2)}
+.nav a.go{background:linear-gradient(100deg,var(--gold),var(--amber));color:#1A1204;font-weight:700}
+.btn{display:inline-flex;align-items:center;gap:8px;font:700 15px var(--sans);text-decoration:none;padding:13px 22px;border-radius:99px;transition:transform .25s cubic-bezier(.22,1,.36,1)}
+.btn:hover{transform:translateY(-2px)}
+.btn-p{background:linear-gradient(100deg,var(--gold),var(--amber));color:#1A1204;box-shadow:0 6px 22px rgba(242,181,68,.28)}
+.btn-o{border:1.5px solid var(--line2);color:var(--txt)}.btn-o:hover{border-color:var(--gold);color:var(--gold)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.crumbs{font-size:13px;color:var(--dim);margin:0 0 16px}.crumbs a{color:var(--dim);text-decoration:none}.crumbs a:hover{color:var(--gold)}
+/* hero */
+.hero{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero>picture,.hero>video{position:absolute;inset:0;width:100%;height:100%;z-index:-2}
+.hero img,.hero video{width:100%;height:100%;object-fit:cover}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,12,22,.55),rgba(7,12,22,.78) 55%,var(--bg)),radial-gradient(60% 80% at 15% 20%,rgba(242,181,68,.16),transparent 70%)}
+.hero .wrap{padding-top:54px;padding-bottom:54px}
+.hero p.lead{font-size:clamp(16px,2.2vw,19px);color:#C9D4E6;max-width:60ch;margin:16px 0 0}
+.hero.tall .wrap{padding-top:90px;padding-bottom:78px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:30px}
+.stat{background:rgba(14,22,38,.72);border:1px solid var(--line2);border-radius:var(--r);padding:14px 16px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.stat b{display:block;font:800 26px var(--disp);letter-spacing:-.03em;color:var(--gold)}.stat span{font-size:12.5px;color:var(--dim)}
+section.s{padding:48px 0}.s.alt{background:var(--p1);border-block:1px solid var(--line)}
+.lead2{color:var(--dim);max-width:64ch;margin:0 0 22px}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;list-style:none;margin:0;padding:0}
+.card{display:flex;flex-direction:column;background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden;text-decoration:none;color:var(--txt);height:100%;transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .25s}
+.s.alt .card{background:var(--bg)}
+.card:hover{transform:translateY(-4px);border-color:rgba(242,181,68,.5)}
+.card .im{aspect-ratio:16/8;background:var(--p3);position:relative;overflow:hidden}.card .im img,.card .im .ph{width:100%;height:100%;object-fit:cover}
+.card .im .tag{position:absolute;left:10px;bottom:10px;background:var(--gold);color:#1A1204;font:800 12px var(--sans);padding:4px 10px;border-radius:99px}
+.card .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:18px}.card .mt{color:var(--dim);font-size:13.5px}.card .pr{margin-top:auto;padding-top:8px;font-size:13.5px;color:var(--txt)}.card .pr b{color:var(--gold)}
+.card .im iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.card.vcard .bd{text-decoration:none;color:var(--txt)}.card.vcard:hover .bd h3{color:var(--gold)}.vbox{position:relative;aspect-ratio:16/9;border-radius:var(--rl);overflow:hidden;border:1px solid var(--line2);background:#000}.vbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ph{background:linear-gradient(135deg,var(--p3),var(--p2))}
+.pill{display:inline-block;background:var(--p2);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12.5px;color:var(--dim)}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.pill.g{border-color:rgba(242,181,68,.45);color:var(--gold)}
+/* facts, tables */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.fact{background:var(--p1);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}.fact b{display:block;font:500 10.5px ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}.fact span{font-weight:600}
+.tw{overflow-x:auto;background:var(--p1);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 10.5px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);white-space:nowrap;background:var(--p2)}tr:last-child td{border-bottom:0}
+.was{color:var(--dim);text-decoration:line-through;margin-right:6px}.off{color:#1A1204;background:var(--gold);font-weight:800;font-size:12px;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.mo{color:var(--mint);white-space:nowrap}
+.note{color:var(--dim);font-size:13.5px}
+.lvl{display:flex;align-items:baseline;gap:10px;margin:28px 0 10px}.lvl h3{color:var(--txt)}.lvl span{color:var(--dim);font-size:13px}
+/* payment */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:6px}
+.tier{background:var(--bg);border:1px solid var(--line);border-radius:var(--rl);padding:22px;position:relative}
+.tier.best{border-color:rgba(242,181,68,.6);background:linear-gradient(180deg,rgba(242,181,68,.09),var(--bg) 45%)}
+.tier .badge{position:absolute;top:-11px;right:18px;background:var(--gold);color:#1A1204;font:800 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:4px 11px;border-radius:99px}
+.tier .pz{font:800 38px var(--disp);letter-spacing:-.04em;margin:8px 0 2px}.tier .pz small{font:500 14px var(--sans);color:var(--dim);letter-spacing:0}
+.tier ul{list-style:none;margin:14px 0 0;padding:0;font-size:14px;color:#C9D4E6}.tier li{padding:5px 0 5px 24px;position:relative}.tier li::before{content:"";position:absolute;left:3px;top:11px;width:11px;height:6px;border-left:2px solid var(--mint);border-bottom:2px solid var(--mint);transform:rotate(-45deg)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px;counter-reset:s}
+.flow>div{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px 16px 62px;position:relative;counter-increment:s}
+.flow>div::before{content:counter(s);position:absolute;left:16px;top:14px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--amber));color:#1A1204;font:800 16px var(--disp)}
+.flow b{display:block;margin-bottom:2px}.flow span{color:var(--dim);font-size:13.5px}
+.mbox{background:linear-gradient(135deg,rgba(62,213,152,.12),rgba(92,200,245,.07));border:1px solid rgba(62,213,152,.35);border-radius:var(--rl);padding:20px 22px;margin-bottom:22px}
+.mbox b.big{font:800 34px var(--disp);letter-spacing:-.03em;color:var(--mint)}
+/* media */
+.vid{border-radius:var(--rl);overflow:hidden;border:1px solid var(--line2);background:#000;position:relative}.vid video{width:100%;aspect-ratio:16/9;object-fit:cover}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center}
+.gal{display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:1fr 1fr;gap:10px}.gal figure{margin:0;border-radius:var(--r);overflow:hidden;background:var(--p3);min-height:150px}.gal figure:first-child{grid-row:span 2}.gal img{width:100%;height:100%;object-fit:cover}
+.mosaic{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:28px}.mosaic img{border-radius:var(--r);aspect-ratio:4/3;object-fit:cover;width:100%;border:1px solid var(--line2)}
+.cta-band{background:linear-gradient(135deg,rgba(242,181,68,.16),rgba(169,139,240,.12));border:1px solid rgba(242,181,68,.4);border-radius:var(--rl);padding:30px;display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.cta-band h2{margin:0}.cta-band p{margin:6px 0 0;color:#C9D4E6}
+.prose{max-width:70ch;font-size:16.5px;line-height:1.75}.prose h2{margin-top:1.8em;font-size:26px}.prose p,.prose li{margin:.8em 0}
+.yt{display:flex;gap:16px;align-items:center;text-decoration:none;color:var(--txt);background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden}
+.yt img{width:220px;aspect-ratio:16/9;object-fit:cover;flex:none}.yt div{padding:12px 16px 12px 0}.yt small{color:var(--dim)}
+.ft{border-top:1px solid var(--line);background:var(--p1);margin-top:30px}.ft .wrap{padding:34px 18px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:26px;font-size:14px;color:var(--dim)}
+.ft a{display:block;color:var(--dim);text-decoration:none;padding:3px 0}.ft a.brand{color:var(--txt);font-size:20px;display:flex}.ft a:hover{color:var(--gold)}.ft h4{font:500 11px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--txt);margin:0 0 8px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (max-width:760px){.split{grid-template-columns:1fr}.mosaic{grid-template-columns:1fr 1fr}.mosaic picture:nth-child(3){display:none}.ft .wrap{grid-template-columns:1fr}.yt{flex-direction:column;align-items:stretch}.yt img{width:100%}.yt div{padding:0 16px 14px}.hero.tall .wrap{padding-top:60px;padding-bottom:50px}.gal{grid-template-columns:1fr}.gal figure:first-child{grid-row:auto}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}</style><style>
+.subj{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;list-style:none;margin:0;padding:0}
+.subj a{display:block;background:var(--p1);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;color:var(--txt);text-decoration:none;height:100%}
+.subj a:hover{border-color:rgba(242,181,68,.5)}
+.subj b{display:block;font:800 18px var(--disp);letter-spacing:-.02em;margin-bottom:4px}
+.subj span{color:var(--dim);font-size:13.5px}
+.faq details{background:var(--p1);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;margin-bottom:10px}
+.faq summary{cursor:pointer;font-weight:600}
+.faq p{color:var(--dim);margin:10px 0 0}
+td a{color:var(--txt);text-decoration:none;font-weight:600}
+td a:hover{color:var(--gold)}
+.hero.photo{min-height:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;list-style:none;margin:0;padding:0}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:4/3;border-radius:var(--rl);overflow:hidden;
+  color:#fff;text-decoration:none;border:1px solid var(--line);background:var(--p2) var(--img) center/cover no-repeat;isolation:isolate;
+  transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .25s}
+.tile::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,12,22,.05) 25%,rgba(7,12,22,.88) 82%)}
+.tile:hover{transform:translateY(-4px);border-color:rgba(242,181,68,.6)}
+.tile .ic{position:absolute;top:12px;left:12px;font-size:22px;line-height:1;background:rgba(7,12,22,.6);backdrop-filter:blur(6px);border-radius:12px;padding:8px}
+.tile b{display:block;font:800 21px/1.15 var(--disp);letter-spacing:-.02em;padding:0 16px}
+.tile span{display:block;font-size:13px;color:#d6deea;padding:4px 16px 16px}
+.tile span em{font-style:normal;color:var(--gold);font-weight:700}
+@media(max-width:560px){.tiles{grid-template-columns:1fr 1fr;gap:9px}.tile{aspect-ratio:3/4}.tile b{font-size:16px;padding:0 11px}.tile span{font-size:11.5px;padding:3px 11px 11px}.tile .ic{font-size:18px;padding:6px}}
+.who{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+/* subject pages: the four numbers as one slim strip instead of four boxes */
+.hero .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:26px;background:rgba(7,12,22,.55);backdrop-filter:blur(8px);
+  border:1px solid var(--line2);border-radius:99px;padding:6px 8px;width:max-content;max-width:100%}
+.hero .stat{background:none;border:0;border-radius:0;padding:6px 16px;backdrop-filter:none;display:flex;align-items:baseline;gap:7px}
+.hero .stat+.stat{border-left:1px solid var(--line2)}
+.hero .stat b{font-size:19px;display:inline}
+.hero .stat span{font-size:12.5px}
+@media(max-width:560px){.hero .stats{border-radius:18px;width:100%;padding:4px}.hero .stat{width:50%;padding:8px 10px}
+  .hero .stat+.stat{border-left:0}.hero .stat:nth-child(even){border-left:1px solid var(--line2)}.hero .stat:nth-child(n+3){border-top:1px solid var(--line2)}}
+</style><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orbuni prices: $800, $1,650 or $2,650, paid only after your offer letter | Orbuni</title>
+<meta name="description" content="What Orbuni costs: applying is free; one service fee after your university offer letter (Standard $800, Plus $1,650, Premier 2 × $1,325). Tuition is paid to the university, never to Orbuni.">
+<link rel="canonical" href="https://myorbuni.com/pricing/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Orbuni"><meta property="og:title" content="Orbuni prices: $800, $1,650 or $2,650, paid only after your offer letter | Orbuni">
+<meta property="og:description" content="What Orbuni costs: applying is free; one service fee after your university offer letter (Standard $800, Plus $1,650, Premier 2 × $1,325). Tuition is paid to the university, never to Orbuni."><meta property="og:url" content="https://myorbuni.com/pricing/"><meta property="og:image" content="https://myorbuni.com/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070C16">
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Orbuni", "item": "https://myorbuni.com/"}, {"@type": "ListItem", "position": 2, "name": "Prices", "item": "https://myorbuni.com/pricing/"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Service", "name": "University admission service for international students", "serviceType": "Study abroad admission and arrival support", "provider": {"@id": "https://myorbuni.com/#org"}, "areaServed": "Worldwide", "offers": [{"@type": "Offer", "name": "Orbuni Standard", "price": "800", "priceCurrency": "USD", "description": "one payment, after your offer letter. University and programme selection matched to your grades, budget and goals; Application prepared and submitted; Every document checked before anything is sent; Every update until the offer letter, then the acceptance steps; A named Orbuni counsellor"}, {"@type": "Offer", "name": "Orbuni Plus", "price": "1650", "priceCurrency": "USD", "description": "one payment, after your offer letter. Everything in Standard; Visa assistance: what to prepare and how to apply (Orbuni is not a visa agent); Airport pickup when you land in Türkiye; Help in your first days"}, {"@type": "Offer", "name": "Orbuni Premier", "price": "2650", "priceCurrency": "USD", "description": "two payments 30 days apart, starting after your offer letter. Everything in Plus; A trusted visa agent in your own country; Escort from the airport to your university for registration; Our agent with you for up to 2 days after you arrive; Residence permit (ikamet) support and local registrations"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does it cost anything to apply through Orbuni?", "acceptedAnswer": {"@type": "Answer", "text": "No. Applying is free. Orbuni's service fee is paid only after a university sends you an offer letter."}}, {"@type": "Question", "name": "How much does Orbuni charge?", "acceptedAnswer": {"@type": "Answer", "text": "One service fee, once: Standard $800, Plus $1,650, or Premier $2,650 paid as two payments of $1,325. Optional extras: airport pickup $150 and escort to your university $200. See prices."}}, {"@type": "Question", "name": "Do I pay my tuition to Orbuni?", "acceptedAnswer": {"@type": "Answer", "text": "No. Tuition and university deposits are paid directly to the university's own account, never to Orbuni. You get the university's receipt."}}, {"@type": "Question", "name": "Is Orbuni a real agency? How can I check?", "acceptedAnswer": {"@type": "Answer", "text": "Orbuni is run by Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba from Istanbul, and applies through AskUni's partner channel. You never pay before an offer letter, and payment happens only on myorbuni.com checkout pages. See how to verify us."}}]}</script>
+<style id="mnav">/* phones: no sideways sliding. Row 1 = logo + Apply free, row 2 = every link, all visible */
+@media (max-width:700px){
+  .hd .wrap{flex-wrap:wrap;position:relative;row-gap:6px;padding-top:10px;padding-bottom:8px}
+  .hd .nav{order:3;width:100%;overflow:visible;justify-content:space-between;gap:0}
+  .hd .nav a{font-size:13px;padding:6px 4px}
+  .hd .nav a.go{position:absolute;right:18px;top:9px;padding:7px 14px}
+}
+@media (max-width:390px){.hd .nav a{font-size:12px;padding:6px 1px;letter-spacing:-.01em}}
+</style><style>
+.pk{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;list-style:none;margin:0;padding:0}
+.pk li{background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);padding:20px 20px 18px;display:flex;flex-direction:column;gap:8px}
+.pk li.hl{border-color:rgba(242,181,68,.55)}
+.pk h3{font-size:21px}.pk .pr{font:800 30px var(--disp);letter-spacing:-.03em;color:var(--gold)}.pk .pr small{display:block;margin-top:4px;font:500 13px var(--sans);letter-spacing:0;color:var(--dim)}
+.pk ul{margin:4px 0 0;padding-left:18px;color:var(--dim);font-size:14px}.pk ul li{background:none;border:0;padding:2px 0;display:list-item}
+.pk .rf{margin-top:auto;font-size:13px;color:var(--dim);border-top:1px solid var(--line);padding-top:10px}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.steps li{background:var(--p1);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px 16px 62px;position:relative}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:18px;top:16px;width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(100deg,var(--gold),var(--amber));color:#1A1204;font:800 15px/30px var(--disp);text-align:center}
+.steps b{display:block;font-size:16px;margin-bottom:3px}.steps span{color:var(--dim);font-size:14.5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:720px){.two{grid-template-columns:1fr}}
+.box{background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);padding:18px 20px}
+.box h3{margin-bottom:8px}.box ul{margin:0;padding-left:18px;color:var(--dim)}.box ul li{margin:4px 0}
+.box.ok{border-color:rgba(62,213,152,.35)}.box.no{border-color:rgba(224,138,51,.4)}
+.money{width:100%;border-collapse:collapse}.money td,.money th{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+.money th{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+</style></head><body>
+<header class="hd"><div class="wrap"><a class="brand" href="/"><span class="orb"></span>Orbuni</a>
+<nav class="nav" aria-label="Main"><a href="/universities/">Universities</a><a href="/study/">Subjects</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Housing</a><a href="/articles/">Guides</a><a class="go" href="/#start">Apply free</a></nav></div></header>
+<div class="hero"><div class="wrap"><p class="crumbs"><a href="/">Orbuni</a> › Prices</p><p class="eyebrow">Prices · paid only after your offer letter</p><h1>What Orbuni costs, <span class="grad">and when you pay</span></h1><p class="lead">Applying is free. You pay one service fee, once, and only after a university sends you an offer letter. Tuition is always paid straight to the university, never to us.</p><div class="btns"><a class="btn btn-p" href="/#start">Free 2-minute assessment</a><a class="btn btn-o" href="https://wa.me/14434481577">Ask on WhatsApp</a></div></div></div>
+
+<section class="s"><div class="wrap"><p class="eyebrow">Three packages</p><h2>Choose how much help you want after the offer</h2>
+<ul class="pk"><li class=""><h3>Standard</h3><div class="pr">$800 <small>one payment, after your offer letter</small></div><ul><li>University and programme selection matched to your grades, budget and goals</li><li>Application prepared and submitted</li><li>Every document checked before anything is sent</li><li>Every update until the offer letter, then the acceptance steps</li><li>A named Orbuni counsellor</li></ul><p class="rf">If Orbuni cannot complete the service, 10% ($80) is refunded, or you carry the service over to the next intake at no extra fee.</p></li><li class="hl"><h3>Plus</h3><div class="pr">$1,650 <small>one payment, after your offer letter</small></div><ul><li>Everything in Standard</li><li>Visa assistance: what to prepare and how to apply (Orbuni is not a visa agent)</li><li>Airport pickup when you land in Türkiye</li><li>Help in your first days</li></ul><p class="rf">If Orbuni cannot complete the service, 20% ($330) is refunded, or you carry it over to the next intake.</p></li><li class=""><h3>Premier</h3><div class="pr">2 × $1,325 <small>two payments 30 days apart, starting after your offer letter</small></div><ul><li>Everything in Plus</li><li>A trusted visa agent in your own country</li><li>Escort from the airport to your university for registration</li><li>Our agent with you for up to 2 days after you arrive</li><li>Residence permit (ikamet) support and local registrations</li></ul><p class="rf">If Orbuni cannot complete the service, 30–40% ($795–$1,060) is refunded, or you carry it over to the next intake.</p></li></ul>
+<p class="note" style="margin-top:14px">Add when you need it: airport pickup in Türkiye <b>$150</b>, escort from the airport to your university <b>$200</b>, booked in your portal (full refund if cancelled 48 hours before). The full terms are in the <a href="/docs/Orbuni-Student-Service-Agreement.pdf">Student Service Agreement</a> (24 September 2026).</p></div></section>
+<section class="s alt"><div class="wrap"><p class="eyebrow">The money map</p><h2>Who you pay, for what, and when</h2>
+<table class="money"><thead><tr><th>What</th><th>Paid to</th><th>When</th></tr></thead><tbody>
+<tr><td>Applying through Orbuni</td><td>Nobody. It is free</td><td>—</td></tr>
+<tr><td>Orbuni service fee ($800 / $1,650 / 2 × $1,325)</td><td>Orbuni, on a myorbuni.com checkout page</td><td>After your offer letter</td></tr>
+<tr><td>Tuition and the university's deposit</td><td>The university's own account, never Orbuni</td><td>By the university's deadline</td></tr>
+<tr><td>Visa and residence-permit fees</td><td>The government</td><td>When you apply</td></tr>
+<tr><td>Housing</td><td>The residence (contract with them)</td><td>Before you fly, as the residence asks</td></tr>
+</tbody></table></div></section>
+<section class="s"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>About paying</h2><details><summary>Does it cost anything to apply through Orbuni?</summary><p>No. Applying is free. Orbuni's service fee is paid only after a university sends you an offer letter.</p></details><details><summary>How much does Orbuni charge?</summary><p>One service fee, once: Standard $800, Plus $1,650, or Premier $2,650 paid as two payments of $1,325. Optional extras: airport pickup $150 and escort to your university $200. See <a href="/pricing/">prices</a>.</p></details><details><summary>Do I pay my tuition to Orbuni?</summary><p>No. Tuition and university deposits are paid directly to the university's own account, never to Orbuni. You get the university's receipt.</p></details><details><summary>Is Orbuni a real agency? How can I check?</summary><p>Orbuni is run by Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba from Istanbul, and applies through AskUni's partner channel. You never pay before an offer letter, and payment happens only on myorbuni.com checkout pages. See <a href="/about/">how to verify us</a>.</p></details><details><summary>What happens if my visa is refused?</summary><p>You can carry your Orbuni service over to the next intake at no extra fee, or take the partial refund written in the Student Service Agreement for your package.</p></details></div></section>
+<section class="s"><div class="wrap"><div class="cta-band"><div><h2>Start with the free assessment</h2><p>Two minutes. It looks at your grades, budget, documents and timeline, and shows which universities and which package fit. Applying is free; you pay our fee only after a university sends you an offer letter.</p></div><a class="btn btn-p" href="/#start">Check in 2 minutes</a></div></div></section>
+<footer class="ft"><div class="wrap"><div><a class="brand" href="/"><span class="orb"></span>Orbuni</a><p>Orbuni helps students get into universities in Türkiye, N. Cyprus, the UAE, Germany, Egypt and Russia — published fees, a named counsellor, tuition paid direct to the university. Fees on these pages come from each university's published figures; your counsellor confirms the current figure in writing before you pay anything.</p></div>
+<div><h4>Explore</h4><a href="/universities/">Universities &amp; fees</a><a href="/scholarships/">Scholarships</a><a href="/housing/">Student housing</a><a href="/articles/">Study guides</a><a href="/study/">Study by subject</a></div>
+<div><h4>Orbuni</h4><a href="/">Home</a><a href="/pricing/">Prices</a><a href="/how-it-works/">How it works</a><a href="/parents/">For parents</a><a href="/faq/">Questions</a><a href="/about/">About &amp; verify us</a><a href="/#start">Start your application</a><a href="/#about">About us</a><a href="/#terms">Terms</a></div></div></footer>
+<!--orb-wa--><style>
+.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
+padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
+font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
+.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
+@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
+body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
+@media print{.orb-wa{display:none}}
+</style>
+<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
+<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
+<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
+var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
+var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
+if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
+a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
+<!--/orb-wa-->
+</body></html>

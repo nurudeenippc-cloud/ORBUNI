@@ -1,0 +1,78 @@
+# The Netlify default address serves the same site. Send it to the real domain
+# so Google treats myorbuni.com as the only copy.
+https://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
+http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
+
+
+# Short tracked links (bios, stories, WhatsApp). Each forwards to the video and the free
+# assessment with its source tag; ?go=start opens #start (see the script at the top of index.html).
+/ig  /?utm_source=instagram&utm_medium=bio&utm_campaign=always_on&go=start  302
+/tt  /?utm_source=tiktok&utm_medium=bio&utm_campaign=always_on&go=start  302
+/fb  /?utm_source=facebook&utm_medium=page&utm_campaign=always_on&go=start  302
+/yt  /?utm_source=youtube&utm_medium=description&utm_campaign=always_on&go=start  302
+/nm  /?utm_source=linkedin&utm_medium=nurudeen&utm_campaign=always_on&go=start  302
+/gw  /?utm_source=linkedin&utm_medium=godfrey&utm_campaign=always_on&go=start  302
+/wa  /?utm_source=whatsapp&utm_medium=community&utm_campaign=always_on&go=start  302
+/story  /?utm_source=instagram&utm_medium=story&utm_campaign=launch_oct26&go=start  302
+/dm  /?utm_source=instagram&utm_medium=dm&utm_campaign=launch_oct26&go=start  302
+/status  /?utm_source=whatsapp&utm_medium=status&utm_campaign=launch_oct26&go=start  302
+/go  /?utm_source=whatsapp&utm_medium=broadcast&utm_campaign=launch_oct26&go=start  302
+/live  /?utm_source=instagram&utm_medium=live&utm_campaign=launch_oct26&go=start  302
+/c/:name  /?utm_source=instagram&utm_medium=collab&utm_campaign=launch_oct26&utm_content=:name&go=start  302
+
+/.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200
+/housing/gozde-student-residence-avcilar-male/  /housing/men-residence-avcilar-1/  301
+/housing/piyano-student-residence-avcilar-male/  /housing/men-residence-avcilar-2/  301
+/housing/ozel-vatan-student-residence-fatih-vatan-male/  /housing/men-residence-fatih-1/  301
+/housing/halic-student-residence-fatih-male/  /housing/men-residence-fatih-2/  301
+/housing/academia-maslak-student-residence-male/  /housing/men-residence-maslak-1/  301
+/housing/academia-student-residence-seyrantepe-male/  /housing/men-residence-seyrantepe-1/  301
+/housing/mimosa-male-student-residence-atasehir/  /housing/men-residence-atasehir-1/  301
+/housing/mihrabat-dormitories-beykoz-male/  /housing/men-residence-beykoz-1/  301
+/housing/eduka-male-student-dormitory-besyol/  /housing/men-residence-besyol-1/  301
+/housing/gozde-female-student-residence-avcilar/  /housing/women-residence-avcilar-1/  301
+/housing/piyano-female-student-residence-avcilar/  /housing/women-residence-avcilar-2/  301
+/housing/ozel-capa-turkuaz-female-student-residence-fatih-capa/  /housing/women-residence-capa-1/  301
+/housing/inci-suit-female-student-residence-fatih/  /housing/women-residence-fatih-1/  301
+/housing/betav-firat-kara-female-student-residence-fatih/  /housing/women-residence-fatih-2/  301
+/housing/vadi-istanbul-female-student-residence-academia/  /housing/women-residence-kagithane-1/  301
+/housing/viva-female-student-residence-kagithane/  /housing/women-residence-kagithane-2/  301
+/housing/academia-bilgi-female-student-dormitory-kagithane/  /housing/women-residence-kagithane-3/  301
+/housing/mimosa-higher-education-female-residence-atasehir/  /housing/women-residence-atasehir-1/  301
+/housing/birgul-female-student-residence-kartal/  /housing/women-residence-kartal-1/  301
+/housing/nefes-female-student-residence-beykoz/  /housing/women-residence-beykoz-1/  301
+/housing/besyol-apart-female/  /housing/women-residence-besyol-1/  301
+/housing/academia-residence-maslak-mixed/  /housing/mixed-residence-maslak-1/  301
+/housing/academia-residence-univotel-kagithane/  /housing/mixed-residence-kagithane-1/  301
+/housing/campus-suit-univotel-esenyurt-female/  /housing/women-residence-esenyurt-1/  301
+/housing/gk-residence-univotel-sisli/  /housing/mixed-residence-sisli-1/  301
+/housing/univotel-galata-beyoglu/  /housing/mixed-residence-beyoglu-1/  301
+/housing/academic-house-atasehir-kiz-ogrenci-yurdu/  /housing/women-residence-atasehir-2/  301
+/housing/academic-house-besiktas-kiz-ogrenci-yurdu/  /housing/women-residence-besiktas-1/  301
+/housing/academic-house-fatih-capa-kiz-ogrenci-yurdu/  /housing/women-residence-fatih-3/  301
+/housing/academic-house-kadikoy-female/  /housing/women-residence-kadikoy-1/  301
+/housing/academic-house-maltepe-kiz-ogrenci-yurdu/  /housing/women-residence-maltepe-1/  301
+/housing/enis-cebi-erkek-ogrenci-yurdu-avcilar-male/  /housing/men-residence-avcilar-3/  301
+/housing/kampushan-kiz-ogrenci-yurdu-eyupsultan/  /housing/women-residence-eyupsultan-1/  301
+/housing/turkuaz-sutluce-kiz-ogrenci-yurdu-beyoglu/  /housing/women-residence-beyoglu-1/  301
+/housing/yeni-nesil-kiz-ogrenci-yurdu-esenyurt/  /housing/women-residence-esenyurt-2/  301
+/study/medicine-in-turkiye/  /study/medicine-in-turkey/  301
+/study/dentistry-in-turkiye/  /study/dentistry-in-turkey/  301
+/study/pharmacy-in-turkiye/  /study/pharmacy-in-turkey/  301
+/study/nursing-in-turkiye/  /study/nursing-in-turkey/  301
+/study/computer-engineering-in-turkiye/  /study/computer-engineering-in-turkey/  301
+/study/software-engineering-in-turkiye/  /study/software-engineering-in-turkey/  301
+/study/artificial-intelligence-engineering-in-turkiye/  /study/artificial-intelligence-engineering-in-turkey/  301
+/study/electrical-and-electronics-engineering-in-turkiye/  /study/electrical-and-electronics-engineering-in-turkey/  301
+/study/civil-engineering-in-turkiye/  /study/civil-engineering-in-turkey/  301
+/study/mechanical-engineering-in-turkiye/  /study/mechanical-engineering-in-turkey/  301
+/study/industrial-engineering-in-turkiye/  /study/industrial-engineering-in-turkey/  301
+/study/architecture-in-turkiye/  /study/architecture-in-turkey/  301
+/study/business-administration-in-turkiye/  /study/business-administration-in-turkey/  301
+/study/economics-in-turkiye/  /study/economics-in-turkey/  301
+/study/international-relations-in-turkiye/  /study/international-relations-in-turkey/  301
+/study/law-in-turkiye/  /study/law-in-turkey/  301
+/study/psychology-in-turkiye/  /study/psychology-in-turkey/  301
+/study/physiotherapy-in-turkiye/  /study/physiotherapy-in-turkey/  301
+/study/nutrition-and-dietetics-in-turkiye/  /study/nutrition-and-dietetics-in-turkey/  301
+/*    /index.html   200
