@@ -10356,6 +10356,7 @@ function route(){
       else closeJob(true);
     } else if(h==='login'){ go('home',true); openPortal('choose');
     } else if(h==='partner'){ go('home',true); openPortal('partner-up');
+    } else if(h==='join'){ go('home',true); openPortal('team-link');
     } else if(h==='signup'){ go('home',true); openPortal('student-up');
     } else if(PAGES.indexOf(h)>-1){ closeUni(true); go(h,true);
     } else { closeUni(true); go('home',true); }
@@ -10624,8 +10625,18 @@ const SCREENS={
    <div class="arow"><a href="#" onclick="orbForgot(event)">Forgot password?</a></div>
    <button class="btn btn-p btn-w" onclick="enter('partner')">Sign in →</button>
    <p class="aswap">Not a partner yet? <b onclick="setAuth('partner-up')">Apply to join</b></p>
+   <p class="aswap" style="margin-top:6px">Just added to the Orbuni team? <b onclick="setAuth('team-link')">Get your login link</b></p>
    <a class="aback" onclick="setAuth('choose')">← Choose a different account type</a>
    ${atrust}`,
+
+ 'team-link':()=>`${crumb(NAVICON.briefcase,'Team login')}
+   <h2>Welcome to the team</h2>
+   <p class="sub">Type the email address you were added with. We will email you a link to choose your own password.</p>
+   <div class="fld"><label>Your email</label><input type="email" id="tl-e" placeholder="you@email.com" autocomplete="email"></div>
+   <button class="btn btn-p btn-w" onclick="orbTeamLink(event)">Email me my login link →</button>
+   <div id="tl-out"></div>
+   <p class="aswap">Already chose your password? <b onclick="setAuth('partner-in')">Sign in</b></p>
+   <a class="aback" onclick="setAuth('choose')">← Back</a>`,
 
  'student-up':()=>`${crumb(NAVICON.cap,'Create account')}
    <h2>Create your account</h2>
@@ -11317,8 +11328,10 @@ async function restore(){
       showEmailConfirmed();
       return;
     }
-    if(linkType === "recovery" || linkType === "magiclink"){
+    if(linkType === "recovery" || linkType === "magiclink" || linkType === "invite"){
       if(linkType === "recovery" && typeof askNewPassword === "function") askNewPassword();
+      // A teammate arriving from their invitation email: they are signed in, but have no password yet.
+      if(linkType === "invite" && typeof askNewPassword === "function"){ askNewPassword("invite"); return; }
     }
     var r = await sb.auth.getSession();
     if(!(r && r.data && r.data.session)) return;
@@ -18691,6 +18704,27 @@ window.orbForgot = async function(ev){
   }catch(e){ authErr(friendly(e)); }
 };
 
+/* ---------- a teammate asks for their login link ----------
+   New student sign-ups are paused, so the public "create account" screen is closed.
+   Someone the owner has added to the team gets in here instead: the server only
+   acts if that email has a pending team invite (or an account that never finished
+   setting a password), and always gives the same answer so nobody can probe it. */
+window.orbTeamLink = async function(ev){
+  var btn = (ev && ev.target) || null;
+  if(btn && btn.tagName !== "BUTTON") btn = btn.closest ? btn.closest("button") : null;
+  var inp = $("tl-e"), out = $("tl-out");
+  var addr = inp ? inp.value.trim() : "";
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(addr)){ fieldError(inp, "Type the full email address you were added with."); return; }
+  busy(btn, true, "Sending…");
+  try{
+    var r = await sb.functions.invoke("invite-team-login", { body: { email: addr } });
+    if(r.error) throw r.error;
+    if(out) out.innerHTML = '<div class="ok" style="margin-top:14px;line-height:1.6">If <b>' + esc(addr) + '</b> was added to the team, a link is on its way. '
+      + 'Check your inbox and your spam folder, then open the link on this same phone or computer to choose your password.</div>';
+  }catch(e){ authErr(friendly(e)); }
+  finally{ busy(btn, false); }
+};
+
 /* ---------- arriving back from a reset link ---------- */
 window.addEventListener("hashchange", function(){ if(/^#reset\b/.test(location.hash)) askNewPassword(); });
 function authLinkType(){
@@ -18722,12 +18756,13 @@ window.goConfirmedSignIn = async function(){
   var card = $("acard");
   if(card && window.AUTH_CARD_HTML) card.innerHTML = window.AUTH_CARD_HTML;
 };
-function askNewPassword(){
+function askNewPassword(mode){
   if(typeof openPortal === "function") openPortal("choose");
   var card = $("acard"); if(!card) return;
+  var inv = mode === "invite";
   card.innerHTML = '<div class="abrand"><div class="row"><span class="orb"><b>O</b></span>'
-    + '<span class="nm">Orbuni</span></div></div><h2>Choose a new password</h2>'
-    + '<p class="sub">Make it at least 8 characters. You will stay signed in afterwards.</p>'
+    + '<span class="nm">Orbuni</span></div></div><h2>' + (inv ? "Welcome to the Orbuni team" : "Choose a new password") + '</h2>'
+    + '<p class="sub">' + (inv ? "Choose the password you will use to sign in. " : "") + 'Make it at least 8 characters. You will stay signed in afterwards.</p>'
     + '<div class="fld"><label>New password</label><input type="password" id="rp1" placeholder="At least 8 characters"></div>'
     + '<div class="fld"><label>Type it again</label><input type="password" id="rp2"></div>'
     + '<button class="btn btn-p btn-w" onclick="orbSetPassword(event)">Save and continue →</button>';
@@ -20988,19 +21023,17 @@ window.chSendInvite = async function(ev){
     if($("iv-s") && !$("iv-s").checked){
       try{ await sb.from("team_invites").update({ takes_students: false }).eq("email", e.toLowerCase()).is("accepted_at", null); }catch(_){}
     }
-    var link = "https://myorbuni.com/#signup";
-    var mail = await sb.functions.invoke("send-manual-email", { body: { to_email: e, template: "custom_notice",
-      vars: { first_name: first, subject: "You're invited to the Orbuni team",
-        body: "Hi" + (first ? " " + first : "") + ",\n\nYou've been added to the Orbuni team" + (title ? " as " + title : "") + ".\n\n"
-          + "Create your account here with this email address (" + e + "): " + link + "\n\n"
-          + "You'll land straight in the team portal. Once you're in, open Spaces → Settings → Google Calendar & Meet and press Connect, so your meetings get Meet links.\n\nWelcome aboard,\nNurudeen" } } });
+    // New student sign-ups are paused, so there is no public "create account" page for a teammate.
+    // The server emails them a link to choose their password; #join is the backup door.
+    var link = "https://myorbuni.com/#join";
+    var mail = await sb.functions.invoke("invite-team-login", { body: { email: e } });
     var mailErr = await edgeErr(mail);
     $("iv-out").innerHTML = '<div class="ok">' + esc((first || e)) + " is on the team list."
-      + (mailErr ? " The email could not be sent (" + esc(mailErr) + "), so send them the link yourself:" : " We've emailed them the sign-up link. You can also send it yourself:")
+      + (mailErr ? " The login email could not be sent (" + esc(mailErr) + "), so send them this page and they can ask for it themselves:" : " We've emailed them a link to choose their password (check spam if it is slow). If it does not arrive, they can ask for it again here:")
       + '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
-      + '<button class="btn btn-o btn-s" onclick="copyText(\'' + link + '\')">Copy sign-up link</button>'
-      + '<a class="btn btn-o btn-s" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent("You're invited to the Orbuni team. Create your account with " + e + " here: " + link) + '">Send on WhatsApp</a></div>'
-      + '<div style="margin-top:8px;font-size:12.5px;color:var(--faint)">They must sign up with exactly ' + esc(e) + '.</div></div>';
+      + '<button class="btn btn-o btn-s" onclick="copyText(\'' + link + '\')">Copy the team login page</button>'
+      + '<a class="btn btn-o btn-s" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent("You're added to the Orbuni team. Open " + link + " and enter " + e + " to get your login link.") + '">Send on WhatsApp</a></div>'
+      + '<div style="margin-top:8px;font-size:12.5px;color:var(--faint)">They must use exactly ' + esc(e) + '.</div></div>';
   }catch(err){ $("iv-out").innerHTML = '<div class="err">' + esc(friendly(err)) + "</div>"; }
   finally{ busy(btn, false); }
 };
@@ -30465,10 +30498,13 @@ window.r6AddMemberSave = async function(ev){
   var r = await sb.rpc("invite_teammate", { p_email: email, p_first: $("am-f").value.trim() || null, p_last: $("am-l").value.trim() || null,
     p_title: $("am-t").value.trim() || null, p_role: $("am-r").value, p_sections: [] });
   if(r.error){ $("am-err").textContent = friendly(r.error); return; }
-  var link = "https://myorbuni.com/#signup";
+  var link = "https://myorbuni.com/#join";
+  var sent = false;
+  try{ var m2 = await sb.functions.invoke("invite-team-login", { body: { email: email } }); sent = !m2.error; }catch(_){}
   $("r6-add-member").innerHTML = '<section class="o6-card r6-roleform"><div class="o6-ch"><h3>' + r6Ic("check") + " Added</h3></div>"
-    + "<p style=\"margin:0 0 12px;color:var(--dim)\">Send them this link. They create their account with <b>" + esc(email) + "</b> and land straight in the team portal.</p>"
-    + '<div class="r6-person-a"><button class="o6-btn gold" onclick="copyText(\'' + link + '\')">' + r6Ic("link") + " Copy sign-up link</button></div></section>";
+    + "<p style=\"margin:0 0 12px;color:var(--dim)\">" + (sent ? "We emailed <b>" + esc(email) + "</b> a link to choose their password. " : "The login email could not be sent just now. ")
+    + "If it does not arrive, send them this page: they type <b>" + esc(email) + "</b> and get a new link.</p>"
+    + '<div class="r6-person-a"><button class="o6-btn gold" onclick="copyText(\'' + link + '\')">' + r6Ic("link") + " Copy the team login page</button></div></section>";
 };
 
 /* ---------- Careers (founder view), redesigned to match the public careers page ----------
@@ -34162,7 +34198,8 @@ async function orbSignupsOpen(){
         + '<div class="fld"><label>Email</label><input id="wl-e" type="email" autocomplete="email" placeholder="you@example.com"></div>'
         + '<div class="fld"><label>WhatsApp number</label><input id="wl-p" type="tel" autocomplete="tel" placeholder="+234 …"></div>'
         + '<button class="btn btn-p btn-w" id="wl-go" onclick="orbWaitlist(event)">Join the waitlist</button>'
-        + '<p class="sub" style="margin-top:14px;font-size:13px">Already have an account? <a href="#" onclick="setAuth(\'student-in\');return false">Sign in</a></p>';
+        + '<p class="sub" style="margin-top:14px;font-size:13px">Already have an account? <a href="#" onclick="setAuth(\'student-in\');return false">Sign in</a></p>'
+        + '<p class="sub" style="margin-top:6px;font-size:13px">Added to the Orbuni team? <a href="#" onclick="setAuth(\'team-link\');return false">Get your login link</a></p>';
     });
   };
 })();
