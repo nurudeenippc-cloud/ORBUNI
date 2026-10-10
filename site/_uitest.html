@@ -52,11 +52,11 @@ try{if(/[?&]go=start(&|$)/.test(location.search)&&!location.hash)history.replace
   ],
   "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"},
   "founder": [
-    {"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director"},
-    {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer"}
+    {"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director", "sameAs": "https://www.instagram.com/coolguyn94/"},
+    {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer", "sameAs": "https://www.instagram.com/wudaba_jnr/"}
   ],
   "employee": [
-    {"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)"}
+    {"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)", "sameAs": "https://www.instagram.com/lennswordjy/"}
   ],
   "contactPoint": {"@type": "ContactPoint", "contactType": "admissions", "telephone": "+1-443-448-1577",
     "availableLanguage": ["English"], "url": "https://wa.me/14434481577"},
@@ -593,6 +593,12 @@ nav{position:sticky;top:16px;z-index:70;padding:0 16px}
 .tm-b b{display:block;font-size:17px;font-family:var(--disp);font-weight:800;letter-spacing:-.03em}
 .tm-b .role{font-size:12.5px;color:var(--gold);margin:3px 0 6px}
 .tm-b .bio{font-size:13px;color:var(--faint);line-height:1.6;margin-top:6px}
+.tm-b .xl{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:14px 0 5px}
+.tm-b .xt{font-size:13px;color:var(--faint);line-height:1.55}
+.tm-b .chips{display:flex;flex-wrap:wrap;gap:6px}
+.tm-b .chips span{font-size:11.5px;padding:4px 10px;border:1px solid var(--line);border-radius:20px;color:var(--dim)}
+.tm-b .tig{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:13px;font-weight:600;color:var(--gold);text-decoration:none}
+.tm-b .tig:hover{text-decoration:underline}
 
 .tm-b .lang{display:block;margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
   font-family:var(--disp);font-size:14.5px;font-weight:600;letter-spacing:-.02em;color:var(--gold);line-height:1.35}
@@ -9921,16 +9927,25 @@ const TEAM=[
   role:"Founder & Managing Director",
   bio:"Nurudeen has spent years inside this industry — first navigating it as a student himself, then watching family, friends and strangers walk into the same maze. He saw the lapses close up: agents who took money and disappeared, fees that changed after payment, applications that died over a missing translation, students who gave up because nobody would tell them the truth.<br><br>Orbuni did not start from a business plan. It started from a list of everything that had gone wrong for people he knew, and a decision to build the opposite.<br><br>He sits on the organising committee of the Africa Diaspora Forum in İstanbul, working on Türkiye–Africa cooperation — but the reason is simpler than the title makes it sound. The more doors that open institutionally, the more students walk through them.",
   lang:"“Every student has a right to dream.”",
+  exp:"Years in the study-abroad industry, first as a student himself. Organising committee, Africa Diaspora Forum, İstanbul.",
+  skills:["Student placement","Honest pricing","Türkiye–Africa partnerships","Building Orbuni"],
+  ig:"coolguyn94",
   photos:["photos/inline/fcf25e4bbda8.jpg","photos/inline/823977a3cdeb.jpg","photos/inline/ae43a37687d7.jpg","photos/home/team-nurudeen-award.jpg","photos/home/team-nurudeen-speaking.jpg","photos/home/team-nurudeen-roundtable.jpg","photos/home/team-nurudeen-climate.jpg","photos/home/team-nurudeen-podium.jpg"]},
  {name:"Godfrey Emmanuel Wudaba",
   role:"Co-Founder & Chief Operating Officer",
   bio:"Godfrey co-founded Orbuni and runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
   lang:"“Nothing leaves this office unchecked.”",
+  exp:"Runs everything from the first enquiry to the first day of class. Works every day with university admissions offices, from İstanbul.",
+  skills:["University relations","Document standards","Application timelines","Operations"],
+  ig:"wudaba_jnr",
   photos:["photos/inline/1e08e2a16d18.jpg","photos/inline/136e052d5d16.jpg","photos/inline/5b8ce73ab9e2.jpg"]},
  {name:"Lenns Wordjy Coutilien",
   role:"Creative Director",
   bio:"Lenns is in charge of creativity, our VSL videos and marketing: the videos, reels, guides, testimonials and the way we show our fees. His job is to make our promise easy to see: real prices, no surprises, and a named counsellor beside you.",
   lang:"Making the promise easy to see.",
+  exp:"Makes Orbuni’s videos, reels and VSL scripts, and leads how the brand looks and sounds.",
+  skills:["Creative direction","VSL videos","Video and reels","Marketing","Storytelling"],
+  ig:"lennswordjy",
   photos:["photos/feed/lenns-1.jpg","photos/feed/lenns-2.jpg","photos/feed/lenns-3.jpg","photos/feed/lenns-cafe.jpg"]}
 ];
 document.getElementById("team").innerHTML=TEAM.map((t,ti)=>`
@@ -9944,7 +9959,11 @@ document.getElementById("team").innerHTML=TEAM.map((t,ti)=>`
    </div>
    <div class="tm-b">
      <b>${t.name}</b><div class="role">${t.role}</div>
-     <div class="bio">${t.bio}</div><span class="lang">${t.lang}</span>
+     <div class="bio">${t.bio}</div>
+     ${t.exp?`<div class="xl">Experience</div><div class="xt">${t.exp}</div>`:""}
+     ${t.skills?`<div class="xl">Expertise</div><div class="chips">${t.skills.map(k=>`<span>${k}</span>`).join("")}</div>`:""}
+     ${t.ig?`<a class="tig" href="https://www.instagram.com/${t.ig}/" target="_blank" rel="noopener" aria-label="${t.name} on Instagram"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>@${t.ig}</a>`:""}
+     <span class="lang">${t.lang}</span>
    </div>
  </article>`).join("");
 requestAnimationFrame(()=>document.querySelectorAll("#team .rv").forEach(e=>e.classList.add("in")));
