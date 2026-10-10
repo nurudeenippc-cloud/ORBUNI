@@ -28919,6 +28919,15 @@ function whKpi(label, value, note, st){
 
 async function aWhop(){
   var box = $("a-live"); if(!box) return;
+  // The company's Whop numbers (revenue, payments, payouts, ads, agreements) are for the owner and finance.
+  // Anyone else sees only what Whop itself shows them, on Whop, under the role they were given there.
+  if(!(PROF && PROF.is_owner) && !canOpenSec("finance")){
+    box.innerHTML = '<div class="wh" id="wh"><div class="wh-card"><h3>Your Whop seat</h3>'
+      + '<div class="s" style="line-height:1.65">You are on the Orbuni team on Whop. What you can see and do there is set by the role Nurudeen gave you on Whop, and Whop enforces it. '
+      + "The company's revenue, payments and payouts are not shown in this portal. Open Whop to work with your own access.</div>"
+      + '<div style="margin-top:14px"><a class="btn btn-p btn-s" href="' + ORB_WHOP.dashboard + '" target="_blank" rel="noopener">Open Whop ↗</a></div></div></div>';
+    return;
+  }
   box.innerHTML = '<div class="wh" id="wh">'
     + '<div id="wh-status"></div>'
     + '<div class="wh-kpis" id="wh-kpis">' + ["Revenue · 30 days","Payments · 30 days","New customers","Store visits"].map(function(l){ return whKpi(l, "…", ""); }).join("") + "</div>"
@@ -31383,6 +31392,7 @@ if(typeof aWhop === "function" && !aWhop.__r6){
   var _aWhop6 = aWhop;
   aWhop = async function(){
     await _aWhop6.apply(this, arguments);
+    if(!(PROF && PROF.is_owner) && !canOpenSec("finance")) return;   // no company-wide banner for people without finance
     var wh = $("wh"); if(!wh || wh.querySelector(".r6-whophero")) return;
     wh.insertAdjacentHTML("afterbegin", '<section class="r6-whophero"><div class="r6-whopmark">' + WHOP_ICON + "</div>"
       + '<div class="r6-whop-tx"><span class="o6-eye" style="color:#FFD2C2">Payments · courses · community · ads</span><h2>Whop, inside Orbuni</h2>'
