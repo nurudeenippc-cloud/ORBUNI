@@ -10599,12 +10599,12 @@ const SCREENS={
      <button class="role" onclick="setAuth('partner-in')">
        <span class="last">LAST USED</span>
        <div class="ic">${NAVICON.briefcase}</div>
-       <b>I'm a Partner</b>
-       <span>Refer students, track applications and earn commission</span>
+       <b>I'm a Partner or on the team</b>
+       <span>Partners refer students and earn commission. Team members sign in here too</span>
        <span class="arw">→</span>
      </button>
    </div>
-   <div class="hint"><div>Agencies, schools and individual recruiters sign in as <b>Partner</b>.
+   <div class="hint"><div>Agencies, schools, recruiters and Orbuni team members sign in as <b>Partner</b>.
      Students applying for themselves sign in as <b>Student</b>.</div></div>
    <p class="aswap">New here? <b onclick="setAuth('student-up')">Create a student account</b>
      or <b onclick="setAuth('partner-up')">apply to become a partner</b></p>
@@ -10623,15 +10623,15 @@ const SCREENS={
    ${atrust}`,
 
  'partner-in':()=>`${crumb(NAVICON.briefcase,'Sign in')}
-   <h2>Welcome, Partner</h2>
-   <p class="sub">Sign in to manage your students and commission</p>
+   <h2>Welcome back</h2>
+   <p class="sub">Partners and Orbuni team members sign in here</p>
    <div class="fld"><label>Email</label><input type="email" placeholder="you@agency.com" autocomplete="email"></div>
    <div class="fld"><label>Password</label><div class="pw"><input type="password" id="pw2" placeholder="Your password" autocomplete="current-password">
      <button onclick="tog('pw2',this)">👁</button></div></div>
    <div class="arow"><a href="#" onclick="orbForgot(event)">Forgot password?</a></div>
    <button class="btn btn-p btn-w" onclick="enter('partner')">Sign in →</button>
    <p class="aswap">Not a partner yet? <b onclick="setAuth('partner-up')">Apply to join</b></p>
-   <p class="aswap" style="margin-top:6px">Just added to the Orbuni team? <b onclick="setAuth('team-link')">Get your login link</b></p>
+   <p class="aswap" style="margin-top:6px">Team member, first time here? <b onclick="setAuth('team-link')">Send me my login link</b></p>
    <a class="aback" onclick="setAuth('choose')">← Choose a different account type</a>
    ${atrust}`,
 
@@ -14096,7 +14096,7 @@ var A_NAV_ALL = [
       works for anything that routes there directly (a push, a deep link). */
    { id:"chat",   ic:NAVI.message, l:"Spaces" },
    { id:"wa",     ic:NAVI.reply,   l:"WhatsApp", gate:true },
-   { id:"chall",  ic:NAVI.trophy,  l:"Challenges" }]},
+   { id:"chall",  ic:NAVI.trophy,  l:"Challenges", gate:true }]},
  { g:"Students", items:[
    { id:"students", ic:NAVI.users, l:"Students" },
    { id:"create",   ic:NAVI.plus, l:"Create a student" },
@@ -14115,7 +14115,7 @@ var A_NAV_ALL = [
  { g:"Growth", items:[
    { id:"marketing", ic:NAVI.grid,      l:"Marketing engine", owner:true },
    { id:"reach",     ic:NAVI.send,      l:"Reach", owner:true },
-   { id:"leads",     ic:NAVI.userCheck, l:"Leads" },
+   { id:"leads",     ic:NAVI.userCheck, l:"Leads", gate:true },
    { id:"projects",  ic:NAVI.folder,    l:"Projects" },
    { id:"housing",   ic:NAVI.home,      l:"Housing", owner:true },
    { id:"content",   ic:NAVI.bookOpen,  l:"Content & ads", owner:true }]},
@@ -14174,7 +14174,8 @@ async function loadSections(){
   // grant adds on top of those two is the right to reassign other people's
   // work, which is what canManageSec() gates.
   if(ME){
-    if(!MYSEC.leads)    MYSEC.leads    = { open:true, manage:false };
+    // Leads are for people on the lead rota (or admins, or anyone the owner opens it for).
+    if(!MYSEC.leads && PROF && PROF.takes_leads) MYSEC.leads = { open:true, manage:false };
     if(!MYSEC.projects) MYSEC.projects = { open:true, manage:false };
   }
 }
@@ -14305,7 +14306,7 @@ window.aGo = function(v){
   // merged page with that tab already showing rather than at a dead view.
   if(v === "ads"){ CONTENT_TAB = "ads"; v = "content"; AV = v; window.AV = v; aNav(); $("a-title").textContent = A_TITLE[v] || v; }
   var gated = { partners:1, enq:1, jobs:1, ops:1, marketing:1, content:1, schol:1, arts:1, finance:1, housing:1 };
-  var gatedAdmin = { wa:1, askuni:1, docs:1, team:1, extras:1 };   // admins too, but not plain staff unless opened for them
+  var gatedAdmin = { wa:1, askuni:1, docs:1, team:1, extras:1, chall:1, leads:1 };   // admins too, but not plain staff unless opened for them
   var isAdm = !!(PROF && (PROF.is_owner || PROF.role === "admin"));
   if(((gated[v] && !(PROF && PROF.is_owner)) || (gatedAdmin[v] && !isAdm)) && !canOpenSec(v)){
     $("a-live").innerHTML = '<div class="panel"><div class="empty">This part of the portal has not been '
@@ -15415,15 +15416,24 @@ async function aToday(){
 
   // What the team can do from a standing start, in the order they actually
   // do it: add a student, open the room, chase a lead, look at the money.
+  // Each tile is a door that opens for this person: Leads for the lead rota, Marketing for the marketing team,
+  // Finance only for finance; everyone else gets Projects or their own earnings instead of a closed door.
+  var isAdmin = !!(PROF && (PROF.is_owner || PROF.role === "admin"));
+  var tileThree = (isAdmin || canOpenSec("leads"))
+    ? { label:"Leads", icon:NAVI.target, ac:"violet", go:"aGo('leads')", tag: myLate.length ? String(myLate.length) + " late" : "" }
+    : (canOpenSec("marketing")
+        ? { label:"Marketing engine", icon:NAVI.grid, ac:"violet", go:"aGo('marketing')" }
+        : { label:"Projects", icon:NAVI.folder, ac:"violet", go:"aGo('projects')" });
+  var tileFour = canOpenSec("finance") || (PROF && PROF.is_owner)
+    ? { label:"Finance", icon:NAVI.barChart, ac:"mint", go:"aGo('finance')" }
+    : (tileThree.label === "Projects"
+        ? { label:"My earnings", icon:NAVI.wallet, ac:"mint", go:"aGo('earn')" }
+        : { label:"Projects", icon:NAVI.folder, ac:"mint", go:"aGo('projects')" });
   var acts = dashActs([
     { label:"Create a student", icon:NAVI.plus,      ac:"gold",   go:"aGo('create')" },
     { label:"Spaces",           icon:NAVI.message,   ac:"cyan",   go:"aGo('chat')" },
-    { label:"Leads",            icon:NAVI.target,    ac:"violet", go:"aGo('leads')",
-      tag: myLate.length ? String(myLate.length) + " late" : "" },
-    // Finance is gated; everyone else gets their own earnings instead of a door that does not open for them.
-    canOpenSec("finance")
-      ? { label:"Finance",      icon:NAVI.barChart,  ac:"mint",   go:"aGo('finance')" }
-      : { label:"Projects",     icon:NAVI.folder,    ac:"mint",   go:"aGo('projects')" }
+    tileThree,
+    tileFour
   ]);
 
   var canSeeDocs = !!(PROF && (PROF.is_owner || PROF.role === "admin" || canOpenSec("docs")));
