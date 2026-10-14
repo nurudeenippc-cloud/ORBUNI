@@ -11456,7 +11456,18 @@ function added(btn){
   var y=document.getElementById('yr'); if(y) y.textContent=new Date().getFullYear();
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* Supabase library: served from our own site (pinned), with the CDN as a backup if it ever fails to load. */
+window.orbSbBackup = function(){
+  if(window.supabase && window.supabase.createClient) return;
+  if(window.orbSbBackupStarted) return; window.orbSbBackupStarted = true;
+  var s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
+  document.head.appendChild(s);
+};
+setTimeout(window.orbSbBackup, 6000);
+</script>
+<script src="/vendor/supabase-js/supabase-2.117.3.js" onerror="window.orbSbBackup()"></script>
 <script id="orb-live-js">
 /* ============================================================
    ORBUNI LIVE LAYER
@@ -11613,6 +11624,18 @@ async function orbCaptchaRun(){
   });
 }
 
+/* Forms call this before giving up: waits (up to ms) for the connection to finish loading. */
+function orbWaitSB(ms){
+  return new Promise(function(res){
+    var t0 = Date.now();
+    (function chk(){
+      if(typeof sb !== "undefined" && sb) return res(true);
+      if(typeof window.orbSbBackup === "function" && Date.now() - t0 > 1500) window.orbSbBackup();
+      if(Date.now() - t0 > ms) return res(false);
+      setTimeout(chk, 150);
+    })();
+  });
+}
 /* ---------- wait for the Supabase library ---------- */
 function boot(){
   if(!window.supabase || !window.supabase.createClient){ return setTimeout(boot, 60); }
@@ -28025,6 +28048,7 @@ window.lpSubmit = async function(){
   if(email && email.indexOf("@") < 1) return bad("That email address does not look right.");
   if(!country) return bad("Which country do you live in?");
   if(!document.getElementById("lpq-ok").checked) return bad("Please tick the box so we are allowed to contact you.");
+  if(typeof sb === "undefined" || !sb){ bad("Connecting… one moment."); await orbWaitSB(12000); bad(""); }
   if(typeof sb === "undefined" || !sb) return bad("The connection to our system has not loaded. Refresh the page and try again.");
   bad("");
   if(btn){ btn.disabled = true; btn.textContent = "Saving…"; }
@@ -37181,7 +37205,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return bad("An email address we can send the link to.");
     if(!country) return bad("Which country do you live in?");
     if(!$("wb-ok").checked) return bad("Please tick the box so we are allowed to send you the link.");
-    if(typeof sb === "undefined" || !sb) return bad("The connection to our system has not loaded. Refresh the page and try again.");
+    if(typeof sb === "undefined" || !sb){ bad("Connecting… one moment."); await orbWaitSB(12000); bad(""); }
+  if(typeof sb === "undefined" || !sb) return bad("The connection to our system has not loaded. Refresh the page and try again.");
     bad(""); if(btn){ btn.disabled = true; btn.textContent = "Saving…"; }
     var u = (typeof orbUTM === "function") ? orbUTM() : {};
     var r = await sb.rpc("webinar_register", { p_id: WB_ID, p_name: name, p_email: email, p_phone: phone, p_country: country,
