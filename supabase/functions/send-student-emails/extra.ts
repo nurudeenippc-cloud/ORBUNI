@@ -10,6 +10,8 @@ const SITE = "https://myorbuni.com";
 type V = Record<string, unknown>;
 const g = (v: V, k: string, d = "") => esc(v[k] ?? d);
 const safeLink = (u: unknown) => { const s = String(u ?? ""); return /^https:\/\/(www\.)?myorbuni\.com(\/|$)/.test(s) ? s : SITE; };
+// the Google Calendar link made by public.webinar_queue_email(); nothing else is accepted
+const gcalLink = (u: unknown) => { const x = String(u ?? ""); return /^https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE&[^"<>\s]+$/.test(x) ? x.replace(/&/g, "&amp;") : ""; };
 // the signed "stop these emails" link made by public.optout_link(); nothing else is accepted
 const unsubLink = (u: unknown) => { const x = String(u ?? ""); return /^https:\/\/ytsebzdykfeiiuxbdtvr\.supabase\.co\/functions\/v1\/email-optout\?e=[^"<>\s]+&t=[0-9a-f]{32}$/.test(x) ? x : ""; };
 
@@ -67,7 +69,17 @@ export const EXTRA_SUBJECTS: Record<string, (v: V) => string> = {
   extra_booked:      v => `Booked: ${String(v.service ?? "your extra service")}`,
   extra_assigned:    v => `Who is coming for you — ${String(v.service ?? "your booking")}`,
   call_booked:       v => `Your call with Orbuni — ${String(v.when ?? "")}`,
-  payment_receipt:   v => `Receipt ${String(v.receipt_no ?? "")} — payment received, thank you`
+  payment_receipt:   v => `Receipt ${String(v.receipt_no ?? "")} — payment received, thank you`,
+  // the webinar (Scholarship 1.0)
+  webinar_registered:      v => `Your seat is saved: ${String(v.title ?? "the Orbuni webinar")}`,
+  webinar_reminder:        v => `${String(v.when_short ?? "Soon") === "tomorrow" ? "Tomorrow" : "In one hour"}: ${String(v.title ?? "the Orbuni webinar")}`,
+  webinar_live:            _v => `We are live now. Your seat is waiting`,
+  webinar_replay:          v => `You missed it, ${String(v.first_name ?? "there")}. The replay is ready`,
+  webinar_next:            v => `Your next step after the webinar, ${String(v.first_name ?? "there")}`,
+  webinar_vip_offer:       v => `Start before the webinar, ${String(v.first_name ?? "there")}?`,
+  webinar_vip_unpaid:      _v => `Your VIP seat is not confirmed yet`,
+  webinar_vip_welcome:     v => `You're VIP, ${String(v.first_name ?? "there")}. Here is what you get`,
+  webinar_vip_scholarship: _v => `Your early access: 100% scholarship places`
 };
 
 export const EXTRA_BODIES: Record<string, (v: V) => string> = {
@@ -195,5 +207,103 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + (meet ? button("Join the call", meet) : "")
       + note("Can't make it?", "Reply to this email or message us on WhatsApp and we will move it. The Google Calendar invitation has the same link.", "green")
       + small("You are getting this because you booked a call at myorbuni.com."));
+  },
+
+  // ---------- the webinar (Scholarship 1.0) ----------
+  webinar_registered: v => {
+    const stop = unsubLink(v.unsub), vip = String(v.ticket) === "vip", cal = gcalLink(v.gcal);
+    return shell(`You're in. ${String(v.when ?? "")}`,
+      kick(vip ? "VIP seat saved" : "Free seat saved")
+      + h1(`You're in, ${g(v,"first_name","there")}`)
+      + para(`Your seat for <b>${g(v,"title","the Orbuni webinar")}</b> is saved. Bring your questions, and bring your parents if they help decide.`)
+      + rows([["When", g(v,"when")], ["Where", "Online. The join link is on your seat page"], ["Your seat", vip ? "VIP" : "Free"]])
+      + button("Open my seat", safeLink(v.seat))
+      + (cal ? para(`<a href="${cal}" style="color:${GOLD};font-weight:600">Add it to Google Calendar</a> so you don't miss it.`) : "")
+      + note("Keep this email", "The button above is your personal seat link. It shows the countdown, the join button on the day and, afterwards, the replay. We will also remind you on WhatsApp.", "green")
+      + (vip ? "" : note("Want to start now?", `The VIP seat (${g(v,"vip_price","$10")}) gives you the Scholarship Masterclass today, the replay for life and 48-hour early access to 100% scholarship places. You can upgrade from your seat page.`))
+      + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_reminder: v => {
+    const stop = unsubLink(v.unsub), soon = String(v.when_short ?? "") !== "tomorrow";
+    return shell(soon ? "We start in about an hour." : "See you tomorrow.",
+      kick(soon ? "Starting soon" : "Tomorrow")
+      + h1(soon ? `We start in about an hour, ${g(v,"first_name","there")}` : `See you tomorrow, ${g(v,"first_name","there")}`)
+      + para(`<b>${g(v,"title","The Orbuni webinar")}</b><br>${g(v,"when")}`)
+      + (soon ? para("The join button on your seat page switches on 15 minutes before we start. Find a quiet place, and have a pen ready: we will show real prices.")
+              : para("Write down your biggest question tonight. We answer as many as we can live, and VIP questions go first."))
+      + button(soon ? "Open my seat" : "See my seat", safeLink(v.seat))
+      + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_live: v => {
+    const stop = unsubLink(v.unsub);
+    return shell("We are live. Tap to join.",
+      kick("Live now")
+      + h1("We are live. Join us")
+      + para(`Hello ${g(v,"first_name","there")}, <b>${g(v,"title","the Orbuni webinar")}</b> has started. The real numbers come in the first 20 minutes, so jump in now.`)
+      + button("Join now", safeLink(v.seat))
+      + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_replay: v => {
+    const stop = unsubLink(v.unsub), vip = String(v.ticket) === "vip";
+    return shell("The replay is ready.",
+      kick("Replay")
+      + h1(`We missed you, ${g(v,"first_name","there")}`)
+      + para(`Life happens. The full recording of <b>${g(v,"title","the webinar")}</b> is on your seat page.`)
+      + button("Watch the replay", safeLink(v.seat))
+      + (vip ? note("Yours for life", "As a VIP, the replay stays on your seat page for good.", "green")
+             : note("It comes down in 3 days", `Free seats keep the replay for 3 days. The VIP seat (${g(v,"vip_price","$10")}) keeps it for life and includes the Scholarship Masterclass.`))
+      + para(`After watching, take the free 2-minute assessment. It skips the video and tells you where you stand: <a href="${safeLink(v.quiz)}" style="color:${GOLD};font-weight:600">start the assessment</a>.`)
+      + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_next: v => {
+    const stop = unsubLink(v.unsub);
+    return shell("Two minutes: see exactly where you stand.",
+      kick("Your next step")
+      + h1(`Thank you for coming, ${g(v,"first_name","there")}`)
+      + para("You now know how Turkish scholarships really work. The next step is to see where <b>you</b> stand: which universities fit your results, and what your place would really cost.")
+      + para("The free assessment takes 2 minutes. It skips the video you have already seen and goes straight to the questions.")
+      + button("Take the 2-minute assessment", safeLink(v.quiz))
+      + note("Prefer to talk?", "At the end of the assessment you can book a free call with a counsellor, or just reply to this email.", "green")
+      + small("You are getting this because you joined an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_vip_offer: v => {
+    const stop = unsubLink(v.unsub);
+    return shell("The Scholarship Masterclass today, before the webinar.",
+      kick("Optional upgrade")
+      + h1("Want to start before the webinar?")
+      + para(`Hello ${g(v,"first_name","there")}, your free seat is saved and that is all you need to attend. Some people want to move faster, so there is a VIP seat for ${g(v,"vip_price","$10")}, paid once:`)
+      + rows([["Today", "The Scholarship Masterclass: 9 short lessons, yours for life"], ["On the day", "Your question goes first in the live Q&amp;A"], ["After", "The replay for life (free seats: 3 days)"], ["First", "48-hour early access to 100% scholarship places"]])
+      + button("Upgrade from my seat page", safeLink(v.seat))
+      + small("We send this offer once. Your free seat stays whatever you decide." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_vip_unpaid: v => {
+    const stop = unsubLink(v.unsub);
+    return shell("Nothing was charged. Your free seat is still saved.",
+      kick("Not finished")
+      + h1("Your VIP seat is not confirmed yet")
+      + para(`Hello ${g(v,"first_name","there")}, you started the VIP upgrade (${g(v,"vip_price","$10")}) but the payment did not finish, so nothing was charged. Your free seat is still saved.`)
+      + note("What usually fixes it", "Approve the payment in your bank app, try another card, or pick a local method in the payment window.")
+      + button("Finish the upgrade", safeLink(v.seat))
+      + para("Stuck? Reply to this email and tell us what the screen said. A real person will help.")
+      + small("This is the only reminder we send about it." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
+  webinar_vip_welcome: v => shell("Your VIP seat is confirmed.",
+      kick("VIP confirmed")
+      + h1(`You're VIP, ${g(v,"first_name","there")}`)
+      + para(`Payment received. Your VIP seat for <b>${g(v,"title","the webinar")}</b> is confirmed. Here is everything that comes with it:`)
+      + rows([["Masterclass", "Create your free Orbuni account with this email and the 9 lessons unlock by themselves"], ["Live Q&amp;A", "Your question goes first"], ["Replay", "Yours for life, on your seat page"], ["100% scholarship places", "You see them 48 hours before everyone else"]])
+      + button("Open my VIP seat", safeLink(v.seat))
+      + note("Your receipt", "Your payment receipt comes in a separate email. Questions? Reply to this email.", "green")
+      + small("You are getting this because you bought a VIP seat at myorbuni.com.")),
+  webinar_vip_scholarship: v => {
+    const stop = unsubLink(v.unsub);
+    return shell("You see these places 48 hours before everyone else.",
+      kick("VIP early access")
+      + h1("Your early access is open")
+      + para(`Hello ${g(v,"first_name","there")}, as promised in the webinar: the current list of 100% scholarship places is open to you now, 48 hours before we share it with everyone else.`)
+      + para("These places are limited and go in the order complete applications arrive. A 100% scholarship covers tuition; you still plan for housing, living costs and the visa, and we show you those numbers honestly.")
+      + button("See the 100% scholarship places", safeLink(SITE + "/#schol"))
+      + note("Want help choosing?", "Reply to this email with your results and the course you want, and a counsellor will tell you which places fit.", "green")
+      + small("You are getting this because you are a VIP on an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
   }
 };

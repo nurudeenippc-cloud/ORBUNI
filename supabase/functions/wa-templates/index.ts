@@ -62,6 +62,28 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
   { key: "orbuni_call_booked", category: "UTILITY",
     body: "Hi {{1}}, your free call with Orbuni is booked for {{2}} (Türkiye time). Join with this Google Meet link: {{3}} Reply here if you need to change the time.",
     vars: { "1": "Aisha", "2": "Mon 13 Oct, 14:00", "3": "https://meet.google.com/abc-defg-hij" } },
+  // 14 Oct 2026: the webinar (webinar-followups). Only to people who ticked the consent box on the sign-up form.
+  { key: "orbuni_webinar_seat", category: "UTILITY",
+    body: "Hi {{1}}, your seat for the free Orbuni scholarship webinar is saved. It starts {{2}}. Your personal seat link, with the join button and the countdown: {{3}} We will remind you before we start.",
+    vars: { "1": "Aisha", "2": "Sat 6 Feb, 16:00 WAT (18:00 Türkiye)", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_reminder", category: "UTILITY",
+    body: "Hi {{1}}, a reminder: the Orbuni scholarship webinar starts {{2}}. Join from your seat page: {{3}} Bring your questions.",
+    vars: { "1": "Aisha", "2": "in about one hour", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_live", category: "UTILITY",
+    body: "Hi {{1}}, the Orbuni scholarship webinar is live now. Join from your seat page: {{2}} See you inside.",
+    vars: { "1": "Aisha", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip", category: "UTILITY",
+    body: "Hi {{1}}, your VIP seat for the Orbuni webinar is confirmed. Create your free account at myorbuni.com with the email you paid with and the Scholarship Masterclass unlocks. Your seat: {{2}} Reply here with any question.",
+    vars: { "1": "Aisha", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip_unpaid", category: "UTILITY",
+    body: "Hi {{1}}, your VIP upgrade for the Orbuni webinar was not completed and nothing was charged. Your free seat is still saved. You can finish the upgrade from your seat page: {{2}} Reply here if the payment gave you trouble.",
+    vars: { "1": "Aisha", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_replay", category: "MARKETING",
+    body: "Hi {{1}}, we missed you at the Orbuni scholarship webinar. The replay is on your seat page: {{2}} Free seats keep it for 3 days. Reply STOP to opt out.",
+    vars: { "1": "Aisha", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_next", category: "MARKETING",
+    body: "Hi {{1}}, thank you for joining the Orbuni scholarship webinar. Your next step is the free 2-minute assessment, which skips the video: {{2}} Reply here with any question. Reply STOP to opt out.",
+    vars: { "1": "Aisha", "2": "https://myorbuni.com/quiz" } },
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
   if (t.quick) return { "twilio/quick-reply": { body: t.body, actions: t.quick.map((q) => ({ title: q.title, id: q.id || q.title })) } };

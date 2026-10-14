@@ -20,6 +20,14 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /live  /?utm_source=instagram&utm_medium=live&utm_campaign=launch_oct26&go=start  302
 /c/:name  /?utm_source=instagram&utm_medium=collab&utm_campaign=launch_oct26&utm_content=:name&go=start  302
 
+# Webinar (Scholarship 1.0). /webinar is the sign-up page; /webinar/<source> tags where it was shared
+# (e.g. /webinar/ig). /s/<token> is a person's private seat. /quiz is the link pasted in the live
+# chat after the webinar: it skips the video and opens the assessment straight away.
+/webinar  /?utm_source=direct&utm_medium=link&utm_campaign=scholarship1&go=webinar  302
+/webinar/:src  /?utm_source=:src&utm_medium=link&utm_campaign=scholarship1&go=webinar  302
+/s/:t  /?seat=:t&go=webinar  302
+/quiz  /?utm_source=webinar&utm_medium=live&utm_campaign=scholarship1&go=quiz  302
+
 /.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200
 /housing/gozde-student-residence-avcilar-male/  /housing/men-residence-avcilar-1/  301
 /housing/piyano-student-residence-avcilar-male/  /housing/men-residence-avcilar-2/  301
