@@ -10860,7 +10860,7 @@ function bnavRender(){
   if(window.isChatView ? window.isChatView(cur) : cur === "chat"){ bar.innerHTML=""; return; }
   // The Finance tab is only for people who may open Finance; everyone else gets Projects in its place.
   var tabsNow = def.tabs.map(function(t){
-    if(role === "admin" && t[0] === "finance" && !(typeof PROF !== "undefined" && PROF && PROF.is_owner) && !(typeof canOpenSec === "function" && canOpenSec("finance")))
+    if(role === "admin" && t[0] === "finance" && !(window.orbProf && window.orbProf.is_owner) && !(typeof window.canOpenSec === "function" && window.canOpenSec("finance")))
       return ["projects", NAVICON.folder, "Projects"];
     return t;
   });
@@ -11481,6 +11481,8 @@ var SB_URL = "https://ytsebzdykfeiiuxbdtvr.supabase.co";
 var SB_KEY = "sb_publishable_mG66ec2eJvB1MCkfVTI8vA_6b-cZYmG";
 
 var sb = null, ME = null, PROF = null, READY = null;
+/* read-only view of the signed-in profile for code outside this layer (the phone tab bar) */
+try{ Object.defineProperty(window, "orbProf", { get: function(){ return PROF; }, configurable: true }); }catch(e){}
 
 /* ---------- small helpers ---------- */
 function $(id){ return document.getElementById(id); }
@@ -11579,12 +11581,12 @@ function tsLoad(){
     document.head.appendChild(s);
   });
 }
-// Never blocks by itself: if the check can't load or takes over 2 minutes, the request goes
+// Never blocks by itself: if the check can't load or takes over 30 seconds, the request goes
 // ahead without a token and Supabase decides (it only insists once CAPTCHA is switched on).
 async function orbCaptcha(){
   if(!ORB_TURNSTILE_KEY) return undefined;
   try{
-    var tok = await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 120000); })]);
+    var tok = await Promise.race([orbCaptchaRun(), new Promise(function(ok){ setTimeout(function(){ ok(undefined); }, 30000); })]);
     if(!tok){ window.orbTsErr = "timeout"; try{ toast("Security check timed out. Please try again.", true); }catch(_){} }
     return tok;
   }catch(e){
@@ -11636,6 +11638,7 @@ function orbWaitSB(ms){
     })();
   });
 }
+window.orbWaitSB = orbWaitSB;
 /* ---------- wait for the Supabase library ---------- */
 function boot(){
   if(!window.supabase || !window.supabase.createClient){ return setTimeout(boot, 60); }
@@ -14509,6 +14512,7 @@ async function loadSections(){
   }
 }
 function canOpenSec(id){ return !!(MYSEC[id] && MYSEC[id].open); }
+window.canOpenSec = canOpenSec;
 function canManageSec(id){ return !!(MYSEC[id] && MYSEC[id].manage); }
 var SECTIONS = [
   { id:"partners", l:"Partner requests", d:"Agencies applying to work with Orbuni" },
@@ -25946,6 +25950,7 @@ window.askSend = async function(ev){
   if(name.length < 2) return bad("Your name, please — we would rather not reply to “there”.");
   if(!email && !phone) return bad("Leave us one way to reach you: an email address or a WhatsApp number.");
   if(email && email.indexOf("@") < 1) return bad("That email address does not look right.");
+  if(!sb){ bad("Connecting… one moment."); await orbWaitSB(12000); if(out) out.innerHTML = ""; }
   if(!sb) return bad("The connection to our system has not loaded. Refresh the page and try again.");
 
   busy(btn, true, "Sending…");
@@ -25954,7 +25959,10 @@ window.askSend = async function(ev){
   if(ASK_CTX && ASK_CTX.programme_id != null) row.programme_id = Number(ASK_CTX.programme_id);
   if(ASK_CTX && ASK_CTX.ctx) row.message = (msg ? msg + "\n\n" : "") + "— asked about: " + ASK_CTX.ctx;
 
-  var r = await sb.from("enquiries").insert(row).select().single();
+  // Insert only, never read back: a visitor who is not signed in may add an enquiry
+  // but (rightly) may not read enquiries, so insert(...).select() was refused and every
+  // question from a visitor failed. The lead below carries the same message.
+  var r = await sb.from("enquiries").insert(row);
   busy(btn, false);
   if(r.error){
     bad("We could not send that just now. " + friendly(r.error)
@@ -25984,7 +25992,7 @@ window.askSend = async function(ev){
     source: utm.utm_medium === "cpc" ? "ad" : ((ASK_CTX && ASK_CTX.source) || "website"),
     utm_source: utm.utm_source, utm_medium: utm.utm_medium, utm_campaign: utm.utm_campaign,
     landing_page: utm.landing_page,
-    enquiry_id: (r.data && r.data.id) || null
+    enquiry_id: null
   };
   // A failure here must never look like a failed enquiry to the person: their
   // message is already saved. Log it and move on.
@@ -26163,6 +26171,7 @@ window.sendJob = async function(ev){
   if(!file)                      return bad("Attach your CV — it is the part we actually read.");
   if(file.size > 10 * 1024 * 1024) return bad("That CV is over 10 MB. Send a smaller PDF.");
   if(!/\.(pdf|docx?)$/i.test(file.name)) return bad("CVs need to be a PDF, DOC or DOCX.");
+  if(!sb){ bad("Connecting… one moment."); await orbWaitSB(12000); if(out) out.innerHTML = ""; }
   if(!sb)                        return bad("The connection to our system has not loaded. Refresh and try again.");
 
   busy(btn, true, "Sending…");
@@ -26379,6 +26388,7 @@ window.scholSend = async function(ev){
   if(course.length < 2) return bad("Which course? Even roughly — “nursing” is enough.", "sq-c");
   if(phone.length < 6) return bad("A WhatsApp number, so we can send you the quote.", "sq-p");
   if(email && email.indexOf("@") < 1) return bad("That email address does not look right.", "sq-e");
+  if(!sb){ bad("Connecting… one moment."); await orbWaitSB(12000); if(out) out.innerHTML = ""; }
   if(!sb) return bad("The connection to our system has not loaded. Refresh the page and try again.");
 
   busy(btn, true, "Sending…");
@@ -26785,6 +26795,7 @@ var ARTS_DB = null;
 
 async function loadArticles(){
   if(ARTS_DB) return ARTS_DB;
+  if(!sb) await orbWaitSB(8000);
   if(!sb) return [];
   var r = await sb.from("articles_public")
     .select("slug,category,title,dek,read_minutes,body,video_id,video_title,video_channel,video_note,image_path,sources,updated_at")
@@ -28167,6 +28178,7 @@ function lpcDayLabel(key){ var d = new Date(key + "T12:00:00+03:00"); return d.t
 function lpcTime(iso){ return new Date(iso).toLocaleTimeString("en-GB", { timeZone:"Europe/Istanbul", hour:"2-digit", minute:"2-digit" }); }
 window.lpCallOpen = function(path){ var w = document.getElementById("lpr-call-wrap"); if(w){ w.hidden = false; w.scrollIntoView({ behavior:"smooth", block:"center" }); } lpCallInit(path); };
 async function lpCallInit(path){
+  if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
   LPC.path = path; LPC.pick = null;
   var box = document.getElementById("lpr-call"); if(!box) return;
   box.innerHTML = '<div class="lpr-load"><i></i>Finding free times…</div>';
@@ -28206,6 +28218,7 @@ function lpcPaint(){
 window.lpcDay = function(k){ LPC.day = k; LPC.pick = null; lpcPaint(); };
 window.lpcPick = function(s){ LPC.pick = s; lpcPaint(); var b = document.getElementById("lpc-go"); if(b) b.scrollIntoView({ behavior:"smooth", block:"nearest" }); };
 window.lpcBook = async function(){
+  if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
   var c = LPQ_STATE.contact || {};
   var err = document.getElementById("lpc-err"), btn = document.getElementById("lpc-go");
   var em = document.getElementById("lpc-e"); var email = em ? String(em.value || "").trim() : (c.email || "");
@@ -28546,6 +28559,7 @@ window.lpDocsClose = function(){ var el = document.getElementById("lpd-ov"); if(
 
 /* ---- start my application: open account creation, or — while new accounts are paused — reserve their place ---- */
 window.lpStartApp = async function(from){
+  if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
   lpEvent("cta_click", null, "start_app_" + (from || ""));
   var open = await orbSignupsOpen();
   if(open){ openPortal("student-up"); return; }
@@ -28564,6 +28578,7 @@ window.lpStartApp = async function(from){
 };
 /* save a waitlist lead when the quiz lead can't be matched (older than 12 hours, another device, or the quiz was skipped) */
 window.lpWaitlistSave = async function(c, from){
+  if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
   try{
     var utm = (typeof orbUTM === "function") ? orbUTM() : {};
     var ph = String(c.phone || "").trim(), em = String(c.email || "").trim();
@@ -34800,6 +34815,7 @@ async function orbSignupsOpen(){
   };
 })();
 window.orbWaitlist = async function(ev){
+  if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
   var n = ($("wl-n") || {}).value || "", e = ($("wl-e") || {}).value || "", p = ($("wl-p") || {}).value || "";
   n = n.trim(); e = e.trim(); p = p.trim();
   if(!n){ toast("Add your name.", true); return; }
@@ -37043,6 +37059,14 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
    All reads and writes go through webinar_* functions in the database; the token is private.
    ============================================================ */
 (function(){
+  /* The database connection lives inside the live layer (a closed scope) and is shared as
+     window.orbSB. This block used to read a bare `sb`, which never exists out here, so every
+     sign-up failed with "The connection to our system has not loaded". Always go through this. */
+  var sb = window.orbSB || null;
+  var orbWaitSB = async function(ms){
+    var ok = (typeof window.orbWaitSB === "function") ? await window.orbWaitSB(ms) : false;
+    sb = window.orbSB || null; return ok || !!sb;
+  };
   var WB_ID = "scholarship-1", KEY = "orb-wb-seat";
   var WB = { info:null, i:0, ans:{}, token:null, seat:null, timer:null };
   var WBQ = [
@@ -37138,7 +37162,9 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   window.wbGroupClick = function(vip){ ev(vip ? "webinar_group_vip" : "webinar_group_free"); };
 
   async function loadInfo(){
-    if(WB.info || typeof sb === "undefined" || !sb) return WB.info;
+    if(WB.info) return WB.info;
+    if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
+    if(typeof sb === "undefined" || !sb) return WB.info;
     try{ var r = await sb.rpc("webinar_info", { p_id: WB_ID }); if(!r.error && r.data) WB.info = r.data; }catch(e){}
     return WB.info;
   }
@@ -37242,6 +37268,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   window.wbKeepFree = function(){ ev("webinar_keep_free"); wbSeat(WB.token || stored(), { fresh:true }); };
   window.wbVip = async function(){
     var tok = WB.token || stored(); if(!tok) return;
+    if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
     ev("webinar_vip_click");
     try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:(WB.info && WB.info.vip_price) || 10, currency:"USD", content_name:"webinar_vip" }); }catch(e){}
     var who = {};
@@ -37261,8 +37288,13 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     opts = opts || {};
     if(!tok) return backToLanding();
     flow('<div class="wb-seat"><p class="wb-when">Opening your seat…</p></div>');
+    if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
+    // No connection yet is not the same as "no such seat": keep the token and let them retry.
+    if(typeof sb === "undefined" || !sb) return flow('<div class="wb-seat" style="text-align:center"><h2>Still connecting…</h2><p class="wb-when">Your seat is safe. Check your internet, then tap below.</p><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="location.reload()">Try again</button></div></div>');
     var s = null;
-    try{ var r = await sb.rpc("webinar_seat", { p_token: tok }); s = r.data; }catch(e){}
+    var netErr = false;
+    try{ var r = await sb.rpc("webinar_seat", { p_token: tok }); s = r.data; if(r.error) netErr = true; }catch(e){ netErr = true; }
+    if(!s && netErr) return flow('<div class="wb-seat" style="text-align:center"><h2>We could not reach our system</h2><p class="wb-when">Your seat is safe. Check your internet, then tap below.</p><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="location.reload()">Try again</button></div></div>');
     if(!s){ store(""); return flow('<div class="wb-seat" style="text-align:center"><h2>We could not find that seat</h2><p class="wb-when">The link may be incomplete. Sign up again with the same email and we will send your seat link to you.</p><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbForget()">Back to the webinar</button></div></div>'); }
     WB.seat = s; WB.token = tok; store(tok);
     var w = s.webinar, vip = s.ticket === "vip" || opts.vip, first = s.first_name || "";
@@ -37320,6 +37352,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
   };
   window.wbJoin = async function(){
+    if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
     var win = window.open("", "_blank");
     var url = null; try{ var r = await sb.rpc("webinar_join", { p_token: WB.token }); url = r.data; }catch(e){}
     if(url && /^https:\/\//.test(url)){ if(win) win.location = url; else location.href = url; }
