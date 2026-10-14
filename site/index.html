@@ -11261,7 +11261,7 @@ function added(btn){
   if(!cv||!cv.getContext) return;
   const ctx=cv.getContext('2d');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W=0,H=0,R=0,DPR=Math.min(devicePixelRatio||1,2);
+  let W=0,H=0,R=0,DPR=Math.min(devicePixelRatio||1,innerWidth<700?1.5:2);
 
   // rough continent outlines in [lon,lat] — stylised, not survey-grade
   const LAND={
@@ -11320,7 +11320,9 @@ function added(btn){
   const proj=v=>{ const y=v.y*ct - v.z*st, z=v.y*st + v.z*ct;
     return {sx:W/2+v.x*R, sy:H/2-y*R, z}; };
 
+  const SLOW=innerWidth<700;
   function frame(now){
+    if(SLOW && now-last<30){ schedule(); return; }
     const dt=Math.min((now-last)/1000,.05); last=now;
     if(!reduce) rot += dt*6.2;
     ctx.clearRect(0,0,W,H);
@@ -11358,13 +11360,23 @@ function added(btn){
       ctx.stroke();
     }
 
-    // land dots
+    // land dots: batched by brightness step (same look, far fewer draw calls)
+    const LB=14, bk=[];
+    for(let i=0;i<2*LB;i++) bk.push(null);
     for(const d of dots){
       const p=proj(toXYZ(d.lon,d.lat,rot));
       if(p.z<0.02)continue;
       const a=Math.min(p.z*1.25,1);
-      ctx.fillStyle = d.af ? `rgba(242,181,68,${0.30+a*0.62})` : `rgba(150,190,225,${0.14+a*0.40})`;
-      ctx.beginPath(); ctx.arc(p.sx,p.sy,d.af?1.55:1.25,0,7); ctx.fill();
+      const k=Math.min(LB-1,(a*LB)|0)+(d.af?LB:0);
+      (bk[k]||(bk[k]=[])).push(p.sx,p.sy);
+    }
+    for(let k=0;k<2*LB;k++){
+      const arr=bk[k]; if(!arr) continue;
+      const af=k>=LB, a=((k%LB)+.5)/LB, r=af?1.55:1.25;
+      ctx.fillStyle = af ? `rgba(242,181,68,${0.30+a*0.62})` : `rgba(150,190,225,${0.14+a*0.40})`;
+      ctx.beginPath();
+      for(let i=0;i<arr.length;i+=2){ ctx.moveTo(arr[i]+r,arr[i+1]); ctx.arc(arr[i],arr[i+1],r,0,7); }
+      ctx.fill();
     }
 
     // arcs
@@ -11377,12 +11389,20 @@ function added(btn){
         pts.push(proj({x:m.x*lift,y:m.y*lift,z:m.z*lift}));
       }
       ctx.lineWidth=1.4;
+      const AB=8, seg=[];
+      for(let i=0;i<AB;i++) seg.push(null);
       for(let i=0;i<N;i++){
         const p=pts[i],q=pts[i+1];
         if(p.z<0.02||q.z<0.02)continue;
         const vis=Math.max(0,Math.min(1,Math.min(p.z,q.z)/0.35));
-        ctx.strokeStyle=`rgba(242,181,68,${0.10+vis*0.34})`;
-        ctx.beginPath(); ctx.moveTo(p.sx,p.sy); ctx.lineTo(q.sx,q.sy); ctx.stroke();
+        (seg[Math.min(AB-1,(vis*AB)|0)]||(seg[Math.min(AB-1,(vis*AB)|0)]=[])).push(p.sx,p.sy,q.sx,q.sy);
+      }
+      for(let b2=0;b2<AB;b2++){
+        const arr=seg[b2]; if(!arr) continue;
+        ctx.strokeStyle=`rgba(242,181,68,${0.10+((b2+.5)/AB)*0.34})`;
+        ctx.beginPath();
+        for(let i=0;i<arr.length;i+=4){ ctx.moveTo(arr[i],arr[i+1]); ctx.lineTo(arr[i+2],arr[i+3]); }
+        ctx.stroke();
       }
       // travelling pulse
       const ph=((t*0.30)+k*0.14)%1, idx=Math.floor(ph*N), pp=pts[idx];
@@ -11426,6 +11446,9 @@ function added(btn){
   function schedule(){
     if(running) return;
     if(document.hidden || !visible || !document.getElementById('pg-home').classList.contains('on')){ running=false; return; }
+    /* the hero photo sits on top of the globe and hides it, so drawing it is wasted work */
+    const cover=document.querySelector('#pg-home .hshot img');
+    if(cover && cover.complete && cover.naturalWidth>0){ running=false; return; }
     running=true;
     requestAnimationFrame(t=>{ running=false; frame(t); });
   }
@@ -36926,8 +36949,6 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     if(el.closest("#portal,.hero,.hshot,.lp-float,[aria-hidden='true']")) return false;
     if(el.classList.contains("rv") || el.closest(".rv")) return false;
     if(el.querySelector("video,iframe,input,select,textarea")) return false;
-    var cs = getComputedStyle(el);
-    if(cs.position === "fixed" || cs.position === "sticky") return false;
     return true;
   }
   var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function(es){
