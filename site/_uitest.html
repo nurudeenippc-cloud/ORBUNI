@@ -6,7 +6,7 @@
 try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if(_g&&!location.hash)history.replaceState(null,"",location.pathname+location.search+(_g==="webinar"?"#webinar":"#start"))}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Study in Turkey from Nigeria, Ghana &amp; Africa | Orbuni</title>
-<meta name="description" content="Study in Turkey with a named counsellor: real university fees, scholarships and visa help for students from Nigeria, Ghana and Africa. Free 2-minute assessment.">
+<meta name="description" content="Study in Turkey with a named counsellor: search 2,600+ programmes at 48 partner universities, apply free, and get scholarship, visa and housing support. Free 2-minute assessment.">
 <link rel="canonical" href="https://myorbuni.com/">
 <meta name="theme-color" content="#070C16">
 <meta name="author" content="Orbuni">
@@ -43,7 +43,7 @@ try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if
   "url": "https://myorbuni.com/",
   "logo": "https://myorbuni.com/icon-192.png",
   "image": "https://myorbuni.com/share.png",
-  "description": "Orbuni is an education consultancy placing international students into universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia — published fees, a named counsellor, and tuition paid direct to the university.",
+  "description": "Orbuni is a university search and application platform based in Istanbul, Türkiye. Students compare 2,600+ programmes at 48 partner universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia, apply free with a dedicated counsellor, and get support with scholarships, admission, visa preparation, student housing and arrival. Tuition is paid directly to the university.",
   "areaServed": ["Türkiye","Northern Cyprus","United Arab Emirates","Germany","Egypt","Russia"],
   "sameAs": [
     "https://www.instagram.com/myorbuni",
@@ -51,16 +51,9 @@ try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if
     "https://whop.com/orbuni-community/"
   ],
   "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"},
-  "founder": [
-    {"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director", "sameAs": "https://www.instagram.com/coolguyn94/"},
-    {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer", "sameAs": "https://www.instagram.com/wudaba_jnr/"}
-  ],
-  "employee": [
-    {"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)", "sameAs": "https://www.instagram.com/lennswordjy/"}
-  ],
   "contactPoint": {"@type": "ContactPoint", "contactType": "admissions", "telephone": "+1-443-448-1577",
     "availableLanguage": ["English"], "url": "https://wa.me/14434481577"},
-  "knowsAbout": ["Study in Türkiye", "Turkish university admission", "Tuition scholarships for international students", "Student visa preparation", "Student housing in Istanbul"],
+  "knowsAbout": ["University search and comparison", "Study in Türkiye", "Turkish university admission", "Tuition scholarships for international students", "Student visa preparation", "Student housing in Istanbul"],
   "subjectOf": {"@type": "WebPage", "url": "https://myorbuni.com/faq/"}
 }
 </script>
@@ -1488,6 +1481,7 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
 .abshot{border-radius:var(--rl);overflow:hidden;border:1px solid var(--line2);
   aspect-ratio:4/3;background:var(--p2);box-shadow:0 22px 50px rgba(0,0,0,.42)}
 .abshot img{width:100%;height:100%;object-fit:cover;display:block}
+.ab-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:6px}.ab-stats>div{background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);padding:18px}.ab-stats b{display:block;font:800 clamp(26px,3.4vw,38px)/1 var(--disp);letter-spacing:-.03em;color:var(--gold)}.ab-stats span{display:block;margin-top:8px;font-size:13.5px;color:var(--dim)}@media(max-width:760px){.ab-stats{grid-template-columns:1fr 1fr}}
 .abgrid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,3vw,40px);
   align-items:center;margin-top:34px}
 @media(max-width:820px){.abgrid{grid-template-columns:1fr}.abshot{aspect-ratio:16/9}}
@@ -1837,6 +1831,12 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 
 /* pricing */
 .lp-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.lp-free{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lp-free-i{background:#fff;border:1px solid var(--l-line,#E7E5DF);border-radius:18px;padding:20px 20px 18px;text-align:left;position:relative}
+.lp-free-i::before{content:"✓";display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#EAF7F1;color:#127A52;font-weight:800;font-size:14px;margin-bottom:12px}
+.lp-free-i b{display:block;font-size:16px;color:var(--l-ink,#0D1321);margin-bottom:5px}
+.lp-free-i span{display:block;font-size:14px;line-height:1.55;color:var(--l-mute,#6B7280)}
+@media(max-width:900px){.lp-free{grid-template-columns:1fr}}
 .lp-tier{background:var(--l-card);border-radius:28px;padding:30px 26px;display:flex;flex-direction:column;gap:12px;position:relative;
   box-shadow:0 1px 0 rgba(13,19,33,.03),inset 0 0 0 1px var(--l-line)}
 .lp-tier.best{background:var(--l-ink);color:#fff;box-shadow:0 30px 60px rgba(13,19,33,.25)}
@@ -2464,6 +2464,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 .gc-pill svg{width:14px;height:14px}
 .gc-path .gc-pill.ok{background:#fff;color:#137A50}.gc-path .gc-pill.no{background:rgba(13,19,33,.08);color:#5E6778}
 .gc-card .gc-pill.ok{background:rgba(62,213,152,.14);color:#3ED598}.gc-card .gc-pill.mid{background:rgba(242,181,68,.15);color:#F2B544}.gc-card .gc-pill.no{background:rgba(255,255,255,.07);color:var(--faint)}
+.gc-sub{font:700 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:14px 0 6px}
 .gc-two{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
 .gc-vrow{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .gc-vrow:first-of-type{border-top:0;padding-top:0}
@@ -4124,6 +4125,108 @@ html[data-theme="light"] [style*="color:var(--gold)"]:not([style*="background"])
   .wb-f{grid-template-columns:1fr}
   .wb-row{grid-template-columns:1fr}
   .wb-count div{min-width:62px}
+}
+
+/* ===== webinar landing v2 (long-form) ===== */
+#pg-webinar .wb:not(.in-flow) .wb-topcta{background:linear-gradient(100deg,#F6BD3F,#EE9B2F);color:#1A1204}
+#pg-webinar .wb:not(.in-flow) .wb-myseat{color:#fff}
+#pg-webinar .lp-top{position:absolute;left:0;right:0;top:0;z-index:5;background:transparent;border-bottom-color:transparent}
+#pg-webinar .lp-top .lp-brand,#pg-webinar .lp-top .lp-mark{color:#fff}
+#pg-webinar .wb.in-flow .lp-top{position:sticky;background:var(--l-bg)}
+#pg-webinar .wb.in-flow .lp-top .lp-brand,#pg-webinar .wb.in-flow .lp-top .lp-mark{color:var(--l-ink)}
+.wbx-hero{position:relative;overflow:hidden;background:#060B16;color:#fff;padding:118px 0 70px;text-align:center}
+.wbx-bg{position:absolute;inset:0;background:url(photos/webinar/istanbul.webp) center 65%/cover no-repeat;opacity:.38;filter:saturate(.9)}
+.wbx-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(1000px 520px at 50% 18%,rgba(242,181,68,.20),transparent 60%),linear-gradient(180deg,rgba(6,11,22,.55),rgba(6,11,22,.86) 55%,#060B16)}
+.wbx-hero-in{position:relative}
+.wbx-proof{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:14px;font-weight:600;color:rgba(255,255,255,.86);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:7px 14px 7px 8px;border-radius:100px;backdrop-filter:blur(8px)}
+.wbx-live{display:inline-flex;align-items:center;gap:7px;background:#E5251B;color:#fff;font-weight:800;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;padding:5px 11px 5px 9px;border-radius:100px}
+.wbx-live i{width:8px;height:8px;border-radius:50%;background:#fff;animation:wbxp 1.6s infinite}
+@keyframes wbxp{0%,100%{opacity:1}50%{opacity:.35}}
+.wbx-h1{font-family:var(--disp);font-weight:800;letter-spacing:-.045em;line-height:1.02;font-size:clamp(36px,6.2vw,72px);max-width:17ch;margin:22px auto 18px;text-wrap:balance}
+.wbx-h1 em{font-style:normal;background:linear-gradient(100deg,#F6BD3F,#FFD98A 50%,#EE9B2F);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wbx-sub{font-size:clamp(16px,2vw,19.5px);line-height:1.6;color:rgba(255,255,255,.78);max-width:58ch;margin:0 auto}
+.wbx-vsl{position:relative;max-width:860px;margin:34px auto 0;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#0B1220;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12)}
+.wbx-vsl iframe,.wbx-vsl video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.wbx-poster{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;padding:0;border:0;background:#000}
+.wbx-poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--e)}
+.wbx-poster:hover img{transform:scale(1.02)}
+.wbx-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 10px 40px rgba(0,0,0,.45);color:#0D1321;font-size:28px;padding-left:5px}
+.wbx-play::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.5);animation:wbxr 2s infinite}
+@keyframes wbxr{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.25);opacity:0}}
+.wbx-poster-cap{position:absolute;left:14px;bottom:14px;background:rgba(6,11,22,.78);color:#fff;font-size:13px;font-weight:600;padding:6px 11px;border-radius:9px;backdrop-filter:blur(6px)}
+.wbx-cta{margin-top:28px}
+.wbx-under{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:14px;font-size:14px;color:rgba(255,255,255,.72)}
+.wbx-under span::before{content:"✓";color:#3ED598;font-weight:800;margin-right:6px}
+.wbx-count{margin-top:26px}
+#pg-webinar .wbx-count>div{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+#pg-webinar .wbx-count b{color:#fff}#pg-webinar .wbx-count span{color:rgba(255,255,255,.6)}
+.wbx-strip{background:#0B1220;color:#fff;padding:26px 0;border-top:1px solid rgba(255,255,255,.08)}
+.wbx-strip-in{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;text-align:center}
+.wbx-strip b{display:block;font:800 clamp(24px,3vw,34px)/1.1 var(--disp);letter-spacing:-.03em;color:#F6BD3F}
+.wbx-strip span{display:block;font-size:13.5px;color:rgba(255,255,255,.66);margin-top:4px}
+.wbx-traps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+.wbx-traps>div{background:#fff;border:1px solid var(--l-line);border-radius:20px;padding:24px;text-align:left}
+.wbx-traps i{font-style:normal;font:800 13px var(--mono,monospace);color:#E5251B;letter-spacing:.1em}
+.wbx-traps b{display:block;font:700 20px/1.25 var(--disp);letter-spacing:-.02em;margin:10px 0 8px;color:var(--l-ink)}
+.wbx-traps p{color:var(--l-mute);font-size:15px;line-height:1.6;margin:0}
+.wbx-ladder-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}
+.wbx-ladder-tx .lp-h2{text-align:left}
+.wbx-rungs-why{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:10px}
+.wbx-rungs-why li{position:relative;padding-left:30px;color:var(--l-ink2);font-size:15.5px;line-height:1.55}
+.wbx-rungs-why li::before{content:"↑";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:#FFF4DC;color:#B8791A;font-weight:800;font-size:13px;display:grid;place-items:center}
+.wbx-ladder{display:grid;gap:10px}
+.wbx-ladder .r{display:flex;align-items:center;gap:16px;border-radius:16px;padding:16px 20px;color:#fff;box-shadow:0 10px 26px rgba(13,19,33,.12)}
+.wbx-ladder .r b{font:800 30px/1 var(--disp);letter-spacing:-.03em;min-width:92px}
+.wbx-ladder .r span{font-size:14.5px;opacity:.92}
+.wbx-ladder .r4{background:linear-gradient(100deg,#0D1321,#1E2A44);margin-left:0}
+.wbx-ladder .r4 b{color:#F6BD3F}
+.wbx-ladder .r3{background:linear-gradient(100deg,#1FA971,#178A5C);margin-left:6%}
+.wbx-ladder .r2{background:linear-gradient(100deg,#2563EB,#1D4FC4);margin-left:12%}
+.wbx-ladder .r1{background:linear-gradient(100deg,#64748B,#475569);margin-left:18%}
+.wbx-table{max-width:860px;margin:30px auto 0;background:#fff;border:1px solid var(--l-line);border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(13,19,33,.07)}
+.wbx-table>div{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:16px 22px;border-top:1px solid var(--l-line);font-size:15.5px;color:var(--l-ink)}
+.wbx-table>div.h{border-top:0;background:#F6F6F3;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--l-faint);font-weight:700}
+.wbx-table>div span:first-child b{display:block;font-weight:700}
+.wbx-table>div span:first-child{color:var(--l-mute);font-size:14px}
+.wbx-table .g{color:#1FA971;font-weight:800}.wbx-table .y{font-weight:800;font-size:17px}
+.wbx-note{margin:0;padding:14px 22px;font-size:13px;color:var(--l-faint);background:#FBFBF9;border-top:1px solid var(--l-line)}
+.wbx-agenda{list-style:none;padding:0;margin:30px 0 0;display:grid;gap:12px}
+.wbx-agenda li{display:flex;gap:18px;background:#fff;border:1px solid var(--l-line);border-radius:18px;padding:18px 20px}
+.wbx-agenda time{font:700 14px var(--mono,monospace);color:#B8791A;background:#FFF4DC;border-radius:10px;padding:6px 10px;height:fit-content;flex:0 0 auto}
+.wbx-agenda b{display:block;font:700 17.5px/1.3 var(--disp);color:var(--l-ink);letter-spacing:-.015em}
+.wbx-agenda span{display:block;color:var(--l-mute);font-size:15px;line-height:1.55;margin-top:4px}
+.wbx-who{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+.wbx-who-ph{margin:0;border-radius:24px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 24px 60px rgba(13,19,33,.16)}
+.wbx-who-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.wbx-check{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:12px}
+.wbx-check li{position:relative;padding-left:32px;color:var(--l-ink2);font-size:16px;line-height:1.55}
+.wbx-check li::before{content:"✓";position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:#E6F6EE;color:#1FA971;font-weight:800;font-size:13px;display:grid;place-items:center}
+.wbx-final{position:relative;overflow:hidden;background:#060B16;color:#fff;padding:96px 0}
+.wbx-final .lp-h2{color:#fff}.wbx-final .lp-lead{color:rgba(255,255,255,.75)}
+.wbx-final .wb-ps{color:rgba(255,255,255,.72)}
+.wbx-final-bg{position:absolute;inset:0;background:url(photos/webinar/hats.webp) center/cover;opacity:.45}
+.wbx-final-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,11,22,.4),rgba(6,11,22,.85))}
+.wbx-mini-vsl{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#0B1220;margin:0 0 18px}
+.wbx-mini-vsl iframe,.wbx-mini-vsl video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.wbx-mini-vsl .wbx-play{width:62px;height:62px;font-size:22px}
+.wbx-group{display:flex;gap:14px;align-items:center;background:#E9F9F0;border:1px solid #BFEBD3;border-radius:18px;padding:16px 18px;margin-top:16px}
+.wbx-group .gi{width:46px;height:46px;border-radius:14px;background:#25D366;color:#fff;display:grid;place-items:center;flex:0 0 auto}
+.wbx-group b{display:block;color:var(--l-ink);font-size:16px}.wbx-group span{display:block;color:var(--l-mute);font-size:14px;margin-top:2px}
+.wbx-group a{margin-left:auto;flex:0 0 auto}
+.wbx-group.vip{background:#16120A;border-color:#3A2F14}.wbx-group.vip b{color:#fff}.wbx-group.vip span{color:#C9BFA8}.wbx-group.vip .gi{background:#F6BD3F;color:#16120A}
+@media(max-width:900px){
+  .wbx-traps,.wbx-ladder-wrap,.wbx-who{grid-template-columns:1fr}
+  .wbx-strip-in{grid-template-columns:1fr 1fr;row-gap:20px}
+  .wbx-ladder .r{margin-left:0!important}
+  .wbx-table>div{grid-template-columns:1.6fr .8fr .8fr .9fr;padding:14px;font-size:14px;gap:6px}
+  .wbx-hero{padding:100px 0 56px}
+  .wbx-group{flex-wrap:wrap}.wbx-group a{margin-left:0;width:100%}
+}
+@media(max-width:520px){
+  .wbx-proof{font-size:12.5px;padding:6px 12px 6px 6px;gap:8px}.wbx-live{font-size:11px;padding:4px 9px 4px 8px}
+  .wbx-table>div{grid-template-columns:1fr 1fr 1fr}
+  .wbx-table>div>span:first-child{grid-column:1/-1}
+  .wbx-table>div.h>span:first-child{display:none}
 }
 </style>
 
@@ -7935,17 +8038,17 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h2 style="margin:14px 0 12px">Built by people who<br><span class="grad">made this journey.</span></h2>
     <div class="story" style="margin-top:34px">
       <div>
-        <p class="lead" style="margin-bottom:16px">Orbuni started the way most good things do — because something was broken. Students in our community were paying agents hundreds of thousands of naira for admissions that never arrived. Families were sending money to strangers. Good students were staying home.</p>
+        <p class="lead" style="margin-bottom:16px">Orbuni started the way most good things do — because something was broken. Students everywhere were paying agents up front for admissions that never arrived. Families were sending money to strangers. Good students were staying home.</p>
         <p class="lead" style="margin-bottom:16px">We had done the journey ourselves. We knew which universities actually admit, which scholarships are real, and which agents disappear once the transfer clears. So we built the agency we wished had existed when we were the ones applying.</p>
         <p class="lead">Today Orbuni publishes what others hide — the real fee, the real scholarship band, and the honest answer about whether you can win it.</p>
       </div>
       <div class="photo" style="aspect-ratio:4/3;padding:0;display:block">
-        <img src="photos/inline/4c34f55e4e7c.jpg" alt="Nurudeen Muhammad Abdulkareem at the Africa Diaspora Forum, İstanbul"
+        <img src="photos/inline/4c34f55e4e7c.jpg" alt="Orbuni at the Africa Diaspora Forum, İstanbul"
              style="width:100%;height:100%;object-fit:cover;display:block">
         <div style="position:absolute;left:0;right:0;bottom:0;padding:34px 18px 15px;text-align:left;
              background:linear-gradient(transparent,rgba(7,12,22,.55) 45%,rgba(7,12,22,.95))">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold)">AFRICA DIASPORA FORUM · İSTANBUL</div>
-          <div style="font-size:13px;color:var(--txt);margin-top:4px">Nurudeen on the organising committee — Türkiye–Africa cooperation</div>
+          <div style="font-size:13px;color:var(--txt);margin-top:4px">Orbuni on the organising committee: Türkiye–Africa cooperation</div>
         </div>
       </div>
       </div>
@@ -7959,7 +8062,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div class="tgrid" id="team"></div>
     <div class="fnote rv">
       <div class="fnote-in">
-        <span class="eyebrow">A note from the founder</span>
+        <span class="eyebrow">A note from our Managing Director</span>
         <blockquote>
           Education is the one sector that will never die. There will always be a student somewhere
           with a dream and no map. <em>I have been that student.</em>
@@ -7976,7 +8079,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <blockquote class="big">Every student has a right to dream.</blockquote>
         <div class="sig">
           <b>Nurudeen Muh. Abdulkareem</b>
-          <span>Founder & Managing Director, Orbuni</span>
+          <span>Managing Director, Orbuni</span>
         </div>
       </div>
     </div>
@@ -8011,7 +8114,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <section class="cr-hero"><div class="wrap">
     <span class="eyebrow">Careers at Orbuni</span>
     <h2 class="h1x">Do the work that gets a student<br><span class="grad">from a dream to a lecture hall.</span></h2>
-    <p class="lead">We are a small team in İstanbul and remote across Africa, building the study-abroad agency we wished existed: published fees, honest answers, and one named person beside every student.</p>
+    <p class="lead">Our team works from İstanbul and remotely across Africa and beyond, helping students from search to first lecture, with one dedicated counsellor beside every student.</p>
     <div class="hcta"><button class="btn btn-p" onclick="document.getElementById('job-list').scrollIntoView({behavior:'smooth'})">See open roles ↓</button>
       <button class="btn btn-o" onclick="go('team')">Our story</button></div>
     <div class="cr-stats">
@@ -8023,11 +8126,11 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
   <section style="padding-top:0"><div class="wrap">
     <span class="eyebrow">Why people join</span>
-    <h2 style="margin:12px 0 22px">Small team, real responsibility</h2>
+    <h2 style="margin:12px 0 22px">Real responsibility from day one</h2>
     <div class="cr-why">
       <div class="rv"><i>01</i><h3>Early enough to matter</h3><p>You shape how this works instead of inheriting somebody else's system.</p></div>
       <div class="rv"><i>02</i><h3>You see the names</h3><p>Every student placed is a life that changed direction, and you will know which ones you helped.</p></div>
-      <div class="rv"><i>03</i><h3>Honest by design</h3><p>We publish fees others hide. Nobody here is asked to oversell or promise what a university has not confirmed.</p></div>
+      <div class="rv"><i>03</i><h3>Honest by design</h3><p>Nobody here is asked to oversell or promise what a university has not confirmed.</p></div>
     </div>
   </div></section>
 
@@ -8037,7 +8140,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <ol class="cr-steps">
       <li class="rv"><b>Apply</b><span>A short form and your CV. Two or three lines on why you is plenty.</span></li>
       <li class="rv"><b>We reply in 5 working days</b><span>Yes or no, always. Nobody is left waiting.</span></li>
-      <li class="rv"><b>A 30-minute call</b><span>With the founder or the COO, about work you have actually done.</span></li>
+      <li class="rv"><b>A 30-minute call</b><span>With a hiring manager, about work you have actually done.</span></li>
       <li class="rv"><b>A small paid task</b><span>Something close to the real job, then a decision.</span></li>
     </ol>
   </div></section>
@@ -8065,82 +8168,78 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 <main class="page" id="pg-about">
   <section><div class="wrap">
     <span class="eyebrow">About Orbuni</span>
-    <h2 style="margin:14px 0 12px">The consultancy that<br><span class="grad">tells you the number.</span></h2>
-    <p class="lead" style="margin-bottom:26px;max-width:64ch">Students in our market have been burned
-      repeatedly — deposits taken for admissions that never came, fees quoted verbally then changed,
-      agents who stopped answering once the transfer cleared. Orbuni is built to be the opposite:
-      published fees, a published process, and a named human on the other end.</p>
+    <h2 style="margin:14px 0 12px">From search<br><span class="grad">to first lecture.</span></h2>
+    <p class="lead" style="margin-bottom:26px;max-width:64ch">Orbuni is a university search and application
+      platform based in Istanbul, Türkiye. Students from Africa and around the world use it to find the right
+      programme, apply free, win the best available scholarship, and arrive ready, with a dedicated
+      counsellor beside them the whole way.</p>
 
-    <div class="lg-plain">
-      <b>So let us start with what we are, before you read anything else.</b>
-      <p>Orbuni is two people — Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba — working
-        from Istanbul as a <b>verified partner of AskUni</b>, the university application platform
-        that holds our access to these universities. We are not a large firm with offices in six
-        countries, and we are not separately incorporated as a company.</p>
-      <p>We tell you that on purpose. An agency that is vague about what it actually is, is exactly
-        the thing this page exists to help you avoid. Everything below tells you what that means for
-        your money, your documents and your application.</p>
+    <div class="ab-stats">
+      <div><b>2,698</b><span>programmes, fees and scholarships side by side</span></div>
+      <div><b>48</b><span>partner universities</span></div>
+      <div><b>6</b><span>countries: Türkiye, N. Cyprus, UAE, Germany, Egypt, Russia</span></div>
+      <div><b>Free</b><span>to search, compare and apply</span></div>
     </div>
 
     <div class="grid3" style="margin-top:30px">
-      <div class="card rv"><div class="ic">🤝</div><h3>We apply through the official channel</h3>
-        <p>Applications go through AskUni's partner channel rather than a public form, which is how
-          we can see live fees and scholarship bands and quote you an exact figure.</p></div>
-      <div class="card rv"><div class="ic">🧾</div><h3>Tuition is paid to the university</h3>
-        <p>Your tuition is the university's money, not ours. You get the receipt and the reference
-          number, and so does whoever is sponsoring you.</p></div>
-      <div class="card rv"><div class="ic">🏠</div><h3>We do not stop at admission</h3>
-        <p>Visa file, accommodation before you fly, airport pickup, and people already in your city.</p></div>
+      <div class="card rv"><div class="ic">🔎</div><h3>Search and compare</h3>
+        <p>Filter thousands of programmes by subject, language, city and budget, with the tuition and the
+          current scholarship shown side by side.</p></div>
+      <div class="card rv"><div class="ic">🤝</div><h3>Apply through official channels</h3>
+        <p>Applications go to universities through our official partner channels, so they are reviewed
+          faster and considered for the best available scholarship.</p></div>
+      <div class="card rv"><div class="ic">🎓</div><h3>Scholarship matching</h3>
+        <p>We match your grades to the scholarship each university offers, and apply for the highest band you
+          qualify for.</p></div>
+      <div class="card rv"><div class="ic">🛂</div><h3>Visa preparation</h3>
+        <p>A complete, checked visa file: what to prepare, how to present it, and what the consulate looks for.</p></div>
+      <div class="card rv"><div class="ic">🏠</div><h3>Student housing</h3>
+        <p>Real residences with photos and prices, chosen before you fly, close to your campus.</p></div>
+      <div class="card rv"><div class="ic">✈️</div><h3>Arrival and registration</h3>
+        <p>Airport pickup, registration at your university and residence-permit support when you land.</p></div>
     </div>
 
     <div class="abgrid">
       <div>
         <h3 style="font-family:var(--disp);font-size:clamp(20px,2.6vw,27px);font-weight:800;letter-spacing:-.03em;margin-bottom:12px">
-          What we charge, and when.</h3>
+          One dedicated counsellor, one portal.</h3>
         <p style="color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:14px">
-          We charge <b style="color:var(--gold)">one fee, once</b>. Not every year, not per
-          application, and not a percentage of anything. You are told exactly what it is, in writing,
-          before you commit to anything. It covers choosing your universities, preparing and
-          submitting the application, checking your documents, chasing the acceptance letter, your
-          student visa support, and getting you settled when you land.</p>
+          Every student gets a dedicated counsellor from the first question to the first lecture, and a
+          private student portal where every document, every update and every offer letter lives in one place.</p>
         <p style="color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:14px">
-          We are paid the same whichever university you choose. No university pays us more to send
-          you there, so nobody here has a reason to steer you.</p>
+          Universities pay no one at Orbuni to send you anywhere, so the advice you get is about what fits
+          your grades, your budget and your plans.</p>
         <p style="color:var(--dim);font-size:15px;line-height:1.7">
-          The work does not stop at the offer letter. A student who never gets a visa, never boards
-          a plane, or arrives with nowhere to sleep is a student we failed — and we are the ones who
-          carry that.</p>
+          Our work does not stop at the offer letter. Visa, housing, the flight, the first week: we stay with you
+          until you are sitting in your first lecture.</p>
       </div>
       <figure class="abshot" style="margin:0">
         <picture>
           <source type="image/webp" srcset="photos/home/team-card.webp">
-          <img src="photos/home/team-card.jpg" alt="Two Orbuni counsellors working through a student application together"
+          <img src="photos/home/team-card.jpg" alt="Orbuni counsellors working through a student application together"
                loading="lazy" decoding="async">
         </picture>
       </figure>
     </div>
 
     <div class="lg-two" style="margin-top:34px">
-      <div><span class="eyebrow">What we will do</span>
+      <div><span class="eyebrow">Your money is protected</span>
         <ul class="lg-yes">
-          <li>Tell you the real fee, from the university's own published figures</li>
-          <li>Tell you honestly when your grades will not win the band you want</li>
-          <li>Show you the university's own paperwork before you pay anything</li>
-          <li>Answer you, including when the answer is bad news</li>
+          <li>Tuition is paid directly to the university's own account, and you get its receipt</li>
+          <li>Any payment to Orbuni happens only on secure myorbuni.com checkout pages</li>
+          <li>You see the university's own offer letter and fee before any deposit</li>
         </ul></div>
-      <div><span class="eyebrow">What we will never do</span>
-        <ul class="lg-no">
-          <li>Guarantee admission. The university decides, not us.</li>
-          <li>Guarantee a visa. The consulate decides, not us.</li>
-          <li>Promise a full scholarship we have not confirmed in writing</li>
-          <li>Ask you to send a passport or a document over WhatsApp</li>
-          <li>Take your tuition into a personal account</li>
+      <div><span class="eyebrow">Your documents are protected</span>
+        <ul class="lg-yes">
+          <li>Documents are uploaded to your private portal, encrypted, never over WhatsApp</li>
+          <li>They go only to the universities you apply to and, later, the consulate</li>
+          <li>Partner agencies never see your documents</li>
         </ul></div>
     </div>
 
     <div style="text-align:center;margin-top:34px">
       <button class="btn btn-p" onclick="go('progs')">Find your programme →</button>
-      <button class="btn btn-o" style="margin-left:9px" onclick="go('terms')">Read the terms</button>
+      <button class="btn btn-o" style="margin-left:9px" onclick="go('start')">Free 2-minute assessment</button>
     </div>
   </div></section>
 </main>
@@ -8154,45 +8253,42 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
     <div class="lg-plain">
       <b>In one paragraph.</b>
-      <p>Orbuni helps you choose a university, applies for you, and supports you through your visa
-        and arrival. We charge one fee, once, and you know what it is before you commit. We cannot
-        promise you admission or a visa, because neither decision is ours. Everything below says the
-        same thing more carefully.</p>
+      <p>Orbuni is a university search and application platform. Applying through Orbuni is free. We
+        help you choose a university, apply for you, and support you with scholarships, your visa, housing
+        and arrival. Universities decide admissions and scholarships and consulates decide visas; our job
+        is to give you the strongest possible file. Everything below says the same thing more carefully.</p>
     </div>
 
     <h3 class="lg-h">1. Who you are dealing with</h3>
-    <p>Orbuni ("we", "us") is a partnership between Nurudeen Muhammad Abdulkareem and Godfrey
-      Emmanuel Wudaba, operating from Istanbul, Türkiye, and trading as Orbuni at myorbuni.com.</p>
-    <p><b>Orbuni is not a separately incorporated company.</b> We are a verified partner of AskUni,
-      the university application platform through which we hold access to the universities listed on
-      this site. AskUni is a separate business; our partnership with them does not make us part of
-      their company, and they are not responsible for our conduct or ours for theirs. If you need to
-      raise something formally, raise it with us, at the address in section 12.</p>
+    <p>Orbuni ("we", "us") operates the platform at myorbuni.com from Istanbul, Türkiye.
+      Applications are submitted to universities through Orbuni's official university partner channels.
+      If you need to raise something formally, write to us at the address in section 12.</p>
 
     <h3 class="lg-h">2. What we actually do</h3>
     <ul class="lg-list">
       <li>Help you choose universities and programmes you are realistically eligible for</li>
-      <li>Prepare and submit your application through the partner channel</li>
+      <li>Prepare and submit your application through our official partner channels</li>
       <li>Check your documents and tell you what is missing or wrong</li>
       <li>Follow up your acceptance letter with the university</li>
       <li>Support your student visa application — preparing the file, not deciding it</li>
       <li>Help with accommodation, arrival and settling in</li>
     </ul>
 
-    <h3 class="lg-h">3. What we cannot do, and will not pretend to</h3>
+    <h3 class="lg-h">3. Who makes which decision</h3>
     <ul class="lg-list">
-      <li><b>We cannot guarantee admission.</b> Universities decide who they admit. We can tell you
-        what your chances honestly look like; we cannot change the answer.</li>
-      <li><b>We cannot guarantee a visa.</b> That decision belongs to the Turkish consulate, or the
-        relevant consulate for your destination. A refusal is not a failure of this service.</li>
-      <li><b>We cannot guarantee a scholarship band</b> beyond one already confirmed in writing by
-        the university for you specifically.</li>
-      <li><b>We do not control university fees.</b> Universities review tuition annually and may
-        change it. Where a fee is shown on this site, it is the figure published at the date shown.</li>
+      <li><b>Admission and scholarships</b> are decided by each university. We match you to programmes
+        you are eligible for and apply for the best scholarship band you qualify for.</li>
+      <li><b>Visas</b> are decided by the consulate of your destination. We prepare and check your visa
+        file so it is complete and well presented.</li>
+      <li><b>Tuition fees</b> are set by each university and reviewed every year. Fees on this site are the
+        university's published figures at the date shown; the figure that binds is the one on your offer letter.</li>
     </ul>
 
-    <h3 class="lg-h">4. Our fee</h3>
-    <p><b>Applying is free.</b> Our service fee — Standard $800, Plus $1,650 or Premier $2,650 (Premier can be paid in two parts) — is charged once, only after a university sends you an offer letter. It is the same whichever university you choose, so nobody here earns more by steering you somewhere. Before you pay, you read and accept our <a onclick="go('agreement')">Student Service Agreement</a>, which sets out exactly what each package includes.</p>
+    <h3 class="lg-h">4. Free application, optional services</h3>
+    <p><b>Searching, comparing and applying through Orbuni is free.</b> Optional services, such as full
+      management of your file after an offer, visa preparation, airport pickup and arrival support, are offered
+      inside your student portal. What each one includes and costs is shown to you in writing before you choose
+      it, and nothing is ever charged without your agreement.</p>
     <p>Where this site advertises a <b>100% scholarship place</b>, the single price shown on that
       page is the whole amount you pay for that place, our own fee included. There is nothing
       further to pay for tuition on that programme. That price is fixed at
@@ -8214,13 +8310,13 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
     <h3 class="lg-h">6. Refunds</h3>
     <ul class="lg-list">
-      <li>Our team works for you from the day you pay, so the service fee is never refunded in full. When a refund is due, you get back <b>10% on Standard, 20% on Plus and 30–40% on Premier</b> (set from the Premier services already delivered).</li>
-      <li>A refund is due if Orbuni cannot complete the service — for example your visa is refused — or if you stop before it is complete. If your visa is refused you may instead carry your service over to the next intake at no extra fee.</li>
+      <li>The refund rules for each optional paid service are written in the Student Service Agreement
+        you read and accept in your portal before paying. If your visa is refused you may carry your service
+        over to the next intake at no extra fee.</li>
       <li>Extra services (such as airport pickup) are refunded in full if cancelled at least 48 hours before the booked time.</li>
       <li>Once the service you paid for has been delivered, the fee is not refundable.</li>
       <li>Tuition, deposits and university fees are refundable only on that university's own terms.
         We will tell you what those are before you pay, and we will help you claim.</li>
-      <li>The full rules are in the <a onclick="go('agreement')">Student Service Agreement</a>.</li>
     </ul>
 
     <h3 class="lg-h">7. What we need from you</h3>
@@ -8233,8 +8329,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h3 class="lg-h">8. Your account and this website</h3>
     <p>Keep your password to yourself. Tell us at once if you think someone else has your account.
       We may suspend an account being used to abuse the service or other people.</p>
-    <p>The programme and fee information on this site comes from the universities and from the
-      partner network, and is shown with the date it was confirmed. We check it, but we do not
+    <p>The programme and fee information on this site comes from the universities and our partner
+      channels, and is shown with the date it was confirmed. We check it, but we do not
       author it, and universities occasionally change a figure without notice. The figure that binds
       is the one on the university's own offer letter.</p>
 
@@ -8261,13 +8357,6 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <p>These terms are governed by Turkish law. This does not remove any protection you have under
       the consumer law of the country you live in.</p>
 
-    <div class="lg-note">
-      <span>⚖️</span>
-      <div><b>An honest note about this page.</b>
-        <span>These terms describe accurately how Orbuni works. They have not yet been reviewed by a
-        lawyer, and they will be before we take on volume. If anything here is unclear, ask us
-        rather than guessing — we would rather answer than have you assume.</span></div>
-    </div>
   </div></section>
 </main>
 
@@ -8305,9 +8394,9 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h3 class="lg-h">Who sees it</h3>
     <ul class="lg-list">
       <li><b>You</b>, at any time, in your portal.</li>
-      <li><b>Your named counsellor</b>, and the two founders.</li>
-      <li><b>The university you are applying to</b>, and AskUni as the platform the application goes
-        through — this is the whole point of giving them to us.</li>
+      <li><b>Your counsellor</b>, and the Orbuni staff who manage your application.</li>
+      <li><b>The universities you apply to</b>, through our official partner channels. This is the whole
+        point of giving them to us.</li>
       <li><b>The consulate</b>, when your visa file is submitted.</li>
     </ul>
     <p>That is the complete list. <b>We do not sell your data, and we do not share it for
@@ -8401,12 +8490,6 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <p style="margin-top:22px">Orbuni · Istanbul, Türkiye ·
       <a href="mailto:privacy@myorbuni.com">privacy@myorbuni.com</a></p>
 
-    <div class="lg-note">
-      <span>⚖️</span>
-      <div><b>The same honest note.</b>
-        <span>This describes what actually happens to your data today. It has not yet been reviewed
-        by a data protection lawyer, and it will be.</span></div>
-    </div>
   </div></section>
 </main>
 
@@ -8508,16 +8591,11 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <section class="lp-sec lp-price">
     <div class="lp-w">
       <div class="lp-head">
-        <span class="lp-eyebrow">What it costs</span>
-        <h2 class="lp-h2">Applying is free. Our fee comes <em>after your offer</em>.</h2>
-        <p class="lp-sub">Three packages, one price each, printed in full. University tuition is always paid straight to the university — never to Orbuni.</p>
+        <span class="lp-eyebrow">What you get</span>
+        <h2 class="lp-h2">Everything you need to apply, <em>free</em>.</h2>
+        <p class="lp-sub">Search, compare and apply at no cost, with a dedicated counsellor beside you. University tuition is always paid straight to the university.</p>
       </div>
       <div class="lp-tiers" id="lp-tiers"></div>
-      <div class="lp-refund">
-        <span class="lp-refund-ic">%</span>
-        <p><b>Our refund rule, in plain numbers.</b> Our team works for you from the day you pay, so if the service cannot be completed — or you stop — part of the fee comes back: <b>10%</b> on Standard, <b>20%</b> on Plus, <b>30–40%</b> on Premier. Visa refused? Take that refund, or carry your file to the next intake for free.
-          <a onclick="go('agreement')">Read the Student Service Agreement →</a></p>
-      </div>
     </div>
   </section>
 
@@ -8560,13 +8638,12 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <span class="lp-eyebrow">Questions</span>
         <h2 class="lp-h2">Before you start</h2>
       </div>
-      <details><summary>Do I pay anything to apply?</summary><p>No. Creating your account, choosing programmes and applying are free. The service fee is paid only after a university sends you an offer letter.</p></details>
-      <details><summary>Is a 100% scholarship free?</summary><p>No, and any agency that says so without showing a price is not being straight with you. A 100% scholarship place has one payment that secures it; we print that number in full.</p></details>
-      <details><summary>Do you get my visa for me?</summary><p>No one can promise a visa. We guide you on what to prepare, and Premier connects you with a trusted visa agent in your own country. Government fees are always paid by you.</p></details>
-      <details><summary>Can I pay in two parts?</summary><p>Yes, Premier can be paid in two parts: $1,325 now and $1,325 thirty days later, taken automatically. Then it stops.</p></details>
-      <details><summary>What if my visa is refused?</summary><p>You choose. Take the refund for your package — 10% on Standard, 20% on Plus, 30–40% on Premier — or keep your file open and we carry your service over to the next intake at no extra fee. It is all written in the <a onclick="go('agreement')">Student Service Agreement</a>.</p></details>
-      <details><summary>Can someone pick me up from the airport?</summary><p>Yes. Plus and Premier include airport pickup. On Standard you can add it from your portal for $150, or an escort from the airport to your university for registration for $200 — you choose the date and pay on the same page.</p></details>
-      <details><summary>Where do I pay, and is it safe?</summary><p>Right here on Orbuni. The payment form is Whop's secure checkout, opened inside our page — card, bank transfer and local methods such as Nigerian cards, bank transfer and USSD. Before you pay you read and accept our Student Service Agreement.</p></details>
+      <details><summary>Do I pay anything to apply?</summary><p>No. Creating your account, searching, choosing programmes and applying are free.</p></details>
+      <details><summary>Is a 100% scholarship free?</summary><p>A 100% scholarship covers your tuition. You still plan for housing, living costs and the visa, and we show you those numbers up front so there are no surprises.</p></details>
+      <details><summary>Do you help with the visa?</summary><p>Yes. We prepare and check your visa file with you: what to bring, how to present it and what the consulate looks for. Government fees are paid by you directly.</p></details>
+      <details><summary>Can you help with housing?</summary><p>Yes. You see real student residences with photos and prices, and choose one before you fly.</p></details>
+      <details><summary>Can someone pick me up from the airport?</summary><p>Yes. Airport pickup and help with registration at your university can be booked from your student portal.</p></details>
+      <details><summary>Who receives my tuition?</summary><p>The university, directly, on its own account. You get the university's receipt. Orbuni never takes tuition.</p></details>
       <details><summary>What happens with my answers?</summary><p>They go to your Orbuni counsellor so they can advise you, and nowhere else. You can ask us to delete them at any time — see our <a onclick="go('privacy')">privacy notice</a>.</p></details>
     </div>
   </section>
@@ -8584,7 +8661,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <footer class="lp-foot">
     <div class="lp-w lp-foot-in">
       <span>© 2026 Orbuni · Istanbul, Türkiye</span>
-      <nav><a onclick="go('agreement')">Student agreement</a><a onclick="go('privacy')">Privacy</a><a onclick="go('terms')">Terms</a><a onclick="orbCookieSettings()">Cookie settings</a><a onclick="go('home')">myorbuni.com</a></nav>
+      <nav><a onclick="go('privacy')">Privacy</a><a onclick="go('terms')">Terms</a><a onclick="orbCookieSettings()">Cookie settings</a><a onclick="go('home')">myorbuni.com</a></nav>
     </div>
   </footer>
 </div>
@@ -8606,62 +8683,113 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   </header>
 
   <div id="wb-land">
-  <section class="lp-hero wb-hero">
-    <div class="lp-w lp-hero-in">
-      <span class="lp-badge"><i></i><span id="wb-when-badge">Free live webinar · Saturday 6 February 2027</span></span>
-      <h1 class="lp-h1 wb-h1">How Turkish scholarships <em>really</em> work, and what a 100% scholarship actually costs</h1>
-      <p class="lp-lead">One honest live session with the Orbuni team. Real prices, real universities, and your questions answered on the spot. Free for students and parents.</p>
-      <div class="lp-vsl wb-vsl" id="wb-vsl" aria-label="Webinar invitation video"></div>
-      <div class="lp-cta lp-cta-under">
+  <section class="wbx-hero">
+    <div class="wbx-bg" aria-hidden="true"></div>
+    <div class="lp-w wbx-hero-in">
+      <div class="wbx-proof"><span class="wbx-live"><i></i>Free live masterclass</span><span id="wb-when-badge">Saturday 6 February 2027 · 16:00 WAT</span></div>
+      <h1 class="wbx-h1">How international students win <em>25% to 100%</em> scholarships at universities in Türkiye</h1>
+      <p class="wbx-sub">90 minutes, live: which universities give the biggest scholarships, what a “100% scholarship” really costs, and the exact steps to apply for the September 2027 intake.</p>
+      <div class="wbx-vsl" id="wb-vsl" aria-label="Webinar invitation video"></div>
+      <div class="wbx-cta">
         <button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbStart('hero')">Save my free seat <span aria-hidden="true">→</span></button>
+        <p class="wbx-under"><span>Free</span><span>Live Q&amp;A</span><span>Replay included</span><span id="wb-reg-count" hidden></span></p>
       </div>
-      <div class="wb-count" id="wb-count" aria-live="off"></div>
-      <ul class="lp-ticks"><li>Free to join</li><li>Live questions and answers</li><li>Link sent on WhatsApp and email</li></ul>
+      <div class="wb-count wbx-count" id="wb-count" aria-live="off"></div>
+    </div>
+  </section>
+
+  <section class="wbx-strip">
+    <div class="lp-w wbx-strip-in">
+      <div><b>2,698</b><span>programmes analysed</span></div>
+      <div><b>48</b><span>partner universities</span></div>
+      <div><b>Up to 75%</b><span>tuition scholarships, plus 100% places</span></div>
+      <div><b>6</b><span>countries</span></div>
     </div>
   </section>
 
   <section class="lp-sec">
-    <div class="lp-w lp-w-narrow">
+    <div class="lp-w">
       <div class="lp-head">
-        <span class="lp-eyebrow">In one hour</span>
-        <h2 class="lp-h2">What you will know <em>by the end</em></h2>
+        <span class="lp-eyebrow">The problem</span>
+        <h2 class="lp-h2">Why so many families pay <em>more</em> for a “free” scholarship</h2>
+        <p class="lp-sub">Three traps cost students a year, or thousands of dollars. You will see each one, with real numbers, in the first 20 minutes.</p>
       </div>
-      <ol class="wb-learn">
-        <li><b>Why "100% scholarship" does not mean free</b><span>What you actually pay, once, and why one payment often beats four yearly bills.</span></li>
-        <li><b>Which universities give what, to whom</b><span>The real discount bands for average, good and excellent results. No guessing.</span></li>
-        <li><b>The documents that decide everything</b><span>The short list that makes or breaks an application, and how to get them ready this month.</span></li>
-        <li><b>The mistakes that cost families money</b><span>Agents who disappear, fees that change after payment, tuition paid into the wrong account.</span></li>
-        <li><b>Your exact next step</b><span>Live answers to your questions, and a two-minute check of where you stand.</span></li>
-      </ol>
+      <div class="wbx-traps">
+        <div><i>01</i><b>The “100% scholarship” that isn't</b><p>A place advertised as free, with fees that appear only after the deposit. We show what a genuine 100% place costs, in full, before anyone commits.</p></div>
+        <div><i>02</i><b>The right grades, the wrong university</b><p>The same results can win 25% at one university and 75% at another. Most students never compare, so they pay the higher price.</p></div>
+        <div><i>03</i><b>Applying a month too late</b><p>The biggest scholarship bands fill first. Late applications get what is left, even with excellent grades.</p></div>
+      </div>
     </div>
   </section>
 
   <section class="lp-sec lp-sec-tint">
-    <div class="lp-w">
-      <div class="lp-head">
-        <span class="lp-eyebrow">Your hosts</span>
-        <h2 class="lp-h2">Real people you can <em>ask anything</em></h2>
+    <div class="lp-w wbx-ladder-wrap">
+      <div class="wbx-ladder-tx">
+        <span class="lp-eyebrow">The method</span>
+        <h2 class="lp-h2">The Scholarship <em>Ladder</em></h2>
+        <p class="lp-sub" style="text-align:left;margin-left:0">Turkish universities do not hand out scholarships at random. Each one has bands, and four things decide which band you land on. In the masterclass we walk through every rung.</p>
+        <ul class="wbx-rungs-why">
+          <li><b>Your results</b> and how the university reads your certificate</li>
+          <li><b>The programme</b> you choose: some give far more than others</li>
+          <li><b>When you apply</b>: early files get the top bands</li>
+          <li><b>How complete your file is</b> on the first submission</li>
+        </ul>
       </div>
-      <div class="wb-hosts">
-        <figure><img src="photos/feed/founder-nurudeen.jpg" alt="Nurudeen Muhammad Abdulkareem" loading="lazy"><figcaption><b>Nurudeen Muhammad Abdulkareem</b><span>Founder &amp; Managing Director</span></figcaption></figure>
-        <figure><img src="photos/feed/lenns-1.jpg" alt="Lenns Wordjy Coutilien" loading="lazy"><figcaption><b>Lenns Wordjy Coutilien</b><span>Creative Director</span></figcaption></figure>
-        <figure><img src="photos/feed/founder-godfrey-desk.jpg" alt="Godfrey Emmanuel Wudaba" loading="lazy"><figcaption><b>Godfrey Emmanuel Wudaba</b><span>Co-Founder &amp; COO, Istanbul</span></figcaption></figure>
+      <div class="wbx-ladder" aria-label="Scholarship bands">
+        <div class="r r4"><b>100%</b><span>Limited places, first come first served</span></div>
+        <div class="r r3"><b>75%</b><span>Strong results, early application</span></div>
+        <div class="r r2"><b>50%</b><span>Good results, right programme</span></div>
+        <div class="r r1"><b>25%</b><span>Most students qualify</span></div>
       </div>
     </div>
   </section>
 
   <section class="lp-sec">
+    <div class="lp-w">
+      <div class="lp-head">
+        <span class="lp-eyebrow">Real numbers</span>
+        <h2 class="lp-h2">This is what a scholarship <em>looks like</em></h2>
+        <p class="lp-sub">Three real bachelor's programmes from the Orbuni catalogue: the university's published fee, the scholarship, and what the student pays each year.</p>
+      </div>
+      <div class="wbx-table">
+        <div class="h"><span>University · programme</span><span>Published fee</span><span>Scholarship</span><span>You pay / year</span></div>
+        <div><span><b>Beykoz University</b>Artificial Intelligence</span><span>$7,000</span><span class="g">50%</span><span class="y">$3,500</span></div>
+        <div><span><b>Istanbul Kültür University</b>Business Administration</span><span>$9,000</span><span class="g">50%</span><span class="y">$4,500</span></div>
+        <div><span><b>Yeditepe University</b>Biomedical Engineering</span><span>$20,000</span><span class="g">50%</span><span class="y">$10,000</span></div>
+        <p class="wbx-note">Published 2026/27 figures. Tuition is paid directly to the university. Bachelor's programmes in the catalogue start from $1,600 a year after scholarship.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec lp-sec-tint">
     <div class="lp-w lp-w-narrow">
       <div class="lp-head">
-        <span class="lp-eyebrow">Why listen to us</span>
-        <h2 class="lp-h2">We put the <em>numbers</em> on the page</h2>
+        <span class="lp-eyebrow">The 90 minutes</span>
+        <h2 class="lp-h2">What we cover, <em>minute by minute</em></h2>
       </div>
-      <ul class="wb-proof">
-        <li><b>Every fee is published.</b> The university's own price, with its own discount, on our site before you ask.</li>
-        <li><b>Tuition goes to the university.</b> Never to us, never into a personal account.</li>
-        <li><b>Our fee comes after your offer letter.</b> Applying is free.</li>
-        <li><b>A named counsellor.</b> One person who knows your file, not a call centre.</li>
-      </ul>
+      <ol class="wbx-agenda">
+        <li><time>00:00</time><div><b>What a “100% scholarship” really costs</b><span>The full price of a genuine 100% place, and the warning signs of a fake one.</span></div></li>
+        <li><time>15:00</time><div><b>The Scholarship Ladder, university by university</b><span>Who gives 25%, 50%, 75% and 100%, and to which students.</span></div></li>
+        <li><time>35:00</time><div><b>The documents that decide your band</b><span>The short list that makes or breaks an application, and how to get it ready this month.</span></div></li>
+        <li><time>50:00</time><div><b>Visa, housing and the first month</b><span>What a year in Türkiye really costs beyond tuition, and how to plan it.</span></div></li>
+        <li><time>65:00</time><div><b>Live questions and your next step</b><span>Your questions answered live, and how to apply for September 2027.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="lp-sec">
+    <div class="lp-w wbx-who">
+      <figure class="wbx-who-ph"><picture><source type="image/webp" srcset="photos/webinar/group.webp"><img src="photos/webinar/group.jpg" alt="International students on a university campus" loading="lazy"></picture></figure>
+      <div>
+        <span class="lp-eyebrow">Who it is for</span>
+        <h2 class="lp-h2" style="text-align:left">Made for students <em>and</em> the people paying</h2>
+        <ul class="wbx-check">
+          <li><b>Students</b> finishing school, or with a degree, who want to study abroad from 2027</li>
+          <li><b>Parents and sponsors</b> who want the real numbers before paying anything</li>
+          <li><b>Anyone helping</b> a student apply: a relative, a teacher, a guardian</li>
+        </ul>
+        <div class="lp-cta lp-cta-left" style="margin-top:22px"><button class="lp-pill lp-pill-gold" onclick="wbStart('who')">Save my free seat <span aria-hidden="true">→</span></button></div>
+      </div>
     </div>
   </section>
 
@@ -8670,7 +8798,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="lp-head">
         <span class="lp-eyebrow">Optional upgrade</span>
         <h2 class="lp-h2">The VIP seat, <em>$10</em></h2>
-        <p class="lp-lead" style="margin-top:14px">Your free seat is enough to attend. VIP is for people who want to move faster.</p>
+        <p class="lp-lead" style="margin-top:14px">Your free seat is enough to attend. VIP is for students who want to move faster.</p>
       </div>
       <div class="wb-vipcard" id="wb-vip-stack-land"></div>
     </div>
@@ -8681,19 +8809,20 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="lp-head"><span class="lp-eyebrow">Questions</span><h2 class="lp-h2">Before you <em>sign up</em></h2></div>
       <details><summary>Is it really free?</summary><p>Yes. The free seat costs nothing and you can attend the whole live session. The $10 VIP seat is optional.</p></details>
       <details><summary>Can my parents join?</summary><p>Please bring them. Many questions are about money and safety, and parents ask the best ones.</p></details>
-      <details><summary>How do I get the link?</summary><p>On WhatsApp and by email, and on your personal seat page. The link opens 15 minutes before we start.</p></details>
-      <details><summary>Will there be a replay?</summary><p>Free seats can watch the replay for 3 days after the live session. VIP seats keep it for life.</p></details>
-      <details><summary>Is a 100% scholarship free?</summary><p>No. A 100% scholarship place has one payment that secures it, and we show that number in full. Anyone who promises "free" without a price is not being straight with you.</p></details>
-      <details><summary>Do you guarantee a scholarship?</summary><p>No one honest can. Universities decide. We show you the real discount bands and help you prepare an application that gives you the best chance.</p></details>
+      <details><summary>How do I get the link?</summary><p>On WhatsApp and by email, and on your personal seat page. The join button opens 15 minutes before we start.</p></details>
+      <details><summary>Will there be a replay?</summary><p>Free seats can watch the replay for 3 days. VIP seats keep it for life.</p></details>
+      <details><summary>Is a 100% scholarship completely free?</summary><p>A 100% scholarship covers tuition. You still plan for housing, living costs and the visa, and in the masterclass we show you those numbers in full.</p></details>
+      <details><summary>Do I need IELTS?</summary><p>Not always. Many universities accept their own English test or proof of English-medium schooling. We cover this live.</p></details>
     </div>
   </section>
 
-  <section class="lp-sec lp-sec-tint wb-final">
-    <div class="lp-w lp-w-narrow" style="text-align:center">
-      <h2 class="lp-h2">Save your seat <em>now</em></h2>
+  <section class="wbx-final">
+    <div class="wbx-final-bg" aria-hidden="true"></div>
+    <div class="lp-w lp-w-narrow" style="text-align:center;position:relative">
+      <h2 class="lp-h2">Your place in <em>September 2027</em> starts here</h2>
       <p class="lp-lead" style="margin-top:14px">It takes a minute. We send the link on WhatsApp and by email.</p>
       <div class="lp-cta" style="margin-top:26px"><button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbStart('bottom')">Save my free seat <span aria-hidden="true">→</span></button></div>
-      <p class="wb-ps"><b>P.S.</b> If you only remember one thing: a scholarship that "costs nothing" usually costs the most later. Come and see the real numbers, then decide.</p>
+      <p class="wb-ps"><b>P.S.</b> The biggest scholarship bands fill first. Ninety minutes now can be the difference between paying 25% less and 75% less, every year of your degree.</p>
     </div>
   </section>
   </div>
@@ -8716,8 +8845,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h2 style="margin:14px 0 10px">Student Service Agreement</h2>
     <p class="lg-date" id="agr-date">Version 24 September 2026 · applies to every Orbuni service fee paid on or after that date</p>
     <div id="agr-body"></div>
-    <h2 style="margin:40px 0 10px;font-size:26px">Course terms</h2>
-    <p class="lg-date">For the Scholarship Masterclass and the Partner Growth Program</p>
+    <div id="agr-course-head"><h2 style="margin:40px 0 10px;font-size:26px">Course terms</h2>
+    <p class="lg-date">For the Scholarship Masterclass and the Partner Growth Program</p></div>
     <div id="agr-course"></div>
   </div></section>
 </main>
@@ -9053,7 +9182,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="brandline"><b>Orbuni</b></div>
       <p style="max-width:34ch;line-height:1.6">We help students get into universities across Türkiye,
         N. Cyprus, the UAE, Germany, Egypt and Russia — from choosing a course and scholarship, through
-        application and visa, to the room waiting for you on arrival. Published fees, a named counsellor,
+        application and visa, to the room waiting for you on arrival. Free to apply, a dedicated counsellor,
         tuition paid direct to the university.</p>
     </div>
     <div>
@@ -9068,10 +9197,10 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div>
       <h4>Orbuni</h4>
       <a href="/how-it-works/">How it works</a>
-      <a href="/pricing/">Prices</a>
+      <a href="/pricing/">Is it free?</a>
       <a href="/parents/">For parents</a>
       <a href="/faq/">Questions</a>
-      <a href="/about/" onclick="go('about');return false">About &amp; verify us</a>
+      <a href="/about/" onclick="go('about');return false">About Orbuni</a>
       <a onclick="go('team')">Our team</a>
       <a onclick="go('careers')">Careers</a>
     </div>
@@ -9105,7 +9234,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <span>© 2026 Orbuni Education · Tuition is paid direct to the university, never to us.</span>
     <span><a onclick="go('privacy')" style="display:inline;color:var(--dim)">Privacy policy</a> ·
       <a onclick="go('terms')" style="display:inline;color:var(--dim)">Terms</a> ·
-      <a onclick="go('agreement')" style="display:inline;color:var(--dim)">Service agreement</a> ·
+      
       <a onclick="orbCookieSettings()" style="display:inline;color:var(--dim)">Cookie settings</a></span>
   </div>
 </div></footer>
@@ -10017,8 +10146,8 @@ function openUni(id,silent){
           <h3>Speak with your representative</h3>
           <p>Ask anything about ${u.name} — entry requirements, the real scholarship you would get, living costs in ${u.city}, or whether it is the right fit at all.</p>
           <div class="rep">
-            <img src="${TEAM[1].photos[0]}" alt="Godfrey Emmanuel Wudaba">
-            <div><b>Godfrey Emmanuel Wudaba</b><span>Co-Founder & COO · handles university relations</span></div>
+            <img src="${TEAM[1].photos[0]}" alt="Orbuni university relations">
+            <div><b>University relations team</b><span>Orbuni · Istanbul</span></div>
           </div>
           <button class="btn btn-p btn-w" onclick="orbApply(null,null,'${u.name.replace(/'/g,"")}')">Apply to this university →</button><button class="btn btn-o btn-w" style="margin-top:9px" onclick="ask('${u.name.replace(/'/g,"")}', {source:'university_page', university_id:${u.id}})">Ask a question first</button>
           <p style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:11px">Free · reply within one working day · no obligation</p>
@@ -10031,7 +10160,7 @@ function openUni(id,silent){
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Documents checked line by line before submission</span></div>
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Filed through the official partner channel</span></div>
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Visa file, housing and airport pickup after admission</span></div>
-            <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>No agency fee until you are admitted</span></div>
+            <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Free to apply, with a dedicated counsellor</span></div>
           </div>
         </div>
       </div>
@@ -10069,7 +10198,7 @@ const ARTS=[['Fees','What studying in Türkiye actually costs in 2026','Real pub
 /* team */
 const TEAM=[
  {name:"Nurudeen Muh. Abdulkareem",
-  role:"Founder & Managing Director",
+  role:"Managing Director",
   bio:"Nurudeen has spent years inside this industry — first navigating it as a student himself, then watching family, friends and strangers walk into the same maze. He saw the lapses close up: agents who took money and disappeared, fees that changed after payment, applications that died over a missing translation, students who gave up because nobody would tell them the truth.<br><br>Orbuni did not start from a business plan. It started from a list of everything that had gone wrong for people he knew, and a decision to build the opposite.<br><br>He sits on the organising committee of the Africa Diaspora Forum in İstanbul, working on Türkiye–Africa cooperation — but the reason is simpler than the title makes it sound. The more doors that open institutionally, the more students walk through them.",
   lang:"“Every student has a right to dream.”",
   exp:"Years in the study-abroad industry, first as a student himself. Organising committee, Africa Diaspora Forum, İstanbul.",
@@ -10077,8 +10206,8 @@ const TEAM=[
   ig:"coolguyn94",
   photos:["photos/inline/fcf25e4bbda8.jpg","photos/inline/823977a3cdeb.jpg","photos/inline/ae43a37687d7.jpg","photos/home/team-nurudeen-award.jpg","photos/home/team-nurudeen-speaking.jpg","photos/home/team-nurudeen-roundtable.jpg","photos/home/team-nurudeen-climate.jpg","photos/home/team-nurudeen-podium.jpg"]},
  {name:"Godfrey Emmanuel Wudaba",
-  role:"Co-Founder & Chief Operating Officer",
-  bio:"Godfrey co-founded Orbuni and runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
+  role:"Chief Operating Officer",
+  bio:"Godfrey runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
   lang:"“Nothing leaves this office unchecked.”",
   exp:"Runs everything from the first enquiry to the first day of class. Works every day with university admissions offices, from İstanbul.",
   skills:["University relations","Document standards","Application timelines","Operations"],
@@ -27349,7 +27478,7 @@ var ORB_AGREEMENT = {
   sections: [
     { h: "1. Who this agreement is between",
       b: "<p>This agreement is between you (the student, or the parent or sponsor paying for the student) and "
-       + "<b>Orbuni</b>, a partnership of Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba, operating from "
+       + "<b>Orbuni</b>, operating from "
        + "Istanbul, Türkiye, at myorbuni.com (\"Orbuni\", \"we\", \"us\"). Payments are processed for us by Whop, "
        + "which appears on your statement.</p>" },
     { h: "2. When you pay",
@@ -27477,6 +27606,9 @@ var ORB_WHOP = {
   pixel: "biz_340OHdZOPCa81N"
 };
 var ORB_FUNNEL = { vsl: "", vsl_low: "", vsl_medium: "", vsl_high: "", whatsappGroup: "", community: "" };
+/* the webinar page (its own script) reads the same settings and helpers */
+window.ORB_FUNNEL = ORB_FUNNEL;
+try{ window.lpMountVideo = lpMountVideo; window.orbUTM = orbUTM; }catch(e){}
 function whopPlanOf(k){ return (String(ORB_WHOP.checkout[k] || "").match(/plan_[A-Za-z0-9]+/) || [""])[0]; }
 
 var WHOP_CFG_READY = false;
@@ -27491,6 +27623,11 @@ async function whopLoadConfig(){
       else if(x.key.indexOf("product_") === 0) ORB_WHOP.products[x.key.slice(8)] = v;
       else if(x.key === "vsl") ORB_FUNNEL.vsl = v;
       else if(x.key === "webinar_vsl") ORB_FUNNEL.webinar = v;
+      else if(x.key === "webinar_vip_vsl") ORB_FUNNEL.webinarVip = v;
+      else if(x.key === "webinar_seat_vsl") ORB_FUNNEL.webinarSeat = v;
+      else if(x.key === "webinar_vipseat_vsl") ORB_FUNNEL.webinarVipSeat = v;
+      else if(x.key === "webinar_group_free") ORB_FUNNEL.webinarGroupFree = v;
+      else if(x.key === "webinar_group_vip") ORB_FUNNEL.webinarGroupVip = v;
       else if(x.key === "whatsapp_group") ORB_FUNNEL.whatsappGroup = v;
       else if(x.key === "vsl_low" || x.key === "vsl_medium" || x.key === "vsl_high") ORB_FUNNEL[x.key] = v;
       else if(x.key === "community_url") ORB_FUNNEL.community = v;
@@ -27540,6 +27677,7 @@ function orbSendPixels(ev, data){
   try{
     if(window.fbq && ev !== "page" && ORB_META_EVENTS[ev]){
       var d = {}; if(data && data.value) { d.value = Number(data.value) || 0; d.currency = data.currency || "USD"; }
+      if(data && data.content_name) d.content_name = String(data.content_name).slice(0, 60);
       window.fbq("track", ORB_META_EVENTS[ev], d, (data && data.event_id) ? { eventID: String(data.event_id) } : undefined);
     } else if(window.fbq && ev === "page"){ window.fbq("track", "PageView"); }
   }catch(e){}
@@ -27755,7 +27893,21 @@ function lpVsl(){
     + '<b>The 3-minute video is on its way</b>'
     + '<span>Until it is up, the assessment does the same job — it tells you honestly which path fits you.</span></div>';
 }
+/* public pages: what a student gets for free (the paid packages live only in the portal, after an offer) */
+var LP_FREE = [
+  ["search", "Search 2,600+ programmes", "Fees and the current scholarship side by side, at 48 partner universities."],
+  ["user", "A dedicated counsellor", "One person who knows your file, from first question to first lecture."],
+  ["award", "Scholarship matching", "We apply for the highest scholarship band your grades qualify for."],
+  ["doc", "Your application, done properly", "Every document checked, then submitted through official partner channels."],
+  ["home", "Student housing", "Real residences with photos and prices, chosen before you fly."],
+  ["plane", "Visa and arrival support", "Your visa file prepared and checked, then pickup and registration when you land."]
+];
 function lpTiersHtml(){
+  return '<div class="lp-free">' + LP_FREE.map(function(x){
+    return '<div class="lp-free-i"><b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></div>';
+  }).join("") + '</div>';
+}
+function lpTiersHtmlPaid(){
   return ORB_TIERS.map(function(t){
     return '<div class="lp-tier' + (t.best ? " best" : "") + '">'
       + (t.best ? '<span class="flag">Most chosen</span>' : "")
@@ -27842,6 +27994,7 @@ window.lpBack = function(){ if(LPQ_STATE.i > 0){ LPQ_STATE.i--; lpRenderStep(); 
 var LP_COUNTRIES = ["Nigeria","Ghana","Kenya","Cameroon","Uganda","Tanzania","Ethiopia","Sierra Leone","Liberia","The Gambia","Senegal",
   "South Africa","Zambia","Zimbabwe","Rwanda","Sudan","Somalia","Egypt","Morocco","Algeria","Tunisia","Libya","Pakistan","Bangladesh",
   "India","Afghanistan","Iraq","Iran","Syria","Jordan","Yemen","Azerbaijan","Kazakhstan","Uzbekistan","Turkmenistan","Kyrgyzstan","Other"];
+window.LP_COUNTRIES = LP_COUNTRIES;
 function lpContactStep(){
   var box = document.getElementById("lp-quiz"); if(!box) return;
   box.innerHTML = lpProgress(LPQ.length, LPQ.length)
@@ -27939,10 +28092,10 @@ function lpResult(res, name){
       + "<small>A real counsellor, on Google Meet. Pick a time that suits you.</small></div></div>"
       + '<div id="lpr-call" class="lpr-slots"><div class="lpr-load"><i></i>Finding free times…</div></div></div>'
       + '<div class="lpq-acts">' + applyBtn("Start my application — free →", "signup_higher")
-      + '<button class="lp-pill lp-pill-ghost" onclick="lpScrollTo(\'lp-tiers\')">See the service packages</button></div>';
+      + '<button class="lp-pill lp-pill-ghost" onclick="lpScrollTo(\'lp-tiers\')">What you get, free</button></div>';
   } else if(res.pathway === "medium"){
     head = "You are close, " + esc(first) + ".";
-    sub = "A few things still need to fall into place — that is normal. Here is exactly what we do for you, and what it costs. A counsellor sends your personal shortlist on WhatsApp within two hours.";
+    sub = "A few things still need to fall into place — that is normal. Here is exactly what we do for you. A counsellor sends your personal shortlist on WhatsApp within two hours.";
     block = '<div class="lpr-tiers">' + ORB_TIERS.map(function(t){
         return '<div class="lpr-tier' + (t.best ? " best" : "") + '"><span>Orbuni ' + esc(t.name) + "</span><b>$" + t.price.toLocaleString() + "</b><small>" + esc(t.who) + "</small></div>";
       }).join("") + '</div><p class="lpr-fine">Applying is free. You pay the service fee only after a university sends your offer letter.</p>'
@@ -28076,8 +28229,21 @@ function lpOnPage(){
   if(ag && ag.classList.contains("on")) agreementPage();
 }
 function agreementPage(){
-  var b = document.getElementById("agr-body"); if(!b || b.dataset.ready) return;
+  var b = document.getElementById("agr-body"); if(!b) return;
+  // the full agreement (services and prices) is for signed-in students; it is also shown in the checkout before paying
+  var signed = !!(typeof ME !== "undefined" && ME && ME.id);
+  if(!signed){
+    b.dataset.ready = "";
+    b.innerHTML = '<div class="lg-plain"><b>Your Student Service Agreement is in your student portal.</b><p>Applying through Orbuni is free. '
+      + 'If you choose an optional service after your offer, its agreement is shown to you in full, in your portal, before anything is paid.</p>'
+      + '<p style="margin-top:12px"><a class="btn btn-p" onclick="openPortal(\'choose\')">Sign in to your portal</a></p></div>';
+    var cc = document.getElementById("agr-course"); if(cc) cc.innerHTML = ""; 
+    var d = document.getElementById("agr-date"); if(d) d.style.display = "none"; var ch = document.getElementById("agr-course-head"); if(ch) ch.style.display = "none";
+    return;
+  }
+  if(b.dataset.ready) return;
   b.dataset.ready = "1";
+  var d2 = document.getElementById("agr-date"); if(d2) d2.style.display = ""; var ch2 = document.getElementById("agr-course-head"); if(ch2) ch2.style.display = "";
   b.innerHTML = orbDocHtml(ORB_AGREEMENT);
   var c = document.getElementById("agr-course"); if(c) c.innerHTML = [ORB_TERMS.masterclass, ORB_TERMS.partner_program].map(function(d){ return '<h3 class="agr-h" style="font-size:22px;margin-top:34px">' + esc(d.title) + "</h3>" + orbDocHtml(d); }).join("");
 }
@@ -28206,8 +28372,8 @@ lpResult = function(res, name, noPush){
     body = '<div class="lpr-card lpr-call" id="lpr-call-card"><div class="lpr-h"><span class="lpr-ic">' + lpIc("cal") + '</span><div><b>Book your free 30-minute call</b>'
       + "<small>A real counsellor, on Google Meet. Pick a time that suits you.</small></div></div>"
       + '<div id="lpr-call" class="lpr-slots"><div class="lpr-load"><i></i>Finding free times…</div></div></div>'
-      + '<div class="lpf-sec"><span class="lp-eyebrow">What it costs</span><h3>Applying is free. Our fee comes <em>after your offer</em>.</h3>'
-      + '<p class="lp-sub">Three packages, one price each. University tuition is always paid straight to the university — never to Orbuni.</p>'
+      + '<div class="lpf-sec"><span class="lp-eyebrow">What you get</span><h3>Everything you need, <em>free</em>.</h3>'
+      + '<p class="lp-sub">A dedicated counsellor, your application, scholarship matching and your student portal. Tuition is always paid straight to the university.</p>'
       + '<div class="lp-tiers">' + lpTiersHtml() + "</div></div>";
   } else if(res.pathway === "medium"){
     head = "You are close" + (first ? ", " + first : "") + ".";
@@ -29932,6 +30098,7 @@ async function whopMarketingPanel(){
     + (owner ? '<button class="gc-btn sm" onclick="gcSaveCfg(\'whatsapp_group\', \'gcc-wa\')">Save</button>' : "") + "</div></div></div>"
     + '<p class="gc-fine">' + gcNum(s.community || 0) + " joined the Whop community and " + gcNum(s.wa_group || 0) + " opened WhatsApp from their result, last 30 days.</p></div>"
     + "</div>"
+    + '<div class="gc-card" id="gc-web"><div class="gc-ch"><h3>' + gcIc("video") + ' Webinar · Scholarship 1.0</h3><span>Sign-ups, VIP, the two WhatsApp groups, the four webinar videos and the live links</span></div><div class="gc-empty">Loading…</div></div>'
 
     + '<div class="gc-card"><div class="gc-ch"><h3>' + gcIc("cal") + ' Calls booked from the funnel</h3><span>Google Meet · on the host\'s calendar</span></div><div id="gc-calls" class="gc-list"><div class="gc-empty">Loading…</div></div></div>'
     + '<div class="gc-card"><div class="gc-ch"><h3>' + gcIc("ad") + ' Whop Ads</h3><span>Live from Whop · the Pixel on the site reports every visit, lead and sale</span></div><div id="gc-ads"><div class="gc-empty">Loading…</div></div></div>'
@@ -29947,6 +30114,7 @@ async function whopMarketingPanel(){
   if(box.querySelector("#gc") || !box.isConnected) return;
   box.insertAdjacentHTML("afterbegin", html);
   gcCalls();
+  gcWebinar(owner);
   mountWhopAds("gc-ads");
 }
 window.gcClearVideo = async function(key){
@@ -29977,6 +30145,79 @@ window.gcSaveCfg = async function(key, inputId){
   else if(key === "whatsapp_group") ORB_FUNNEL.whatsappGroup = v;
   else ORB_FUNNEL[key] = v;
   toast("Saved — live on the site now.");
+};
+/* Webinar card: who signed up, who went VIP, how many opened each group, and every link the webinar needs */
+var GC_WEB_VIDEOS = [
+  ["webinar_vsl", "webinar", "Invitation video", "Top of /webinar"],
+  ["webinar_vip_vsl", "webinarVip", "Why VIP (60 sec)", "On the VIP choice"],
+  ["webinar_seat_vsl", "webinarSeat", "Watch before the webinar", "Free seat page"],
+  ["webinar_vipseat_vsl", "webinarVipSeat", "Welcome, VIP", "VIP seat page"]
+];
+var GC_WEB_GROUPS = [
+  ["webinar_group_free", "webinarGroupFree", "Free webinar group", "Shown on every free seat. Announcement-only works best."],
+  ["webinar_group_vip", "webinarGroupVip", "VIP group", "Shown only on VIP seats."]
+];
+async function gcWebinar(owner){
+  var el = $("gc-web"); if(!el) return;
+  var since = new Date(Date.now() - 60 * 864e5).toISOString();
+  var res = await Promise.all([
+    sb.from("webinars").select("id,title,starts_at,live_url,replay_url").eq("id", "scholarship-1").maybeSingle(),
+    sb.from("webinar_registrations").select("name,ticket,country,role,created_at,attended_at,vip_checkout_at,utm_source", { count: "exact" }).eq("webinar_id", "scholarship-1").order("created_at", { ascending: false }).limit(400),
+    sb.from("funnel_events").select("detail").in("detail", ["webinar_group_free", "webinar_group_vip"]).gte("created_at", since).limit(5000)
+  ]);
+  var w = res[0].data || {}, regs = res[1].data || [], total = res[1].count || regs.length, clicks = res[2].data || [];
+  var vip = regs.filter(function(r){ return r.ticket === "vip"; }).length;
+  var started = regs.filter(function(r){ return r.ticket !== "vip" && r.vip_checkout_at; }).length;
+  var came = regs.filter(function(r){ return r.attended_at; }).length;
+  var gf = clicks.filter(function(c){ return c.detail === "webinar_group_free"; }).length, gv = clicks.length - gf;
+  var input = function(id, cfgKey, val, ph){
+    return '<div class="gc-vin"><input id="' + id + '" value="' + esc(val || "") + '" placeholder="' + esc(ph) + '" ' + (owner ? "" : "disabled") + ">"
+      + (owner ? '<button class="gc-btn sm" onclick="' + cfgKey + '">Save</button>' : "") + "</div>";
+  };
+  var kpi = function(lbl, n, sub){ return '<div class="gc-step"><small>' + esc(lbl) + "</small><b>" + gcNum(n) + "</b><em>" + esc(sub || "") + "</em></div>"; };
+  el.innerHTML = '<div class="gc-ch"><h3>' + gcIc("video") + ' Webinar · ' + esc(w.title || "Scholarship 1.0") + '</h3><span>'
+    + (w.starts_at ? esc(new Date(w.starts_at).toLocaleString("en-GB", { timeZone: "Africa/Lagos", weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })) + " WAT" : "") + "</span></div>"
+    + '<div class="gc-flow">' + kpi("Registered", total, "all sign-ups") + kpi("VIP ($10)", vip, total ? Math.round(vip / total * 100) + "% of sign-ups" : "")
+      + kpi("Started VIP, not paid", started, "followed up automatically") + kpi("Opened free group", gf, "last 60 days") + kpi("Opened VIP group", gv, "last 60 days") + kpi("Joined live", came, "") + "</div>"
+    + '<div class="gc-two" style="margin-top:12px"><div>'
+    + '<h4 class="gc-sub">WhatsApp groups</h4>' + GC_WEB_GROUPS.map(function(g){
+        var val = ORB_FUNNEL[g[1]] || "";
+        return '<div class="gc-vrow"><span class="gc-dot t-mint"></span><div class="gc-vi"><b>' + esc(g[2]) + (val ? ' · <a href="' + esc(val) + '" target="_blank" rel="noopener">open</a>' : "") + "</b><small>" + esc(g[3]) + "</small>"
+          + input("gcw-" + g[0], "gcSaveWeb(\'" + g[0] + "\', \'" + g[1] + "\')", val, "https://chat.whatsapp.com/…") + "</div></div>";
+      }).join("")
+    + '<h4 class="gc-sub">Live room</h4>'
+    + '<div class="gc-vrow"><span class="gc-dot t-sky"></span><div class="gc-vi"><b>Live link</b><small>Zoom, YouTube Live or Whop. The join button uses it 15 minutes before the start.</small>' + input("gcw-live", "gcSaveWebLink(\'live_url\')", w.live_url, "https://…") + "</div></div>"
+    + '<div class="gc-vrow"><span class="gc-dot t-lilac"></span><div class="gc-vi"><b>Replay link</b><small>Turns on the replay emails and the "Watch the replay" button.</small>' + input("gcw-replay", "gcSaveWebLink(\'replay_url\')", w.replay_url, "https://…") + "</div></div>"
+    + '</div><div><h4 class="gc-sub">Webinar videos</h4>' + GC_WEB_VIDEOS.map(function(v){
+        var val = ORB_FUNNEL[v[1]] || "";
+        return '<div class="gc-vrow"><span class="gc-dot t-butter"></span><div class="gc-vi"><b>' + esc(v[2]) + "</b><small>" + esc(v[3]) + "</small>"
+          + input("gcw-" + v[0], "gcSaveWeb(\'" + v[0] + "\', \'" + v[1] + "\')", val, "https://youtu.be/…") + "</div></div>";
+      }).join("") + "</div></div>"
+    + '<h4 class="gc-sub">Latest sign-ups</h4>'
+    + (regs.length ? '<div class="gc-list">' + regs.slice(0, 12).map(function(r){
+        return '<div class="gc-call"><div class="gc-when"><b>' + esc(new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })) + "</b><span>" + esc(r.utm_source || "direct") + "</span></div>"
+          + '<div><b>' + esc(r.name || "") + "</b> <span class=\"gc-pill " + (r.ticket === "vip" ? "ok" : "no") + "\">" + (r.ticket === "vip" ? "VIP" : "Free") + "</span><br><small>" + esc([r.role, r.country].filter(Boolean).join(" · ")) + "</small></div></div>";
+      }).join("") + "</div>" : '<div class="gc-empty">No sign-ups yet. Share myorbuni.com/webinar (or /webinar/ig, /webinar/tt) to start.</div>')
+    + '<p class="gc-fine">The groups live on a separate WhatsApp Business number (Meta\'s group API allows only 8 people per group). Clicks are counted here; members are managed in WhatsApp.</p>';
+}
+window.gcSaveWeb = async function(key, funnelKey){
+  var el = $("gcw-" + key); if(!el) return;
+  var v = String(el.value || "").trim();
+  if(v && !/^https:\/\//.test(v)){ toast("Use a full https:// link."); return; }
+  if(/group/.test(key) && v && !/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com|whop\.com)\//.test(v)){ toast("Use a WhatsApp group invite link (chat.whatsapp.com/…)."); return; }
+  if(/vsl/.test(key) && v && !orbVideoSrc(v)){ toast("That does not look like a YouTube or MP4 link."); return; }
+  var r = await sb.from("whop_config").upsert({ key: key, value: v, is_public: true }, { onConflict: "key" });
+  if(r.error){ toast(friendly(r.error)); return; }
+  ORB_FUNNEL[funnelKey] = v; toast("Saved — live on the webinar page now.");
+};
+window.gcSaveWebLink = async function(col){
+  var el = $(col === "live_url" ? "gcw-live" : "gcw-replay"); if(!el) return;
+  var v = String(el.value || "").trim();
+  if(v && !/^https:\/\//.test(v)){ toast("Use a full https:// link."); return; }
+  var patch = {}; patch[col] = v || null;
+  var r = await sb.from("webinars").update(patch).eq("id", "scholarship-1");
+  if(r.error){ toast(friendly(r.error)); return; }
+  toast(col === "live_url" ? "Live link saved." : "Replay link saved. Replay emails start at the next run.");
 };
 async function gcCalls(){
   var el = $("gc-calls"); if(!el) return;
@@ -36571,25 +36812,6 @@ window.ulineStop = function(btn){
 })();
 </script>
 
-<!--orb-wa--><style>
-.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
-padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
-font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
-.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
-@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
-body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
-@media print{.orb-wa{display:none}}
-</style>
-<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
-<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
-<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
-var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
-var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
-if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
-a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
-var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
-s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
-<!--/orb-wa-->
 <!-- ==ORB-MOTION== public-site motion layer: rolling numbers, staggered
      reveals, hero headline. Public pages only; the portal is untouched, and
      everything is skipped for people who ask their device for less motion. -->
@@ -36812,7 +37034,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     ["The replay for life", "Free seats keep the replay for 3 days."],
     ["Your question answered first", "VIP questions go to the top of the live Q&A."],
     ["48-hour early access to 100% scholarship places", "Places are limited and go in the order applications arrive."],
-    ["The documents checklist for your level", "Bachelor's, master's or PhD: exactly what to get ready."]
+    ["The documents checklist for your level", "Bachelor's, master's or PhD: exactly what to get ready."],
+    ["The private VIP WhatsApp group", "Updates, early offers and answers, with a smaller group."]
   ];
   var $ = function(id){ return document.getElementById(id); };
   var E = function(s){ return (typeof esc === "function") ? esc(s) : String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
@@ -36846,14 +37069,50 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + "<ul>" + VIP_STACK.map(function(x){ return "<li><span><b>" + E(x[0]) + "</b><br>" + E(x[1]) + "</span></li>"; }).join("") + "</ul>"
       + (withButtons || "");
   }
+  /* a video at every step: ORB_FUNNEL keys come from whop_config (webinar_vsl, webinar_vip_vsl,
+     webinar_seat_vsl, webinar_vipseat_vsl). Until a video exists, the landing shows its cover and the
+     other steps simply leave the slot out. */
+  function fv(k){ return (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL[k]) || ""; }
+  function poster(cap){
+    return '<button class="wbx-poster" type="button" aria-label="Play the video"><picture><source type="image/webp" srcset="photos/webinar/vsl-poster.webp">'
+      + '<img src="photos/webinar/vsl-poster.jpg" alt="" loading="lazy"></picture><span class="wbx-play" aria-hidden="true">▶</span>'
+      + (cap ? '<span class="wbx-poster-cap">' + E(cap) + "</span>" : "") + "</button>";
+  }
+  function mountInto(box, url, label){
+    if(typeof lpMountVideo === "function" && lpMountVideo(box, url, label, "vsl_started")) return true;
+    return false;
+  }
   function videoBox(){
     var box = $("wb-vsl"); if(!box || box.dataset.ready) return;
     box.dataset.ready = "1";
-    var v = (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL.webinar) || "";
-    if(v && typeof lpMountVideo === "function" && lpMountVideo(box, v, "Scholarship 1.0 · invitation", "vsl_started")) return;
-    box.innerHTML = '<div class="wb-ph"><img src="photos/feed/founder-nurudeen.jpg" alt=""><img src="photos/feed/lenns-1.jpg" alt=""></div>'
-      + '<div class="wb-ph-cap"><b>Nurudeen and Lenns, live</b>One honest hour about scholarships in Türkiye. Bring your questions and your parents.</div>';
+    var v = fv("webinar");
+    box.innerHTML = poster("");
+    box.querySelector(".wbx-poster").onclick = function(){
+      ev("webinar_vsl_click");
+      if(v && mountInto(box, v, "Scholarship masterclass · invitation")) return;
+      wbStart("vsl");
+    };
   }
+  function miniVsl(key, cap){
+    var v = fv(key); if(!v) return "";
+    return '<div class="wbx-mini-vsl" data-vsl="' + E(key) + '">' + poster(cap) + "</div>";
+  }
+  function wireMini(){
+    document.querySelectorAll("#wb-flow .wbx-mini-vsl").forEach(function(box){
+      var b = box.querySelector(".wbx-poster"); if(!b) return;
+      b.onclick = function(){ ev("webinar_vsl_" + box.dataset.vsl); mountInto(box, fv(box.dataset.vsl), cap(box.dataset.vsl)); };
+    });
+    function cap(k){ return k; }
+  }
+  function groupBlock(vip){
+    var url = vip ? (fv("webinarGroupVip") || "") : (fv("webinarGroupFree") || fv("whatsappGroup") || "");
+    if(!/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com|whop\.com)\//.test(url)) return "";
+    return '<div class="wbx-group' + (vip ? " vip" : "") + '"><span class="gi">' + (vip ? "★" : "✆") + "</span><div><b>"
+      + (vip ? "Join the VIP WhatsApp group" : "Join the free webinar WhatsApp group") + "</b><span>"
+      + (vip ? "Early access to 100% scholarship places, the replay and your questions first." : "Reminders, the live link and the replay, in one place.")
+      + '</span></div><a class="lp-pill ' + (vip ? "lp-pill-gold" : "lp-pill-ink") + '" href="' + E(url) + '" target="_blank" rel="noopener" onclick="wbGroupClick(' + (vip ? 1 : 0) + ')">Join the group</a></div>';
+  }
+  window.wbGroupClick = function(vip){ ev(vip ? "webinar_group_vip" : "webinar_group_free"); };
 
   async function loadInfo(){
     if(WB.info || typeof sb === "undefined" || !sb) return WB.info;
@@ -36865,7 +37124,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var land = $("wb-vip-stack-land"); if(land && !land.dataset.ready){ land.dataset.ready = "1"; land.innerHTML = vipStack(info ? info.vip_price : 10); }
     videoBox();
     if(info){
-      var b = $("wb-when-badge"); if(b) b.textContent = "Free live webinar · " + whenText(info.starts_at, false);
+      var b = $("wb-when-badge"); if(b) b.textContent = whenText(info.starts_at, false);
+      var rc = $("wb-reg-count"); if(rc && Number(info.registered) >= 50){ rc.hidden = false; rc.textContent = Number(info.registered).toLocaleString() + " already registered"; }
       countdown("wb-count", info.starts_at);
     }
     var ms = $("wb-myseat"); if(ms) ms.hidden = !stored();
@@ -36931,7 +37191,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       if(btn){ btn.disabled = false; btn.textContent = "Save my free seat →"; }
       return bad((r.error && r.error.message) || "We could not save that just now. Please try again in a moment.");
     }
-    try{ if(typeof orbTrack === "function") orbTrack("lead", {}); }catch(e){}
+    try{ if(typeof orbTrack === "function") orbTrack("lead", { content_name:"webinar_registered" }); }catch(e){}
     if(r.data.duplicate){
       ev("webinar_duplicate");
       return flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Already registered</span>'
@@ -36948,16 +37208,18 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     flow('<span class="wb-step-n" style="display:block;text-align:center">Your free seat is saved</span>'
       + '<h2 class="wb-tk-h">' + (first ? E(first) + ", one" : "One") + " choice before you go</h2>"
       + '<p class="wb-tk-sub">You are in for free. If you want to move faster, the VIP seat gives you the Scholarship Masterclass today, the replay for life and first access to 100% scholarship places.</p>'
-      + '<div class="wb-vipcard">' + vipStack(price,
+      + '<div class="wb-vipcard">' + miniVsl("webinarVip", "Why VIP · 60 seconds") + vipStack(price,
           '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Yes, make me VIP for $' + E(price) + " <span aria-hidden=\"true\">→</span></button>")
       + "</div>"
       + '<button class="wb-no" onclick="wbKeepFree()">No thanks, keep my free seat</button>'
       + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added.</p>");
+    wireMini();
   }
   window.wbKeepFree = function(){ ev("webinar_keep_free"); wbSeat(WB.token || stored(), { fresh:true }); };
   window.wbVip = async function(){
     var tok = WB.token || stored(); if(!tok) return;
     ev("webinar_vip_click");
+    try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:(WB.info && WB.info.vip_price) || 10, currency:"USD", content_name:"webinar_vip" }); }catch(e){}
     var who = {};
     try{ var r = await sb.rpc("webinar_vip_checkout", { p_token: tok }); if(r.data) who = r.data; }catch(e){}
     if(typeof orbCheckout !== "function") return;
@@ -36992,8 +37254,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var after = s.state === "after"
       ? '<div class="wb-note"><b>Your next step:</b> the free 2-minute assessment. It skips the video you have already seen and tells you exactly where you stand.</div>'
         + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div>' : "";
-    var wa = (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL.whatsappGroup) || "";
     var html = '<div class="wb-seat">'
+      + miniVsl(vip ? "webinarVipSeat" : "webinarSeat", vip ? "Welcome, VIP · watch first" : "Watch this before the webinar")
       + '<span class="wb-tag ' + (vip ? "vip" : "free") + '">' + (vip ? "VIP seat" : "Free seat") + "</span>"
       + (s.vip_pending && !vip ? ' <span class="wb-tag free" style="margin-left:6px">VIP payment being confirmed</span>' : "")
       + "<h2>" + (opts.fresh ? "You're in, " : opts.vip ? "You're VIP, " : "Welcome back, ") + E(first) + "</h2>"
@@ -37002,8 +37264,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<div class="wb-acts">' + join
       + '<div class="wb-row"><a class="lp-pill lp-pill-ghost" href="' + gcal + '" target="_blank" rel="noopener">Add to Google Calendar</a>'
       + '<button class="lp-pill lp-pill-ghost" onclick="wbIcs()">Add to my phone calendar</button></div>'
-      + (wa ? '<a class="lp-pill lp-pill-ghost" href="' + E(wa) + '" target="_blank" rel="noopener">Join the free WhatsApp community</a>' : "")
       + "</div>"
+      + groupBlock(vip)
       + '<div class="wb-note">We send the link and reminders on WhatsApp and by email. <b>Keep this page:</b> it is your personal seat, myorbuni.com/s/…</div>'
       + after + "</div>";
     if(vip){
@@ -37016,7 +37278,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     } else if(s.state !== "after"){
       html += '<div class="wb-vipcard">' + vipStack(w.vip_price, '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Upgrade to VIP for $' + E(w.vip_price) + " →</button>") + "</div>";
     }
-    flow(html);
+    flow(html); wireMini();
     if(s.state === "before") countdown("wb-seat-count", w.starts_at);
     var ms = $("wb-myseat"); if(ms) ms.hidden = true;
   }
@@ -37054,6 +37316,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       return wbSeat(t, {});
     }
     var f = $("wb-flow"); if(f && !f.hidden) return;
+    try{ if(!sessionStorage.getItem("orb-wb-viewed")){ sessionStorage.setItem("orb-wb-viewed", "1"); if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_landing" }); } }catch(e){}
     paintLanding();
   }
   window.addEventListener("orbuni:page", function(){ setTimeout(onPage, 20); });
@@ -37069,5 +37332,24 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   }, 900);
 })();
 </script>
+<!--orb-wa--><style>
+.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
+padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
+font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
+.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
+@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
+body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
+@media print{.orb-wa{display:none}}
+</style>
+<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
+<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
+<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
+var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
+var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
+if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
+a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
+<!--/orb-wa-->
 </body>
 </html>

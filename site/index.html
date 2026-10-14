@@ -2464,6 +2464,7 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 .gc-pill svg{width:14px;height:14px}
 .gc-path .gc-pill.ok{background:#fff;color:#137A50}.gc-path .gc-pill.no{background:rgba(13,19,33,.08);color:#5E6778}
 .gc-card .gc-pill.ok{background:rgba(62,213,152,.14);color:#3ED598}.gc-card .gc-pill.mid{background:rgba(242,181,68,.15);color:#F2B544}.gc-card .gc-pill.no{background:rgba(255,255,255,.07);color:var(--faint)}
+.gc-sub{font:700 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:14px 0 6px}
 .gc-two{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
 .gc-vrow{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .gc-vrow:first-of-type{border-top:0;padding-top:0}
@@ -30097,6 +30098,7 @@ async function whopMarketingPanel(){
     + (owner ? '<button class="gc-btn sm" onclick="gcSaveCfg(\'whatsapp_group\', \'gcc-wa\')">Save</button>' : "") + "</div></div></div>"
     + '<p class="gc-fine">' + gcNum(s.community || 0) + " joined the Whop community and " + gcNum(s.wa_group || 0) + " opened WhatsApp from their result, last 30 days.</p></div>"
     + "</div>"
+    + '<div class="gc-card" id="gc-web"><div class="gc-ch"><h3>' + gcIc("video") + ' Webinar · Scholarship 1.0</h3><span>Sign-ups, VIP, the two WhatsApp groups, the four webinar videos and the live links</span></div><div class="gc-empty">Loading…</div></div>'
 
     + '<div class="gc-card"><div class="gc-ch"><h3>' + gcIc("cal") + ' Calls booked from the funnel</h3><span>Google Meet · on the host\'s calendar</span></div><div id="gc-calls" class="gc-list"><div class="gc-empty">Loading…</div></div></div>'
     + '<div class="gc-card"><div class="gc-ch"><h3>' + gcIc("ad") + ' Whop Ads</h3><span>Live from Whop · the Pixel on the site reports every visit, lead and sale</span></div><div id="gc-ads"><div class="gc-empty">Loading…</div></div></div>'
@@ -30112,6 +30114,7 @@ async function whopMarketingPanel(){
   if(box.querySelector("#gc") || !box.isConnected) return;
   box.insertAdjacentHTML("afterbegin", html);
   gcCalls();
+  gcWebinar(owner);
   mountWhopAds("gc-ads");
 }
 window.gcClearVideo = async function(key){
@@ -30142,6 +30145,79 @@ window.gcSaveCfg = async function(key, inputId){
   else if(key === "whatsapp_group") ORB_FUNNEL.whatsappGroup = v;
   else ORB_FUNNEL[key] = v;
   toast("Saved — live on the site now.");
+};
+/* Webinar card: who signed up, who went VIP, how many opened each group, and every link the webinar needs */
+var GC_WEB_VIDEOS = [
+  ["webinar_vsl", "webinar", "Invitation video", "Top of /webinar"],
+  ["webinar_vip_vsl", "webinarVip", "Why VIP (60 sec)", "On the VIP choice"],
+  ["webinar_seat_vsl", "webinarSeat", "Watch before the webinar", "Free seat page"],
+  ["webinar_vipseat_vsl", "webinarVipSeat", "Welcome, VIP", "VIP seat page"]
+];
+var GC_WEB_GROUPS = [
+  ["webinar_group_free", "webinarGroupFree", "Free webinar group", "Shown on every free seat. Announcement-only works best."],
+  ["webinar_group_vip", "webinarGroupVip", "VIP group", "Shown only on VIP seats."]
+];
+async function gcWebinar(owner){
+  var el = $("gc-web"); if(!el) return;
+  var since = new Date(Date.now() - 60 * 864e5).toISOString();
+  var res = await Promise.all([
+    sb.from("webinars").select("id,title,starts_at,live_url,replay_url").eq("id", "scholarship-1").maybeSingle(),
+    sb.from("webinar_registrations").select("name,ticket,country,role,created_at,attended_at,vip_checkout_at,utm_source", { count: "exact" }).eq("webinar_id", "scholarship-1").order("created_at", { ascending: false }).limit(400),
+    sb.from("funnel_events").select("detail").in("detail", ["webinar_group_free", "webinar_group_vip"]).gte("created_at", since).limit(5000)
+  ]);
+  var w = res[0].data || {}, regs = res[1].data || [], total = res[1].count || regs.length, clicks = res[2].data || [];
+  var vip = regs.filter(function(r){ return r.ticket === "vip"; }).length;
+  var started = regs.filter(function(r){ return r.ticket !== "vip" && r.vip_checkout_at; }).length;
+  var came = regs.filter(function(r){ return r.attended_at; }).length;
+  var gf = clicks.filter(function(c){ return c.detail === "webinar_group_free"; }).length, gv = clicks.length - gf;
+  var input = function(id, cfgKey, val, ph){
+    return '<div class="gc-vin"><input id="' + id + '" value="' + esc(val || "") + '" placeholder="' + esc(ph) + '" ' + (owner ? "" : "disabled") + ">"
+      + (owner ? '<button class="gc-btn sm" onclick="' + cfgKey + '">Save</button>' : "") + "</div>";
+  };
+  var kpi = function(lbl, n, sub){ return '<div class="gc-step"><small>' + esc(lbl) + "</small><b>" + gcNum(n) + "</b><em>" + esc(sub || "") + "</em></div>"; };
+  el.innerHTML = '<div class="gc-ch"><h3>' + gcIc("video") + ' Webinar · ' + esc(w.title || "Scholarship 1.0") + '</h3><span>'
+    + (w.starts_at ? esc(new Date(w.starts_at).toLocaleString("en-GB", { timeZone: "Africa/Lagos", weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })) + " WAT" : "") + "</span></div>"
+    + '<div class="gc-flow">' + kpi("Registered", total, "all sign-ups") + kpi("VIP ($10)", vip, total ? Math.round(vip / total * 100) + "% of sign-ups" : "")
+      + kpi("Started VIP, not paid", started, "followed up automatically") + kpi("Opened free group", gf, "last 60 days") + kpi("Opened VIP group", gv, "last 60 days") + kpi("Joined live", came, "") + "</div>"
+    + '<div class="gc-two" style="margin-top:12px"><div>'
+    + '<h4 class="gc-sub">WhatsApp groups</h4>' + GC_WEB_GROUPS.map(function(g){
+        var val = ORB_FUNNEL[g[1]] || "";
+        return '<div class="gc-vrow"><span class="gc-dot t-mint"></span><div class="gc-vi"><b>' + esc(g[2]) + (val ? ' · <a href="' + esc(val) + '" target="_blank" rel="noopener">open</a>' : "") + "</b><small>" + esc(g[3]) + "</small>"
+          + input("gcw-" + g[0], "gcSaveWeb(\'" + g[0] + "\', \'" + g[1] + "\')", val, "https://chat.whatsapp.com/…") + "</div></div>";
+      }).join("")
+    + '<h4 class="gc-sub">Live room</h4>'
+    + '<div class="gc-vrow"><span class="gc-dot t-sky"></span><div class="gc-vi"><b>Live link</b><small>Zoom, YouTube Live or Whop. The join button uses it 15 minutes before the start.</small>' + input("gcw-live", "gcSaveWebLink(\'live_url\')", w.live_url, "https://…") + "</div></div>"
+    + '<div class="gc-vrow"><span class="gc-dot t-lilac"></span><div class="gc-vi"><b>Replay link</b><small>Turns on the replay emails and the "Watch the replay" button.</small>' + input("gcw-replay", "gcSaveWebLink(\'replay_url\')", w.replay_url, "https://…") + "</div></div>"
+    + '</div><div><h4 class="gc-sub">Webinar videos</h4>' + GC_WEB_VIDEOS.map(function(v){
+        var val = ORB_FUNNEL[v[1]] || "";
+        return '<div class="gc-vrow"><span class="gc-dot t-butter"></span><div class="gc-vi"><b>' + esc(v[2]) + "</b><small>" + esc(v[3]) + "</small>"
+          + input("gcw-" + v[0], "gcSaveWeb(\'" + v[0] + "\', \'" + v[1] + "\')", val, "https://youtu.be/…") + "</div></div>";
+      }).join("") + "</div></div>"
+    + '<h4 class="gc-sub">Latest sign-ups</h4>'
+    + (regs.length ? '<div class="gc-list">' + regs.slice(0, 12).map(function(r){
+        return '<div class="gc-call"><div class="gc-when"><b>' + esc(new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })) + "</b><span>" + esc(r.utm_source || "direct") + "</span></div>"
+          + '<div><b>' + esc(r.name || "") + "</b> <span class=\"gc-pill " + (r.ticket === "vip" ? "ok" : "no") + "\">" + (r.ticket === "vip" ? "VIP" : "Free") + "</span><br><small>" + esc([r.role, r.country].filter(Boolean).join(" · ")) + "</small></div></div>";
+      }).join("") + "</div>" : '<div class="gc-empty">No sign-ups yet. Share myorbuni.com/webinar (or /webinar/ig, /webinar/tt) to start.</div>')
+    + '<p class="gc-fine">The groups live on a separate WhatsApp Business number (Meta\'s group API allows only 8 people per group). Clicks are counted here; members are managed in WhatsApp.</p>';
+}
+window.gcSaveWeb = async function(key, funnelKey){
+  var el = $("gcw-" + key); if(!el) return;
+  var v = String(el.value || "").trim();
+  if(v && !/^https:\/\//.test(v)){ toast("Use a full https:// link."); return; }
+  if(/group/.test(key) && v && !/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com|whop\.com)\//.test(v)){ toast("Use a WhatsApp group invite link (chat.whatsapp.com/…)."); return; }
+  if(/vsl/.test(key) && v && !orbVideoSrc(v)){ toast("That does not look like a YouTube or MP4 link."); return; }
+  var r = await sb.from("whop_config").upsert({ key: key, value: v, is_public: true }, { onConflict: "key" });
+  if(r.error){ toast(friendly(r.error)); return; }
+  ORB_FUNNEL[funnelKey] = v; toast("Saved — live on the webinar page now.");
+};
+window.gcSaveWebLink = async function(col){
+  var el = $(col === "live_url" ? "gcw-live" : "gcw-replay"); if(!el) return;
+  var v = String(el.value || "").trim();
+  if(v && !/^https:\/\//.test(v)){ toast("Use a full https:// link."); return; }
+  var patch = {}; patch[col] = v || null;
+  var r = await sb.from("webinars").update(patch).eq("id", "scholarship-1");
+  if(r.error){ toast(friendly(r.error)); return; }
+  toast(col === "live_url" ? "Live link saved." : "Replay link saved. Replay emails start at the next run.");
 };
 async function gcCalls(){
   var el = $("gc-calls"); if(!el) return;
