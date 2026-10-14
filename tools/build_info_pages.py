@@ -6,8 +6,8 @@ The main site is one page (site/index.html) whose sections open by "#hash"; sear
 and AI tools see that as a single URL. These pages give each question its own address,
 with structured data (FAQPage, Service/Offer, BreadcrumbList) and llms.txt for AI tools.
 
-Facts come from what the site, the Whop products and the Student Service Agreement
-(24 Sept 2026) already say. Change a price or a rule there first, then here.
+Public pages say what is free and how it works. Prices for the optional paid services live only
+in the student portal and the Student Service Agreement (shown before anyone pays).
 
 Run:  python3 tools/build_info_pages.py   (then re-zip site/ and upload to Netlify)
 """
@@ -46,8 +46,8 @@ def hero(crumb, eyebrow, h1, lead, btns=True):
 
 
 CTA = ('<section class="s"><div class="wrap"><div class="cta-band"><div><h2>Start with the free assessment</h2>'
-       '<p>Two minutes. It looks at your grades, budget, documents and timeline, and shows which universities and which package fit. '
-       'Applying is free; you pay our fee only after a university sends you an offer letter.</p></div>'
+       '<p>Two minutes. It looks at your grades, budget, documents and timeline, and shows which universities and scholarships fit you. '
+       'Searching, comparing and applying through Orbuni is free.</p></div>'
        '<a class="btn btn-p" href="/#start">Check in 2 minutes</a></div></div></section>\n')
 
 CSS = """<style>
@@ -79,220 +79,205 @@ def page(path, title, desc, ld, body):
     return path
 
 
-PACKAGES = [
-    ("Standard", 800, "$800", "one payment, after your offer letter",
-     ["University and programme selection matched to your grades, budget and goals", "Application prepared and submitted",
-      "Every document checked before anything is sent", "Every update until the offer letter, then the acceptance steps",
-      "A named Orbuni counsellor"],
-     "If Orbuni cannot complete the service, 10% ($80) is refunded, or you carry the service over to the next intake at no extra fee."),
-    ("Plus", 1650, "$1,650", "one payment, after your offer letter",
-     ["Everything in Standard", "Visa assistance: what to prepare and how to apply (Orbuni is not a visa agent)",
-      "Airport pickup when you land in Türkiye", "Help in your first days"],
-     "If Orbuni cannot complete the service, 20% ($330) is refunded, or you carry it over to the next intake."),
-    ("Premier", 2650, "2 × $1,325", "two payments 30 days apart, starting after your offer letter",
-     ["Everything in Plus", "A trusted visa agent in your own country", "Escort from the airport to your university for registration",
-      "Our agent with you for up to 2 days after you arrive", "Residence permit (ikamet) support and local registrations"],
-     "If Orbuni cannot complete the service, 30–40% ($795–$1,060) is refunded, or you carry it over to the next intake."),
+# What every student gets, free. The paid services and their prices live in the student portal,
+# shown in writing before anyone chooses one (Student Service Agreement).
+FREE = [
+    ("Search 2,600+ programmes", "Tuition and the current scholarship side by side, at 48 partner universities in six countries."),
+    ("A dedicated counsellor", "One person who knows your file, from your first question to your first lecture."),
+    ("Scholarship matching", "We apply for the highest scholarship band your grades qualify for."),
+    ("Your application, done properly", "Every document checked, then submitted through official university partner channels."),
+    ("Your student portal", "Every document, update and offer letter in one private place."),
+    ("Housing, visa and arrival support", "Real residences chosen before you fly, a checked visa file, and help when you land."),
 ]
 
 FAQ = [
     ("Does it cost anything to apply through Orbuni?",
-     "No. Applying is free. Orbuni's service fee is paid only after a university sends you an offer letter."),
-    ("How much does Orbuni charge?",
-     "One service fee, once: Standard $800, Plus $1,650, or Premier $2,650 paid as two payments of $1,325. Optional extras: airport pickup $150 and escort to your university $200. See <a href=\"/pricing/\">prices</a>."),
+     "No. Searching, comparing and applying through Orbuni is free, with a dedicated counsellor."),
+    ("What does Orbuni do?",
+     "Orbuni is a university search and application platform based in Istanbul, Türkiye. Students compare 2,600+ programmes at 48 partner universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia, apply free, and get support with scholarships, admission, visa preparation, student housing and arrival."),
     ("Do I pay my tuition to Orbuni?",
      "No. Tuition and university deposits are paid directly to the university's own account, never to Orbuni. You get the university's receipt."),
-    ("Is Orbuni a real agency? How can I check?",
-     "Orbuni is run by Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba from Istanbul, and applies through AskUni's partner channel. You never pay before an offer letter, and payment happens only on myorbuni.com checkout pages. See <a href=\"/about/\">how to verify us</a>."),
-    ("Does Orbuni guarantee admission, a scholarship or a visa?",
-     "No. Universities decide admission and scholarships, and embassies decide visas. Orbuni tells you honestly what your grades are likely to get and shows you the university's own paperwork before you pay."),
+    ("How do I know Orbuni is genuine?",
+     "Orbuni is based in Istanbul and submits applications through official university partner channels. Applying is free, any payment happens only on secure myorbuni.com checkout pages, tuition goes straight to the university, and documents are uploaded to your private portal, never sent over WhatsApp. See <a href=\"/about/\">about Orbuni</a>."),
+    ("Can Orbuni help me get a scholarship?",
+     "Yes. Most private universities in Türkiye give international students a tuition scholarship of 25% to 100%. We match your grades to each university's scholarship bands and apply for the highest band you qualify for. See <a href=\"/articles/how-turkish-scholarships-work/\">how Turkish scholarships work</a>."),
     ("What is a \"scholarship\" at a Turkish private university?",
-     "Usually a discount on tuition that the university gives international students. Its size depends on the university, the programme and sometimes your grades. It is different from the Turkish government scholarship (Türkiye Bursları). See <a href=\"/articles/how-turkish-scholarships-work/\">how Turkish scholarships work</a>."),
+     "Usually a discount on tuition that the university gives international students. Its size depends on the university, the programme and sometimes your grades. It is different from the Turkish government scholarship (Türkiye Bursları)."),
     ("Which documents do I need to apply?",
-     "Usually your passport, your secondary school certificate (for example WAEC, NECO, KCSE or your country's equivalent), your transcript and a photograph. Some programmes ask for an English test. You upload them to your Orbuni portal, never over WhatsApp."),
+     "Usually your passport, your secondary school certificate (for example WAEC, NECO, KCSE or your country's equivalent), your transcript and a photograph. Some programmes ask for an English test. You upload them to your Orbuni portal."),
     ("Do I need IELTS to study in Türkiye?",
      "Not always. Many universities accept their own English test or proof of English-medium schooling. See <a href=\"/articles/do-you-need-ielts/\">do you need IELTS?</a>."),
-    ("What happens if my visa is refused?",
-     "You can carry your Orbuni service over to the next intake at no extra fee, or take the partial refund written in the Student Service Agreement for your package."),
+    ("Does Orbuni help with the student visa?",
+     "Yes. We prepare and check your visa file with you: what to bring, how to present it and what the consulate looks for. If a visa is refused, your file can be carried over to the next intake."),
     ("Can Orbuni help with housing in Istanbul?",
-     "Yes. Orbuni shows real student residences with photos and prices, and you choose before you fly. The contract is with the residence. See <a href=\"/housing/\">student housing</a>."),
+     "Yes. Orbuni shows real student residences with photos and prices, and you choose before you fly. See <a href=\"/housing/\">student housing</a>."),
     ("Which countries does Orbuni place students in?",
-     "Mainly Türkiye, plus Northern Cyprus, the UAE, Germany, Egypt and Russia."),
+     "Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia."),
     ("Who does Orbuni work with?",
-     "Students and parents mostly from Africa, the Middle East and Asia, and partner education agencies who refer students."),
+     "Students and parents from Africa, the Middle East, Asia and Europe, and partner education agencies who refer students."),
     ("How fast will someone answer me?",
-     "The WhatsApp assistant answers at any hour. A person from the team replies in working hours (Istanbul time) and steps in whenever the question needs a human."),
+     "The WhatsApp assistant answers at any hour, and a counsellor replies in working hours (Istanbul time)."),
     ("How do I start?",
-     "Take the free 2-minute assessment at myorbuni.com/#start. It shows which universities and which package fit your grades, budget, documents and timeline."),
+     "Take the free 2-minute assessment at myorbuni.com/#start. It shows which universities and scholarships fit your grades, budget, documents and timeline."),
 ]
 
 
 def build():
     made = []
+    free_cards = "".join(f"<li><h3>{esc(a)}</h3><ul><li>{esc(b)}</li></ul></li>" for a, b in FREE)
 
-    # ---------- prices
-    offers = [{"@type": "Offer", "name": f"Orbuni {n}", "price": str(p), "priceCurrency": "USD",
-               "description": f"{when}. " + "; ".join(inc)} for n, p, _, when, inc, _ in PACKAGES]
-    ld = [crumbs("Prices", "/pricing/"),
-          {"@context": "https://schema.org", "@type": "Service", "name": "University admission service for international students",
-           "serviceType": "Study abroad admission and arrival support", "provider": ORG, "areaServed": "Worldwide",
-           "offers": offers},
-          faq_ld(FAQ[:4])]
-    cards = []
-    for i, (n, p, price, when, inc, refund) in enumerate(PACKAGES):
-        cards.append(f'<li class="{"hl" if i == 1 else ""}"><h3>{n}</h3><div class="pr">{price} <small>{esc(when)}</small></div>'
-                     f'<ul>{"".join(f"<li>{esc(x)}</li>" for x in inc)}</ul><p class="rf">{esc(refund)}</p></li>')
-    body = hero("Prices", "Prices · paid only after your offer letter",
-                'What Orbuni costs, <span class="grad">and when you pay</span>',
-                "Applying is free. You pay one service fee, once, and only after a university sends you an offer letter. "
-                "Tuition is always paid straight to the university, never to us.") + f"""
-<section class="s"><div class="wrap"><p class="eyebrow">Three packages</p><h2>Choose how much help you want after the offer</h2>
-<ul class="pk">{"".join(cards)}</ul>
-<p class="note" style="margin-top:14px">Add when you need it: airport pickup in Türkiye <b>$150</b>, escort from the airport to your university <b>$200</b>, booked in your portal (full refund if cancelled 48 hours before). The full terms are in the <a href="/docs/Orbuni-Student-Service-Agreement.pdf">Student Service Agreement</a> (24 September 2026).</p></div></section>
-<section class="s alt"><div class="wrap"><p class="eyebrow">The money map</p><h2>Who you pay, for what, and when</h2>
-<table class="money"><thead><tr><th>What</th><th>Paid to</th><th>When</th></tr></thead><tbody>
-<tr><td>Applying through Orbuni</td><td>Nobody. It is free</td><td>—</td></tr>
-<tr><td>Orbuni service fee ($800 / $1,650 / 2 × $1,325)</td><td>Orbuni, on a myorbuni.com checkout page</td><td>After your offer letter</td></tr>
-<tr><td>Tuition and the university's deposit</td><td>The university's own account, never Orbuni</td><td>By the university's deadline</td></tr>
-<tr><td>Visa and residence-permit fees</td><td>The government</td><td>When you apply</td></tr>
-<tr><td>Housing</td><td>The residence (contract with them)</td><td>Before you fly, as the residence asks</td></tr>
-</tbody></table></div></section>
-<section class="s"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>About paying</h2>{faq_html(FAQ[:4] + [FAQ[8]])}</div></section>
+    # ---------- what it costs (free)
+    ld = [crumbs("Is it free?", "/pricing/"),
+          {"@context": "https://schema.org", "@type": "Service", "name": "University search and application for international students",
+           "serviceType": "Study abroad admission, scholarship and arrival support", "provider": ORG, "areaServed": "Worldwide",
+           "offers": {"@type": "Offer", "name": "Apply through Orbuni", "price": "0", "priceCurrency": "USD",
+                      "description": "Searching, comparing and applying through Orbuni is free, with a dedicated counsellor."}},
+          faq_ld([FAQ[0], FAQ[2], FAQ[3]])]
+    body = hero("Is it free?", "Free to search, compare and apply", 'Apply through Orbuni <span class="grad">for free</span>',
+                "Searching, comparing and applying through Orbuni costs nothing, and you get a dedicated counsellor from the start. "
+                "Tuition is always paid straight to the university.") + f"""
+<section class="s"><div class="wrap"><p class="eyebrow">Included, free</p><h2>Everything you need to apply</h2>
+<ul class="pk">{free_cards}</ul></div></section>
+<section class="s alt"><div class="wrap"><p class="eyebrow">The money map</p><h2>Who receives what</h2>
+<table class="money"><thead><tr><th>What</th><th>Paid to</th></tr></thead><tbody>
+<tr><td>Searching and applying through Orbuni</td><td>Nobody. It is free</td></tr>
+<tr><td>Tuition and the university's deposit</td><td>The university's own account, never Orbuni</td></tr>
+<tr><td>Visa and residence-permit fees</td><td>The government</td></tr>
+<tr><td>Housing</td><td>The residence (contract with them)</td></tr>
+</tbody></table>
+<p class="note" style="margin-top:14px">Optional services such as airport pickup or full arrival support can be booked inside your student portal, with what they include shown in writing before you choose.</p></div></section>
+<section class="s"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>About money</h2>{faq_html([FAQ[0], FAQ[2], FAQ[3]])}</div></section>
 """
-    made.append(page("/pricing/", "Orbuni prices: $800, $1,650 or $2,650, paid only after your offer letter | Orbuni",
-                     "What Orbuni costs: applying is free; one service fee after your university offer letter (Standard $800, Plus $1,650, Premier 2 × $1,325). Tuition is paid to the university, never to Orbuni.",
+    made.append(page("/pricing/", "Is Orbuni free? Apply to universities abroad for free | Orbuni",
+                     "Searching, comparing and applying to universities through Orbuni is free, with a dedicated counsellor. Tuition is paid directly to the university.",
                      ld, body))
 
     # ---------- how it works
     steps = [
-        ("Take the free 2-minute assessment", "Your grades, budget, documents and timeline. It shows which universities and which package fit, not a list of twenty."),
-        ("Talk to a person", "On WhatsApp or a call. Ready students get a small group with their counsellor and a founder."),
-        ("Choose three routes", "One ambitious, one solid, one safe: university, programme and intake, with the published fee and current discount."),
+        ("Take the free 2-minute assessment", "Your grades, budget, documents and timeline. It shows which universities and scholarships fit you, not a list of twenty."),
+        ("Talk to your counsellor", "On WhatsApp or a call. Ready students get a small group with their counsellor."),
+        ("Choose three routes", "One ambitious, one solid, one safe: university, programme and intake, with the published fee and current scholarship."),
         ("Upload your documents to the portal", "Passport, certificate, transcript, photo. We check every document before anything is sent."),
-        ("We apply through the official partner channel", "You follow every step in your portal until the offer letter arrives."),
-        ("Offer letter: choose your package", "Standard, Plus or Premier. This is the first time you pay Orbuni anything."),
-        ("Pay the university's deposit to the university", "Straight to its own account, by its own deadline, which we show you on the offer page."),
-        ("Visa, housing and flight", "Visa preparation, a real room chosen before you fly, and (with Plus or Premier) pickup when you land."),
-        ("Arrival and registration", "Help in your first days; with Premier, escort to registration and residence-permit support."),
+        ("We apply through official partner channels", "You follow every step in your portal until the offer letter arrives."),
+        ("Your offer letter arrives", "We go through it with you: the programme, the scholarship and the deposit deadline."),
+        ("Pay the university's deposit to the university", "Straight to its own account, by its own deadline."),
+        ("Visa, housing and flight", "A checked visa file, a real room chosen before you fly, and pickup when you land."),
+        ("Arrival and registration", "Registration at your university and residence-permit support in your first weeks."),
     ]
     ld = [crumbs("How it works", "/how-it-works/"),
-          {"@context": "https://schema.org", "@type": "HowTo", "name": "How to apply to a university in Türkiye with Orbuni",
+          {"@context": "https://schema.org", "@type": "HowTo", "name": "How to apply to a university abroad with Orbuni",
            "step": [{"@type": "HowToStep", "position": i + 1, "name": a, "text": b} for i, (a, b) in enumerate(steps)]}]
     body = hero("How it works", "From first message to first lecture", 'How Orbuni works, <span class="grad">step by step</span>',
-                "You don't need to learn the whole system. You follow a file that we run every week, and you can see every step in your portal.") + f"""
+                "You don't need to learn the whole system. Your counsellor runs your file every week, and you see every step in your portal.") + f"""
 <section class="s"><div class="wrap"><ol class="steps">{"".join(f"<li><b>{esc(a)}</b><span>{esc(b)}</span></li>" for a, b in steps)}</ol></div></section>
 <section class="s alt"><div class="wrap two">
-<div class="box ok"><h3>What we will do</h3><ul><li>Tell you the real fee, from the university's own published figures</li><li>Tell you honestly when your grades will not win the discount you want</li><li>Show you the university's own paperwork before you pay anything</li><li>Answer you, including when the answer is bad news</li></ul></div>
-<div class="box no"><h3>What we will never promise</h3><ul><li>Admission or a scholarship amount: the university decides</li><li>A visa: the embassy decides</li><li>A job or a ranking</li><li>Anything we cannot show you in writing</li></ul></div>
+<div class="box ok"><h3>What you can count on</h3><ul><li>The real fee, from the university's own published figures</li><li>The highest scholarship band your grades qualify for</li><li>The university's own paperwork before any deposit</li><li>A counsellor who answers, every step of the way</li></ul></div>
+<div class="box ok"><h3>How your money and documents are protected</h3><ul><li>Tuition goes straight to the university's account</li><li>Payments only on secure myorbuni.com pages</li><li>Documents in your private portal, never on WhatsApp</li><li>Partner agencies never see your documents</li></ul></div>
 </div></section>
 """
-    made.append(page("/how-it-works/", "How Orbuni works: apply to university in Türkiye step by step | Orbuni",
-                     "From the free 2-minute assessment to your first lecture in Türkiye: documents, application, offer letter, deposit, visa, housing and arrival, and what Orbuni will and will not promise.",
+    made.append(page("/how-it-works/", "How Orbuni works: apply to university abroad step by step | Orbuni",
+                     "From the free 2-minute assessment to your first lecture: documents, application, scholarship, offer letter, deposit, visa, housing and arrival.",
                      ld, body))
 
-    # ---------- about / verify
-    ld = [crumbs("About and how to verify us", "/about/"),
+    # ---------- about
+    ld = [crumbs("About Orbuni", "/about/"),
           {"@context": "https://schema.org", "@type": "AboutPage", "url": BASE + "/about/", "about": ORG,
            "mainEntity": {"@type": "EducationalOrganization", "@id": BASE + "/#org", "name": "Orbuni",
-                          "founder": [{"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director"},
-                                      {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer"}],
-                          "employee": [{"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)"}],
                           "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"}}},
-          faq_ld([FAQ[3], FAQ[2], FAQ[4]])]
-    body = hero("About", "About Orbuni · and how to check us", 'Who we are, <span class="grad">and how to verify it</span>',
-                "Families in our market have been robbed by fake agents often enough that suspicion is the right starting point. Here is exactly who we are, and how you can check every line.") + f"""
-<section class="s"><div class="wrap two">
-<div class="box"><h3>Who we are</h3><p style="color:var(--dim)">Orbuni is run by two founders, <b>Nurudeen Muhammad Abdulkareem</b> (Founder &amp; Managing Director) and <b>Godfrey Emmanuel Wudaba</b> (COO), working from Istanbul, with <b>Lenns Wordjy Coutilien</b> as Creative Director, in charge of creativity, VSL videos and marketing. Applications go through <b>AskUni</b>'s partner channel, the university application platform that holds our access to partner universities. We are small on purpose, and we tell you that on purpose.</p>
-<p style="color:var(--dim)">We started Orbuni because we watched friends and family pay agents up front for admissions that never came. So we built the opposite: published fees, a published process, and a named person on your file.</p></div>
-<div class="box ok"><h3>Seven ways to check us</h3><ul>
-<li>You never pay Orbuni before a university's offer letter</li>
-<li>Payment happens only on <b>myorbuni.com</b> checkout pages (Whop or Paystack), never to a personal account</li>
+          faq_ld([FAQ[1], FAQ[3], FAQ[2]])]
+    body = hero("About", "About Orbuni", 'From search <span class="grad">to first lecture</span>',
+                "Orbuni is a university search and application platform based in Istanbul, Türkiye. Students from Africa and around the world use it to find the right programme, apply free, win the best available scholarship and arrive ready.") + f"""
+<section class="s"><div class="wrap"><ul class="pk">
+<li><h3>2,698 programmes</h3><ul><li>Tuition and the current scholarship side by side</li></ul></li>
+<li><h3>48 partner universities</h3><ul><li>In Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia</li></ul></li>
+<li><h3>Free to apply</h3><ul><li>With a dedicated counsellor and a private student portal</li></ul></li>
+</ul></div></section>
+<section class="s alt"><div class="wrap two">
+<div class="box"><h3>What Orbuni does</h3><ul>{"".join(f"<li><b>{esc(a)}.</b> {esc(b)}</li>" for a, b in FREE)}</ul></div>
+<div class="box ok"><h3>How to recognise us</h3><ul>
+<li>Applying is free</li>
+<li>Any payment happens only on <b>myorbuni.com</b> checkout pages (Whop or Paystack), never to a personal account</li>
 <li>Tuition goes to the university's own account; you get its receipt</li>
 <li>We never ask for card details, passwords or codes in a chat</li>
 <li>Documents go in your portal, never over WhatsApp</li>
-<li>Our only WhatsApp number is <b>+1 443 448 1577</b> (“MY ORBUNI”)</li>
-<li>You can come and meet us in Istanbul</li></ul></div>
+<li>Our only WhatsApp number is <b>+1 443 448 1577</b></li>
+<li>You are welcome to visit us in Istanbul</li></ul></div>
 </div></section>
-<section class="s alt"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>Trust, money and promises</h2>{faq_html([FAQ[3], FAQ[2], FAQ[4], FAQ[12]])}
-<p class="note" style="margin-top:14px">More: <a href="/articles/is-this-agency-real/">how to check whether any education agency is real</a> · <a href="/pricing/">prices</a> · <a href="/how-it-works/">how it works</a></p></div></section>
+<section class="s"><div class="wrap faq"><p class="eyebrow">Questions</p><h2>About Orbuni</h2>{faq_html([FAQ[1], FAQ[3], FAQ[2], FAQ[12]])}
+<p class="note" style="margin-top:14px">More: <a href="/articles/is-this-agency-real/">how to check whether any education agency is real</a> · <a href="/pricing/">is it free?</a> · <a href="/how-it-works/">how it works</a></p></div></section>
 """
-    made.append(page("/about/", "About Orbuni: who we are and how to verify us | Orbuni",
-                     "Orbuni is run by Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba from Istanbul. Seven ways to check us: no payment before an offer letter, tuition paid to the university, payment only on myorbuni.com.",
+    made.append(page("/about/", "About Orbuni: university search and application platform, Istanbul | Orbuni",
+                     "Orbuni is a university search and application platform based in Istanbul. Compare 2,600+ programmes at 48 partner universities, apply free, and get scholarship, visa and housing support.",
                      ld, body))
 
     # ---------- parents
     pq = [
-        ("Is my child safe in Istanbul?", "Istanbul is a large city with a big international student population. We show real residences with photos, help choose one before the flight, and with Plus or Premier someone meets your child at the airport."),
-        ("Who is accountable if something goes wrong?", "A named counsellor on the file, a written Student Service Agreement with refund rules, and a portal where you can see every step."),
-        ("Can I pay the service fee for my child?", "Yes. Parents often pay. The fee is paid only after the offer letter, on a myorbuni.com checkout page, and tuition goes straight to the university."),
-        FAQ[2], FAQ[4],
+        ("Is my child safe in Istanbul?", "Istanbul is a large city with a big international student population. We show real residences with photos, help choose one before the flight, and someone can meet your child at the airport."),
+        ("Who is responsible for my child's application?", "A dedicated counsellor on the file, a private portal where you can see every step, and a written agreement for any service you choose."),
+        ("Who receives the tuition?", "The university, directly, on its own account. You get the university's receipt. Orbuni never takes tuition."),
+        FAQ[4], FAQ[8],
     ]
     ld = [crumbs("For parents", "/parents/"), faq_ld(pq)]
     body = hero("For parents", "For parents and sponsors", 'Your child, your money, <span class="grad">your questions</span>',
-                "You are usually the one paying, so you deserve straight answers: what it costs, where the money goes, who is responsible, and what we will not promise.") + f"""
+                "You are usually the one paying, so you deserve straight answers: where the money goes, who is responsible, and what happens at each step.") + f"""
 <section class="s"><div class="wrap two">
-<div class="box"><h3>What it costs, in one minute</h3><ul><li>Applying: free</li><li>Orbuni's fee: $800, $1,650 or 2 × $1,325, only after the offer letter</li><li>Tuition and deposit: paid straight to the university</li><li>Visa and permit fees: paid to the government</li></ul><p style="margin-top:10px"><a href="/pricing/">See the full price page →</a></p></div>
-<div class="box"><h3>What you will see</h3><ul><li>The university's published fee and current discount</li><li>The university's own offer letter before you pay us</li><li>The deposit deadline, set by the university</li><li>Every step of the application in the portal</li></ul></div>
+<div class="box"><h3>Where the money goes</h3><ul><li>Applying through Orbuni: free</li><li>Tuition and deposit: paid straight to the university</li><li>Visa and permit fees: paid to the government</li><li>Housing: paid to the residence</li></ul></div>
+<div class="box"><h3>What you will see</h3><ul><li>The university's published fee and current scholarship</li><li>The university's own offer letter</li><li>The deposit deadline, set by the university</li><li>Every step of the application in the portal</li></ul></div>
 </div></section>
-<section class="s alt"><div class="wrap faq"><p class="eyebrow">Questions parents ask</p><h2>Answered without selling a dream</h2>{faq_html(pq)}</div></section>
+<section class="s alt"><div class="wrap faq"><p class="eyebrow">Questions parents ask</p><h2>Straight answers</h2>{faq_html(pq)}</div></section>
 """
-    made.append(page("/parents/", "For parents: costs, safety and accountability when your child studies in Türkiye | Orbuni",
-                     "For parents and sponsors: what studying in Türkiye with Orbuni costs, where the money goes (tuition to the university, never to Orbuni), who is accountable, and what we will not promise.",
+    made.append(page("/parents/", "For parents: safety, money and support when your child studies abroad | Orbuni",
+                     "For parents and sponsors: where the money goes (tuition straight to the university), who looks after the application, and how housing, visa and arrival are handled.",
                      ld, body))
 
     # ---------- FAQ
     ld = [crumbs("Questions", "/faq/"), faq_ld(FAQ)]
     body = hero("Questions", "Frequently asked questions", 'Straight answers <span class="grad">to common questions</span>',
-                "The questions students and parents actually ask us, answered the way we answer them on WhatsApp.") + \
+                "The questions students and parents ask us most, answered the way our counsellors answer them.") + \
         f'<section class="s"><div class="wrap faq">{faq_html(FAQ)}</div></section>\n'
-    made.append(page("/faq/", "Orbuni FAQ: fees, scholarships, documents, visas and housing in Türkiye | Orbuni",
-                     "Straight answers: is applying free, what Orbuni charges, who receives tuition, what a Turkish scholarship is, which documents you need, IELTS, visa refusal, housing in Istanbul.",
+    made.append(page("/faq/", "Orbuni FAQ: applying free, scholarships, documents, visas and housing | Orbuni",
+                     "Is applying through Orbuni free, who receives tuition, how Turkish scholarships work, which documents you need, IELTS, visa support and housing in Istanbul.",
                      ld, body))
     return made
 
 
 def llms(made):
     """llms.txt: a short, factual map of the site for AI assistants (llmstxt.org format)."""
-    pk = "\n".join(f"- {n}: {price}, {when}. Refund if Orbuni cannot complete: {refund.split(', or')[0].replace('If Orbuni cannot complete the service, ', '')}"
-                   for n, _, price, when, _, refund in PACKAGES)
     faqs = "\n".join(f"- {q} {re.sub(r'<[^>]+>', '', a)}" for q, a in FAQ)
+    free = "\n".join(f"- {a}: {b}" for a, b in FREE)
     txt = f"""# Orbuni
 
-> Orbuni is a small education consultancy in Istanbul that helps international students, mostly from Africa, the Middle East and Asia, apply to universities in Türkiye (and Northern Cyprus, the UAE, Germany, Egypt and Russia). Applying is free; the service fee is paid only after a university sends an offer letter; tuition is always paid directly to the university, never to Orbuni.
+> Orbuni is a university search and application platform based in Istanbul, Türkiye. International students, mainly from Africa, the Middle East and Asia, use it to compare 2,600+ programmes at 48 partner universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia, apply free with a dedicated counsellor, and get support with scholarships, admission, visa preparation, student housing and arrival. Tuition is always paid directly to the university.
 
 Key facts:
-- Run by Nurudeen Muhammad Abdulkareem (Founder & Managing Director) and Godfrey Emmanuel Wudaba (COO), Istanbul, Türkiye.
-- Applies through AskUni's university partner channel.
-- Website: https://myorbuni.com · WhatsApp: +1 443 448 1577 ("MY ORBUNI") · Instagram: https://www.instagram.com/myorbuni
-- Orbuni does not guarantee admission, scholarships or visas: universities and embassies decide.
+- Based in Istanbul, Türkiye. Applications are submitted through official university partner channels.
+- 2,698 programmes, 48 partner universities, 6 countries.
+- Searching, comparing and applying is free, with a dedicated counsellor and a private student portal.
+- Website: https://myorbuni.com · WhatsApp: +1 443 448 1577 · Instagram: https://www.instagram.com/myorbuni
 
-Prices (USD, one fee, once):
-{pk}
-- Extras: airport pickup $150; escort from airport to university $200.
+What every student gets, free:
+{free}
 
 ## Main pages
-- [Prices and the money map]({BASE}/pricing/): what Orbuni charges, when, and who receives each payment
+- [Is it free?]({BASE}/pricing/): what is free and who receives each payment
 - [How it works]({BASE}/how-it-works/): the nine steps from assessment to arrival
-- [About and how to verify Orbuni]({BASE}/about/): who runs it and seven ways to check
-- [For parents]({BASE}/parents/): costs, safety, accountability
+- [About Orbuni]({BASE}/about/): what Orbuni does and how to recognise it
+- [For parents]({BASE}/parents/): money, safety and support
 - [FAQ]({BASE}/faq/): common questions answered
 - [Free 2-minute assessment]({BASE}/#start): the way to start
 
 ## Universities, subjects and costs
-- [Universities in Türkiye with published fees]({BASE}/universities/)
+- [Universities with published fees]({BASE}/universities/)
 - [Study by subject]({BASE}/study/): medicine, nursing, engineering, business and more, with fees per university
-- [Scholarships]({BASE}/scholarships/): how tuition discounts at Turkish private universities work
+- [Scholarships]({BASE}/scholarships/): how tuition scholarships at Turkish private universities work
 - [Student housing in Istanbul]({BASE}/housing/)
 
 ## Guides
 - [What a year in Türkiye actually costs]({BASE}/articles/what-turkiye-actually-costs/)
 - [How Turkish scholarships work]({BASE}/articles/how-turkish-scholarships-work/)
 - [Do you need IELTS?]({BASE}/articles/do-you-need-ielts/)
-- [Nigerian student visa refusals]({BASE}/articles/nigerian-student-visa-refusals/)
+- [Student visa refusals and how to avoid them]({BASE}/articles/nigerian-student-visa-refusals/)
 - [How to check whether an education agency is real]({BASE}/articles/is-this-agency-real/)
-
-## Optional
-- [Student Service Agreement (PDF)]({BASE}/docs/Orbuni-Student-Service-Agreement.pdf)
 
 ## Questions and answers
 {faqs}
@@ -339,14 +324,14 @@ def sitemap(made):
     extra = made + ["/articles/", "/housing/", "/universities/", "/scholarships/"]
     for path in extra:
         sm = re.sub(r"\s*<url><loc>" + re.escape(BASE + path) + r"</loc>.*?</url>", "", sm)
-    pri = {"/pricing/": "0.9", "/how-it-works/": "0.9", "/about/": "0.8", "/faq/": "0.8", "/parents/": "0.7"}
+    pri = {"/pricing/": "0.8", "/how-it-works/": "0.9", "/about/": "0.8", "/faq/": "0.8", "/parents/": "0.7"}
     rows = [f"  <url><loc>{BASE}{x}</loc><lastmod>{TODAY}</lastmod><changefreq>monthly</changefreq><priority>{pri.get(x, '0.8')}</priority></url>" for x in extra]
     sm = sm.replace("</urlset>", "\n".join(rows) + "\n</urlset>")
     sm = re.sub(r"(<loc>https://myorbuni\.com/</loc><lastmod>)[^<]*", r"\g<1>" + TODAY, sm)
     open(p, "w", encoding="utf-8").write(sm)
 
 
-NEW_LINKS = '<a href="/pricing/">Prices</a><a href="/how-it-works/">How it works</a><a href="/parents/">For parents</a><a href="/faq/">Questions</a><a href="/about/">About &amp; verify us</a>'
+NEW_LINKS = '<a href="/pricing/">Is it free?</a><a href="/how-it-works/">How it works</a><a href="/parents/">For parents</a><a href="/faq/">Questions</a><a href="/about/">About Orbuni</a>'
 
 
 def footers():
@@ -358,7 +343,9 @@ def footers():
                 continue
             fp = os.path.join(dp, f)
             t = open(fp, encoding="utf-8").read()
-            if 'href="/pricing/">Prices</a>' in t or "<h4>Orbuni</h4>" not in t:
+            t = t.replace('<a href="/pricing/">Prices</a>', '<a href="/pricing/">Is it free?</a>').replace('<a href="/about/">About Orbuni</a>', '<a href="/about/">About Orbuni</a>')
+            if 'href="/pricing/">' in t or "<h4>Orbuni</h4>" not in t:
+                open(fp, "w", encoding="utf-8").write(t)
                 continue
             t = t.replace('<h4>Orbuni</h4><a href="/">Home</a>', '<h4>Orbuni</h4><a href="/">Home</a>' + NEW_LINKS, 1)
             open(fp, "w", encoding="utf-8").write(t)

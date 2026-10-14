@@ -6,7 +6,7 @@
 try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if(_g&&!location.hash)history.replaceState(null,"",location.pathname+location.search+(_g==="webinar"?"#webinar":"#start"))}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Study in Turkey from Nigeria, Ghana &amp; Africa | Orbuni</title>
-<meta name="description" content="Study in Turkey with a named counsellor: real university fees, scholarships and visa help for students from Nigeria, Ghana and Africa. Free 2-minute assessment.">
+<meta name="description" content="Study in Turkey with a named counsellor: search 2,600+ programmes at 48 partner universities, apply free, and get scholarship, visa and housing support. Free 2-minute assessment.">
 <link rel="canonical" href="https://myorbuni.com/">
 <meta name="theme-color" content="#070C16">
 <meta name="author" content="Orbuni">
@@ -43,7 +43,7 @@ try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if
   "url": "https://myorbuni.com/",
   "logo": "https://myorbuni.com/icon-192.png",
   "image": "https://myorbuni.com/share.png",
-  "description": "Orbuni is an education consultancy placing international students into universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia — published fees, a named counsellor, and tuition paid direct to the university.",
+  "description": "Orbuni is a university search and application platform based in Istanbul, Türkiye. Students compare 2,600+ programmes at 48 partner universities in Türkiye, Northern Cyprus, the UAE, Germany, Egypt and Russia, apply free with a dedicated counsellor, and get support with scholarships, admission, visa preparation, student housing and arrival. Tuition is paid directly to the university.",
   "areaServed": ["Türkiye","Northern Cyprus","United Arab Emirates","Germany","Egypt","Russia"],
   "sameAs": [
     "https://www.instagram.com/myorbuni",
@@ -51,16 +51,9 @@ try{var _g=(location.search.match(/[?&]go=(start|quiz|webinar)(&|$)/)||[])[1];if
     "https://whop.com/orbuni-community/"
   ],
   "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"},
-  "founder": [
-    {"@type": "Person", "name": "Nurudeen Muhammad Abdulkareem", "jobTitle": "Founder & Managing Director", "sameAs": "https://www.instagram.com/coolguyn94/"},
-    {"@type": "Person", "name": "Godfrey Emmanuel Wudaba", "jobTitle": "Chief Operations Officer", "sameAs": "https://www.instagram.com/wudaba_jnr/"}
-  ],
-  "employee": [
-    {"@type": "Person", "name": "Lenns Wordjy Coutilien", "jobTitle": "Creative Director (creativity, VSL and marketing)", "sameAs": "https://www.instagram.com/lennswordjy/"}
-  ],
   "contactPoint": {"@type": "ContactPoint", "contactType": "admissions", "telephone": "+1-443-448-1577",
     "availableLanguage": ["English"], "url": "https://wa.me/14434481577"},
-  "knowsAbout": ["Study in Türkiye", "Turkish university admission", "Tuition scholarships for international students", "Student visa preparation", "Student housing in Istanbul"],
+  "knowsAbout": ["University search and comparison", "Study in Türkiye", "Turkish university admission", "Tuition scholarships for international students", "Student visa preparation", "Student housing in Istanbul"],
   "subjectOf": {"@type": "WebPage", "url": "https://myorbuni.com/faq/"}
 }
 </script>
@@ -1488,6 +1481,7 @@ dialog::backdrop{background:rgba(3,6,13,.88)}
 .abshot{border-radius:var(--rl);overflow:hidden;border:1px solid var(--line2);
   aspect-ratio:4/3;background:var(--p2);box-shadow:0 22px 50px rgba(0,0,0,.42)}
 .abshot img{width:100%;height:100%;object-fit:cover;display:block}
+.ab-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:6px}.ab-stats>div{background:var(--p1);border:1px solid var(--line);border-radius:var(--rl);padding:18px}.ab-stats b{display:block;font:800 clamp(26px,3.4vw,38px)/1 var(--disp);letter-spacing:-.03em;color:var(--gold)}.ab-stats span{display:block;margin-top:8px;font-size:13.5px;color:var(--dim)}@media(max-width:760px){.ab-stats{grid-template-columns:1fr 1fr}}
 .abgrid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,3vw,40px);
   align-items:center;margin-top:34px}
 @media(max-width:820px){.abgrid{grid-template-columns:1fr}.abshot{aspect-ratio:16/9}}
@@ -1837,6 +1831,12 @@ body.on-start .tick, body.on-start > nav, body.on-start #nscrim, body.on-start >
 
 /* pricing */
 .lp-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.lp-free{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lp-free-i{background:#fff;border:1px solid var(--l-line,#E7E5DF);border-radius:18px;padding:20px 20px 18px;text-align:left;position:relative}
+.lp-free-i::before{content:"✓";display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#EAF7F1;color:#127A52;font-weight:800;font-size:14px;margin-bottom:12px}
+.lp-free-i b{display:block;font-size:16px;color:var(--l-ink,#0D1321);margin-bottom:5px}
+.lp-free-i span{display:block;font-size:14px;line-height:1.55;color:var(--l-mute,#6B7280)}
+@media(max-width:900px){.lp-free{grid-template-columns:1fr}}
 .lp-tier{background:var(--l-card);border-radius:28px;padding:30px 26px;display:flex;flex-direction:column;gap:12px;position:relative;
   box-shadow:0 1px 0 rgba(13,19,33,.03),inset 0 0 0 1px var(--l-line)}
 .lp-tier.best{background:var(--l-ink);color:#fff;box-shadow:0 30px 60px rgba(13,19,33,.25)}
@@ -7935,17 +7935,17 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h2 style="margin:14px 0 12px">Built by people who<br><span class="grad">made this journey.</span></h2>
     <div class="story" style="margin-top:34px">
       <div>
-        <p class="lead" style="margin-bottom:16px">Orbuni started the way most good things do — because something was broken. Students in our community were paying agents hundreds of thousands of naira for admissions that never arrived. Families were sending money to strangers. Good students were staying home.</p>
+        <p class="lead" style="margin-bottom:16px">Orbuni started the way most good things do — because something was broken. Students everywhere were paying agents up front for admissions that never arrived. Families were sending money to strangers. Good students were staying home.</p>
         <p class="lead" style="margin-bottom:16px">We had done the journey ourselves. We knew which universities actually admit, which scholarships are real, and which agents disappear once the transfer clears. So we built the agency we wished had existed when we were the ones applying.</p>
         <p class="lead">Today Orbuni publishes what others hide — the real fee, the real scholarship band, and the honest answer about whether you can win it.</p>
       </div>
       <div class="photo" style="aspect-ratio:4/3;padding:0;display:block">
-        <img src="photos/inline/4c34f55e4e7c.jpg" alt="Nurudeen Muhammad Abdulkareem at the Africa Diaspora Forum, İstanbul"
+        <img src="photos/inline/4c34f55e4e7c.jpg" alt="Orbuni at the Africa Diaspora Forum, İstanbul"
              style="width:100%;height:100%;object-fit:cover;display:block">
         <div style="position:absolute;left:0;right:0;bottom:0;padding:34px 18px 15px;text-align:left;
              background:linear-gradient(transparent,rgba(7,12,22,.55) 45%,rgba(7,12,22,.95))">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold)">AFRICA DIASPORA FORUM · İSTANBUL</div>
-          <div style="font-size:13px;color:var(--txt);margin-top:4px">Nurudeen on the organising committee — Türkiye–Africa cooperation</div>
+          <div style="font-size:13px;color:var(--txt);margin-top:4px">Orbuni on the organising committee: Türkiye–Africa cooperation</div>
         </div>
       </div>
       </div>
@@ -7959,7 +7959,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div class="tgrid" id="team"></div>
     <div class="fnote rv">
       <div class="fnote-in">
-        <span class="eyebrow">A note from the founder</span>
+        <span class="eyebrow">A note from our Managing Director</span>
         <blockquote>
           Education is the one sector that will never die. There will always be a student somewhere
           with a dream and no map. <em>I have been that student.</em>
@@ -7976,7 +7976,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <blockquote class="big">Every student has a right to dream.</blockquote>
         <div class="sig">
           <b>Nurudeen Muh. Abdulkareem</b>
-          <span>Founder & Managing Director, Orbuni</span>
+          <span>Managing Director, Orbuni</span>
         </div>
       </div>
     </div>
@@ -8011,7 +8011,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <section class="cr-hero"><div class="wrap">
     <span class="eyebrow">Careers at Orbuni</span>
     <h2 class="h1x">Do the work that gets a student<br><span class="grad">from a dream to a lecture hall.</span></h2>
-    <p class="lead">We are a small team in İstanbul and remote across Africa, building the study-abroad agency we wished existed: published fees, honest answers, and one named person beside every student.</p>
+    <p class="lead">Our team works from İstanbul and remotely across Africa and beyond, helping students from search to first lecture, with one dedicated counsellor beside every student.</p>
     <div class="hcta"><button class="btn btn-p" onclick="document.getElementById('job-list').scrollIntoView({behavior:'smooth'})">See open roles ↓</button>
       <button class="btn btn-o" onclick="go('team')">Our story</button></div>
     <div class="cr-stats">
@@ -8023,11 +8023,11 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
   <section style="padding-top:0"><div class="wrap">
     <span class="eyebrow">Why people join</span>
-    <h2 style="margin:12px 0 22px">Small team, real responsibility</h2>
+    <h2 style="margin:12px 0 22px">Real responsibility from day one</h2>
     <div class="cr-why">
       <div class="rv"><i>01</i><h3>Early enough to matter</h3><p>You shape how this works instead of inheriting somebody else's system.</p></div>
       <div class="rv"><i>02</i><h3>You see the names</h3><p>Every student placed is a life that changed direction, and you will know which ones you helped.</p></div>
-      <div class="rv"><i>03</i><h3>Honest by design</h3><p>We publish fees others hide. Nobody here is asked to oversell or promise what a university has not confirmed.</p></div>
+      <div class="rv"><i>03</i><h3>Honest by design</h3><p>Nobody here is asked to oversell or promise what a university has not confirmed.</p></div>
     </div>
   </div></section>
 
@@ -8037,7 +8037,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <ol class="cr-steps">
       <li class="rv"><b>Apply</b><span>A short form and your CV. Two or three lines on why you is plenty.</span></li>
       <li class="rv"><b>We reply in 5 working days</b><span>Yes or no, always. Nobody is left waiting.</span></li>
-      <li class="rv"><b>A 30-minute call</b><span>With the founder or the COO, about work you have actually done.</span></li>
+      <li class="rv"><b>A 30-minute call</b><span>With a hiring manager, about work you have actually done.</span></li>
       <li class="rv"><b>A small paid task</b><span>Something close to the real job, then a decision.</span></li>
     </ol>
   </div></section>
@@ -8065,82 +8065,78 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 <main class="page" id="pg-about">
   <section><div class="wrap">
     <span class="eyebrow">About Orbuni</span>
-    <h2 style="margin:14px 0 12px">The consultancy that<br><span class="grad">tells you the number.</span></h2>
-    <p class="lead" style="margin-bottom:26px;max-width:64ch">Students in our market have been burned
-      repeatedly — deposits taken for admissions that never came, fees quoted verbally then changed,
-      agents who stopped answering once the transfer cleared. Orbuni is built to be the opposite:
-      published fees, a published process, and a named human on the other end.</p>
+    <h2 style="margin:14px 0 12px">From search<br><span class="grad">to first lecture.</span></h2>
+    <p class="lead" style="margin-bottom:26px;max-width:64ch">Orbuni is a university search and application
+      platform based in Istanbul, Türkiye. Students from Africa and around the world use it to find the right
+      programme, apply free, win the best available scholarship, and arrive ready, with a dedicated
+      counsellor beside them the whole way.</p>
 
-    <div class="lg-plain">
-      <b>So let us start with what we are, before you read anything else.</b>
-      <p>Orbuni is two people — Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba — working
-        from Istanbul as a <b>verified partner of AskUni</b>, the university application platform
-        that holds our access to these universities. We are not a large firm with offices in six
-        countries, and we are not separately incorporated as a company.</p>
-      <p>We tell you that on purpose. An agency that is vague about what it actually is, is exactly
-        the thing this page exists to help you avoid. Everything below tells you what that means for
-        your money, your documents and your application.</p>
+    <div class="ab-stats">
+      <div><b>2,698</b><span>programmes, fees and scholarships side by side</span></div>
+      <div><b>48</b><span>partner universities</span></div>
+      <div><b>6</b><span>countries: Türkiye, N. Cyprus, UAE, Germany, Egypt, Russia</span></div>
+      <div><b>Free</b><span>to search, compare and apply</span></div>
     </div>
 
     <div class="grid3" style="margin-top:30px">
-      <div class="card rv"><div class="ic">🤝</div><h3>We apply through the official channel</h3>
-        <p>Applications go through AskUni's partner channel rather than a public form, which is how
-          we can see live fees and scholarship bands and quote you an exact figure.</p></div>
-      <div class="card rv"><div class="ic">🧾</div><h3>Tuition is paid to the university</h3>
-        <p>Your tuition is the university's money, not ours. You get the receipt and the reference
-          number, and so does whoever is sponsoring you.</p></div>
-      <div class="card rv"><div class="ic">🏠</div><h3>We do not stop at admission</h3>
-        <p>Visa file, accommodation before you fly, airport pickup, and people already in your city.</p></div>
+      <div class="card rv"><div class="ic">🔎</div><h3>Search and compare</h3>
+        <p>Filter thousands of programmes by subject, language, city and budget, with the tuition and the
+          current scholarship shown side by side.</p></div>
+      <div class="card rv"><div class="ic">🤝</div><h3>Apply through official channels</h3>
+        <p>Applications go to universities through our official partner channels, so they are reviewed
+          faster and considered for the best available scholarship.</p></div>
+      <div class="card rv"><div class="ic">🎓</div><h3>Scholarship matching</h3>
+        <p>We match your grades to the scholarship each university offers, and apply for the highest band you
+          qualify for.</p></div>
+      <div class="card rv"><div class="ic">🛂</div><h3>Visa preparation</h3>
+        <p>A complete, checked visa file: what to prepare, how to present it, and what the consulate looks for.</p></div>
+      <div class="card rv"><div class="ic">🏠</div><h3>Student housing</h3>
+        <p>Real residences with photos and prices, chosen before you fly, close to your campus.</p></div>
+      <div class="card rv"><div class="ic">✈️</div><h3>Arrival and registration</h3>
+        <p>Airport pickup, registration at your university and residence-permit support when you land.</p></div>
     </div>
 
     <div class="abgrid">
       <div>
         <h3 style="font-family:var(--disp);font-size:clamp(20px,2.6vw,27px);font-weight:800;letter-spacing:-.03em;margin-bottom:12px">
-          What we charge, and when.</h3>
+          One dedicated counsellor, one portal.</h3>
         <p style="color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:14px">
-          We charge <b style="color:var(--gold)">one fee, once</b>. Not every year, not per
-          application, and not a percentage of anything. You are told exactly what it is, in writing,
-          before you commit to anything. It covers choosing your universities, preparing and
-          submitting the application, checking your documents, chasing the acceptance letter, your
-          student visa support, and getting you settled when you land.</p>
+          Every student gets a dedicated counsellor from the first question to the first lecture, and a
+          private student portal where every document, every update and every offer letter lives in one place.</p>
         <p style="color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:14px">
-          We are paid the same whichever university you choose. No university pays us more to send
-          you there, so nobody here has a reason to steer you.</p>
+          Universities pay no one at Orbuni to send you anywhere, so the advice you get is about what fits
+          your grades, your budget and your plans.</p>
         <p style="color:var(--dim);font-size:15px;line-height:1.7">
-          The work does not stop at the offer letter. A student who never gets a visa, never boards
-          a plane, or arrives with nowhere to sleep is a student we failed — and we are the ones who
-          carry that.</p>
+          Our work does not stop at the offer letter. Visa, housing, the flight, the first week: we stay with you
+          until you are sitting in your first lecture.</p>
       </div>
       <figure class="abshot" style="margin:0">
         <picture>
           <source type="image/webp" srcset="photos/home/team-card.webp">
-          <img src="photos/home/team-card.jpg" alt="Two Orbuni counsellors working through a student application together"
+          <img src="photos/home/team-card.jpg" alt="Orbuni counsellors working through a student application together"
                loading="lazy" decoding="async">
         </picture>
       </figure>
     </div>
 
     <div class="lg-two" style="margin-top:34px">
-      <div><span class="eyebrow">What we will do</span>
+      <div><span class="eyebrow">Your money is protected</span>
         <ul class="lg-yes">
-          <li>Tell you the real fee, from the university's own published figures</li>
-          <li>Tell you honestly when your grades will not win the band you want</li>
-          <li>Show you the university's own paperwork before you pay anything</li>
-          <li>Answer you, including when the answer is bad news</li>
+          <li>Tuition is paid directly to the university's own account, and you get its receipt</li>
+          <li>Any payment to Orbuni happens only on secure myorbuni.com checkout pages</li>
+          <li>You see the university's own offer letter and fee before any deposit</li>
         </ul></div>
-      <div><span class="eyebrow">What we will never do</span>
-        <ul class="lg-no">
-          <li>Guarantee admission. The university decides, not us.</li>
-          <li>Guarantee a visa. The consulate decides, not us.</li>
-          <li>Promise a full scholarship we have not confirmed in writing</li>
-          <li>Ask you to send a passport or a document over WhatsApp</li>
-          <li>Take your tuition into a personal account</li>
+      <div><span class="eyebrow">Your documents are protected</span>
+        <ul class="lg-yes">
+          <li>Documents are uploaded to your private portal, encrypted, never over WhatsApp</li>
+          <li>They go only to the universities you apply to and, later, the consulate</li>
+          <li>Partner agencies never see your documents</li>
         </ul></div>
     </div>
 
     <div style="text-align:center;margin-top:34px">
       <button class="btn btn-p" onclick="go('progs')">Find your programme →</button>
-      <button class="btn btn-o" style="margin-left:9px" onclick="go('terms')">Read the terms</button>
+      <button class="btn btn-o" style="margin-left:9px" onclick="go('start')">Free 2-minute assessment</button>
     </div>
   </div></section>
 </main>
@@ -8154,45 +8150,42 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
     <div class="lg-plain">
       <b>In one paragraph.</b>
-      <p>Orbuni helps you choose a university, applies for you, and supports you through your visa
-        and arrival. We charge one fee, once, and you know what it is before you commit. We cannot
-        promise you admission or a visa, because neither decision is ours. Everything below says the
-        same thing more carefully.</p>
+      <p>Orbuni is a university search and application platform. Applying through Orbuni is free. We
+        help you choose a university, apply for you, and support you with scholarships, your visa, housing
+        and arrival. Universities decide admissions and scholarships and consulates decide visas; our job
+        is to give you the strongest possible file. Everything below says the same thing more carefully.</p>
     </div>
 
     <h3 class="lg-h">1. Who you are dealing with</h3>
-    <p>Orbuni ("we", "us") is a partnership between Nurudeen Muhammad Abdulkareem and Godfrey
-      Emmanuel Wudaba, operating from Istanbul, Türkiye, and trading as Orbuni at myorbuni.com.</p>
-    <p><b>Orbuni is not a separately incorporated company.</b> We are a verified partner of AskUni,
-      the university application platform through which we hold access to the universities listed on
-      this site. AskUni is a separate business; our partnership with them does not make us part of
-      their company, and they are not responsible for our conduct or ours for theirs. If you need to
-      raise something formally, raise it with us, at the address in section 12.</p>
+    <p>Orbuni ("we", "us") operates the platform at myorbuni.com from Istanbul, Türkiye.
+      Applications are submitted to universities through Orbuni's official university partner channels.
+      If you need to raise something formally, write to us at the address in section 12.</p>
 
     <h3 class="lg-h">2. What we actually do</h3>
     <ul class="lg-list">
       <li>Help you choose universities and programmes you are realistically eligible for</li>
-      <li>Prepare and submit your application through the partner channel</li>
+      <li>Prepare and submit your application through our official partner channels</li>
       <li>Check your documents and tell you what is missing or wrong</li>
       <li>Follow up your acceptance letter with the university</li>
       <li>Support your student visa application — preparing the file, not deciding it</li>
       <li>Help with accommodation, arrival and settling in</li>
     </ul>
 
-    <h3 class="lg-h">3. What we cannot do, and will not pretend to</h3>
+    <h3 class="lg-h">3. Who makes which decision</h3>
     <ul class="lg-list">
-      <li><b>We cannot guarantee admission.</b> Universities decide who they admit. We can tell you
-        what your chances honestly look like; we cannot change the answer.</li>
-      <li><b>We cannot guarantee a visa.</b> That decision belongs to the Turkish consulate, or the
-        relevant consulate for your destination. A refusal is not a failure of this service.</li>
-      <li><b>We cannot guarantee a scholarship band</b> beyond one already confirmed in writing by
-        the university for you specifically.</li>
-      <li><b>We do not control university fees.</b> Universities review tuition annually and may
-        change it. Where a fee is shown on this site, it is the figure published at the date shown.</li>
+      <li><b>Admission and scholarships</b> are decided by each university. We match you to programmes
+        you are eligible for and apply for the best scholarship band you qualify for.</li>
+      <li><b>Visas</b> are decided by the consulate of your destination. We prepare and check your visa
+        file so it is complete and well presented.</li>
+      <li><b>Tuition fees</b> are set by each university and reviewed every year. Fees on this site are the
+        university's published figures at the date shown; the figure that binds is the one on your offer letter.</li>
     </ul>
 
-    <h3 class="lg-h">4. Our fee</h3>
-    <p><b>Applying is free.</b> Our service fee — Standard $800, Plus $1,650 or Premier $2,650 (Premier can be paid in two parts) — is charged once, only after a university sends you an offer letter. It is the same whichever university you choose, so nobody here earns more by steering you somewhere. Before you pay, you read and accept our <a onclick="go('agreement')">Student Service Agreement</a>, which sets out exactly what each package includes.</p>
+    <h3 class="lg-h">4. Free application, optional services</h3>
+    <p><b>Searching, comparing and applying through Orbuni is free.</b> Optional services, such as full
+      management of your file after an offer, visa preparation, airport pickup and arrival support, are offered
+      inside your student portal. What each one includes and costs is shown to you in writing before you choose
+      it, and nothing is ever charged without your agreement.</p>
     <p>Where this site advertises a <b>100% scholarship place</b>, the single price shown on that
       page is the whole amount you pay for that place, our own fee included. There is nothing
       further to pay for tuition on that programme. That price is fixed at
@@ -8214,13 +8207,13 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 
     <h3 class="lg-h">6. Refunds</h3>
     <ul class="lg-list">
-      <li>Our team works for you from the day you pay, so the service fee is never refunded in full. When a refund is due, you get back <b>10% on Standard, 20% on Plus and 30–40% on Premier</b> (set from the Premier services already delivered).</li>
-      <li>A refund is due if Orbuni cannot complete the service — for example your visa is refused — or if you stop before it is complete. If your visa is refused you may instead carry your service over to the next intake at no extra fee.</li>
+      <li>The refund rules for each optional paid service are written in the Student Service Agreement
+        you read and accept in your portal before paying. If your visa is refused you may carry your service
+        over to the next intake at no extra fee.</li>
       <li>Extra services (such as airport pickup) are refunded in full if cancelled at least 48 hours before the booked time.</li>
       <li>Once the service you paid for has been delivered, the fee is not refundable.</li>
       <li>Tuition, deposits and university fees are refundable only on that university's own terms.
         We will tell you what those are before you pay, and we will help you claim.</li>
-      <li>The full rules are in the <a onclick="go('agreement')">Student Service Agreement</a>.</li>
     </ul>
 
     <h3 class="lg-h">7. What we need from you</h3>
@@ -8233,8 +8226,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h3 class="lg-h">8. Your account and this website</h3>
     <p>Keep your password to yourself. Tell us at once if you think someone else has your account.
       We may suspend an account being used to abuse the service or other people.</p>
-    <p>The programme and fee information on this site comes from the universities and from the
-      partner network, and is shown with the date it was confirmed. We check it, but we do not
+    <p>The programme and fee information on this site comes from the universities and our partner
+      channels, and is shown with the date it was confirmed. We check it, but we do not
       author it, and universities occasionally change a figure without notice. The figure that binds
       is the one on the university's own offer letter.</p>
 
@@ -8261,13 +8254,6 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <p>These terms are governed by Turkish law. This does not remove any protection you have under
       the consumer law of the country you live in.</p>
 
-    <div class="lg-note">
-      <span>⚖️</span>
-      <div><b>An honest note about this page.</b>
-        <span>These terms describe accurately how Orbuni works. They have not yet been reviewed by a
-        lawyer, and they will be before we take on volume. If anything here is unclear, ask us
-        rather than guessing — we would rather answer than have you assume.</span></div>
-    </div>
   </div></section>
 </main>
 
@@ -8305,9 +8291,9 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h3 class="lg-h">Who sees it</h3>
     <ul class="lg-list">
       <li><b>You</b>, at any time, in your portal.</li>
-      <li><b>Your named counsellor</b>, and the two founders.</li>
-      <li><b>The university you are applying to</b>, and AskUni as the platform the application goes
-        through — this is the whole point of giving them to us.</li>
+      <li><b>Your counsellor</b>, and the Orbuni staff who manage your application.</li>
+      <li><b>The universities you apply to</b>, through our official partner channels. This is the whole
+        point of giving them to us.</li>
       <li><b>The consulate</b>, when your visa file is submitted.</li>
     </ul>
     <p>That is the complete list. <b>We do not sell your data, and we do not share it for
@@ -8401,12 +8387,6 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <p style="margin-top:22px">Orbuni · Istanbul, Türkiye ·
       <a href="mailto:privacy@myorbuni.com">privacy@myorbuni.com</a></p>
 
-    <div class="lg-note">
-      <span>⚖️</span>
-      <div><b>The same honest note.</b>
-        <span>This describes what actually happens to your data today. It has not yet been reviewed
-        by a data protection lawyer, and it will be.</span></div>
-    </div>
   </div></section>
 </main>
 
@@ -8508,16 +8488,11 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <section class="lp-sec lp-price">
     <div class="lp-w">
       <div class="lp-head">
-        <span class="lp-eyebrow">What it costs</span>
-        <h2 class="lp-h2">Applying is free. Our fee comes <em>after your offer</em>.</h2>
-        <p class="lp-sub">Three packages, one price each, printed in full. University tuition is always paid straight to the university — never to Orbuni.</p>
+        <span class="lp-eyebrow">What you get</span>
+        <h2 class="lp-h2">Everything you need to apply, <em>free</em>.</h2>
+        <p class="lp-sub">Search, compare and apply at no cost, with a dedicated counsellor beside you. University tuition is always paid straight to the university.</p>
       </div>
       <div class="lp-tiers" id="lp-tiers"></div>
-      <div class="lp-refund">
-        <span class="lp-refund-ic">%</span>
-        <p><b>Our refund rule, in plain numbers.</b> Our team works for you from the day you pay, so if the service cannot be completed — or you stop — part of the fee comes back: <b>10%</b> on Standard, <b>20%</b> on Plus, <b>30–40%</b> on Premier. Visa refused? Take that refund, or carry your file to the next intake for free.
-          <a onclick="go('agreement')">Read the Student Service Agreement →</a></p>
-      </div>
     </div>
   </section>
 
@@ -8560,13 +8535,12 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <span class="lp-eyebrow">Questions</span>
         <h2 class="lp-h2">Before you start</h2>
       </div>
-      <details><summary>Do I pay anything to apply?</summary><p>No. Creating your account, choosing programmes and applying are free. The service fee is paid only after a university sends you an offer letter.</p></details>
-      <details><summary>Is a 100% scholarship free?</summary><p>No, and any agency that says so without showing a price is not being straight with you. A 100% scholarship place has one payment that secures it; we print that number in full.</p></details>
-      <details><summary>Do you get my visa for me?</summary><p>No one can promise a visa. We guide you on what to prepare, and Premier connects you with a trusted visa agent in your own country. Government fees are always paid by you.</p></details>
-      <details><summary>Can I pay in two parts?</summary><p>Yes, Premier can be paid in two parts: $1,325 now and $1,325 thirty days later, taken automatically. Then it stops.</p></details>
-      <details><summary>What if my visa is refused?</summary><p>You choose. Take the refund for your package — 10% on Standard, 20% on Plus, 30–40% on Premier — or keep your file open and we carry your service over to the next intake at no extra fee. It is all written in the <a onclick="go('agreement')">Student Service Agreement</a>.</p></details>
-      <details><summary>Can someone pick me up from the airport?</summary><p>Yes. Plus and Premier include airport pickup. On Standard you can add it from your portal for $150, or an escort from the airport to your university for registration for $200 — you choose the date and pay on the same page.</p></details>
-      <details><summary>Where do I pay, and is it safe?</summary><p>Right here on Orbuni. The payment form is Whop's secure checkout, opened inside our page — card, bank transfer and local methods such as Nigerian cards, bank transfer and USSD. Before you pay you read and accept our Student Service Agreement.</p></details>
+      <details><summary>Do I pay anything to apply?</summary><p>No. Creating your account, searching, choosing programmes and applying are free.</p></details>
+      <details><summary>Is a 100% scholarship free?</summary><p>A 100% scholarship covers your tuition. You still plan for housing, living costs and the visa, and we show you those numbers up front so there are no surprises.</p></details>
+      <details><summary>Do you help with the visa?</summary><p>Yes. We prepare and check your visa file with you: what to bring, how to present it and what the consulate looks for. Government fees are paid by you directly.</p></details>
+      <details><summary>Can you help with housing?</summary><p>Yes. You see real student residences with photos and prices, and choose one before you fly.</p></details>
+      <details><summary>Can someone pick me up from the airport?</summary><p>Yes. Airport pickup and help with registration at your university can be booked from your student portal.</p></details>
+      <details><summary>Who receives my tuition?</summary><p>The university, directly, on its own account. You get the university's receipt. Orbuni never takes tuition.</p></details>
       <details><summary>What happens with my answers?</summary><p>They go to your Orbuni counsellor so they can advise you, and nowhere else. You can ask us to delete them at any time — see our <a onclick="go('privacy')">privacy notice</a>.</p></details>
     </div>
   </section>
@@ -8584,7 +8558,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   <footer class="lp-foot">
     <div class="lp-w lp-foot-in">
       <span>© 2026 Orbuni · Istanbul, Türkiye</span>
-      <nav><a onclick="go('agreement')">Student agreement</a><a onclick="go('privacy')">Privacy</a><a onclick="go('terms')">Terms</a><a onclick="orbCookieSettings()">Cookie settings</a><a onclick="go('home')">myorbuni.com</a></nav>
+      <nav><a onclick="go('privacy')">Privacy</a><a onclick="go('terms')">Terms</a><a onclick="orbCookieSettings()">Cookie settings</a><a onclick="go('home')">myorbuni.com</a></nav>
     </div>
   </footer>
 </div>
@@ -8716,8 +8690,8 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <h2 style="margin:14px 0 10px">Student Service Agreement</h2>
     <p class="lg-date" id="agr-date">Version 24 September 2026 · applies to every Orbuni service fee paid on or after that date</p>
     <div id="agr-body"></div>
-    <h2 style="margin:40px 0 10px;font-size:26px">Course terms</h2>
-    <p class="lg-date">For the Scholarship Masterclass and the Partner Growth Program</p>
+    <div id="agr-course-head"><h2 style="margin:40px 0 10px;font-size:26px">Course terms</h2>
+    <p class="lg-date">For the Scholarship Masterclass and the Partner Growth Program</p></div>
     <div id="agr-course"></div>
   </div></section>
 </main>
@@ -9053,7 +9027,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="brandline"><b>Orbuni</b></div>
       <p style="max-width:34ch;line-height:1.6">We help students get into universities across Türkiye,
         N. Cyprus, the UAE, Germany, Egypt and Russia — from choosing a course and scholarship, through
-        application and visa, to the room waiting for you on arrival. Published fees, a named counsellor,
+        application and visa, to the room waiting for you on arrival. Free to apply, a dedicated counsellor,
         tuition paid direct to the university.</p>
     </div>
     <div>
@@ -9068,10 +9042,10 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <div>
       <h4>Orbuni</h4>
       <a href="/how-it-works/">How it works</a>
-      <a href="/pricing/">Prices</a>
+      <a href="/pricing/">Is it free?</a>
       <a href="/parents/">For parents</a>
       <a href="/faq/">Questions</a>
-      <a href="/about/" onclick="go('about');return false">About &amp; verify us</a>
+      <a href="/about/" onclick="go('about');return false">About Orbuni</a>
       <a onclick="go('team')">Our team</a>
       <a onclick="go('careers')">Careers</a>
     </div>
@@ -9105,7 +9079,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
     <span>© 2026 Orbuni Education · Tuition is paid direct to the university, never to us.</span>
     <span><a onclick="go('privacy')" style="display:inline;color:var(--dim)">Privacy policy</a> ·
       <a onclick="go('terms')" style="display:inline;color:var(--dim)">Terms</a> ·
-      <a onclick="go('agreement')" style="display:inline;color:var(--dim)">Service agreement</a> ·
+      
       <a onclick="orbCookieSettings()" style="display:inline;color:var(--dim)">Cookie settings</a></span>
   </div>
 </div></footer>
@@ -10017,8 +9991,8 @@ function openUni(id,silent){
           <h3>Speak with your representative</h3>
           <p>Ask anything about ${u.name} — entry requirements, the real scholarship you would get, living costs in ${u.city}, or whether it is the right fit at all.</p>
           <div class="rep">
-            <img src="${TEAM[1].photos[0]}" alt="Godfrey Emmanuel Wudaba">
-            <div><b>Godfrey Emmanuel Wudaba</b><span>Co-Founder & COO · handles university relations</span></div>
+            <img src="${TEAM[1].photos[0]}" alt="Orbuni university relations">
+            <div><b>University relations team</b><span>Orbuni · Istanbul</span></div>
           </div>
           <button class="btn btn-p btn-w" onclick="orbApply(null,null,'${u.name.replace(/'/g,"")}')">Apply to this university →</button><button class="btn btn-o btn-w" style="margin-top:9px" onclick="ask('${u.name.replace(/'/g,"")}', {source:'university_page', university_id:${u.id}})">Ask a question first</button>
           <p style="font-size:11.5px;color:var(--faint);text-align:center;margin-top:11px">Free · reply within one working day · no obligation</p>
@@ -10031,7 +10005,7 @@ function openUni(id,silent){
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Documents checked line by line before submission</span></div>
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Filed through the official partner channel</span></div>
             <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Visa file, housing and airport pickup after admission</span></div>
-            <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>No agency fee until you are admitted</span></div>
+            <div style="display:flex;gap:10px"><b style="color:var(--mint)">✓</b><span>Free to apply, with a dedicated counsellor</span></div>
           </div>
         </div>
       </div>
@@ -10069,7 +10043,7 @@ const ARTS=[['Fees','What studying in Türkiye actually costs in 2026','Real pub
 /* team */
 const TEAM=[
  {name:"Nurudeen Muh. Abdulkareem",
-  role:"Founder & Managing Director",
+  role:"Managing Director",
   bio:"Nurudeen has spent years inside this industry — first navigating it as a student himself, then watching family, friends and strangers walk into the same maze. He saw the lapses close up: agents who took money and disappeared, fees that changed after payment, applications that died over a missing translation, students who gave up because nobody would tell them the truth.<br><br>Orbuni did not start from a business plan. It started from a list of everything that had gone wrong for people he knew, and a decision to build the opposite.<br><br>He sits on the organising committee of the Africa Diaspora Forum in İstanbul, working on Türkiye–Africa cooperation — but the reason is simpler than the title makes it sound. The more doors that open institutionally, the more students walk through them.",
   lang:"“Every student has a right to dream.”",
   exp:"Years in the study-abroad industry, first as a student himself. Organising committee, Africa Diaspora Forum, İstanbul.",
@@ -10077,8 +10051,8 @@ const TEAM=[
   ig:"coolguyn94",
   photos:["photos/inline/fcf25e4bbda8.jpg","photos/inline/823977a3cdeb.jpg","photos/inline/ae43a37687d7.jpg","photos/home/team-nurudeen-award.jpg","photos/home/team-nurudeen-speaking.jpg","photos/home/team-nurudeen-roundtable.jpg","photos/home/team-nurudeen-climate.jpg","photos/home/team-nurudeen-podium.jpg"]},
  {name:"Godfrey Emmanuel Wudaba",
-  role:"Co-Founder & Chief Operating Officer",
-  bio:"Godfrey co-founded Orbuni and runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
+  role:"Chief Operating Officer",
+  bio:"Godfrey runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
   lang:"“Nothing leaves this office unchecked.”",
   exp:"Runs everything from the first enquiry to the first day of class. Works every day with university admissions offices, from İstanbul.",
   skills:["University relations","Document standards","Application timelines","Operations"],
@@ -27349,7 +27323,7 @@ var ORB_AGREEMENT = {
   sections: [
     { h: "1. Who this agreement is between",
       b: "<p>This agreement is between you (the student, or the parent or sponsor paying for the student) and "
-       + "<b>Orbuni</b>, a partnership of Nurudeen Muhammad Abdulkareem and Godfrey Emmanuel Wudaba, operating from "
+       + "<b>Orbuni</b>, operating from "
        + "Istanbul, Türkiye, at myorbuni.com (\"Orbuni\", \"we\", \"us\"). Payments are processed for us by Whop, "
        + "which appears on your statement.</p>" },
     { h: "2. When you pay",
@@ -27755,7 +27729,21 @@ function lpVsl(){
     + '<b>The 3-minute video is on its way</b>'
     + '<span>Until it is up, the assessment does the same job — it tells you honestly which path fits you.</span></div>';
 }
+/* public pages: what a student gets for free (the paid packages live only in the portal, after an offer) */
+var LP_FREE = [
+  ["search", "Search 2,600+ programmes", "Fees and the current scholarship side by side, at 48 partner universities."],
+  ["user", "A dedicated counsellor", "One person who knows your file, from first question to first lecture."],
+  ["award", "Scholarship matching", "We apply for the highest scholarship band your grades qualify for."],
+  ["doc", "Your application, done properly", "Every document checked, then submitted through official partner channels."],
+  ["home", "Student housing", "Real residences with photos and prices, chosen before you fly."],
+  ["plane", "Visa and arrival support", "Your visa file prepared and checked, then pickup and registration when you land."]
+];
 function lpTiersHtml(){
+  return '<div class="lp-free">' + LP_FREE.map(function(x){
+    return '<div class="lp-free-i"><b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></div>';
+  }).join("") + '</div>';
+}
+function lpTiersHtmlPaid(){
   return ORB_TIERS.map(function(t){
     return '<div class="lp-tier' + (t.best ? " best" : "") + '">'
       + (t.best ? '<span class="flag">Most chosen</span>' : "")
@@ -27939,10 +27927,10 @@ function lpResult(res, name){
       + "<small>A real counsellor, on Google Meet. Pick a time that suits you.</small></div></div>"
       + '<div id="lpr-call" class="lpr-slots"><div class="lpr-load"><i></i>Finding free times…</div></div></div>'
       + '<div class="lpq-acts">' + applyBtn("Start my application — free →", "signup_higher")
-      + '<button class="lp-pill lp-pill-ghost" onclick="lpScrollTo(\'lp-tiers\')">See the service packages</button></div>';
+      + '<button class="lp-pill lp-pill-ghost" onclick="lpScrollTo(\'lp-tiers\')">What you get, free</button></div>';
   } else if(res.pathway === "medium"){
     head = "You are close, " + esc(first) + ".";
-    sub = "A few things still need to fall into place — that is normal. Here is exactly what we do for you, and what it costs. A counsellor sends your personal shortlist on WhatsApp within two hours.";
+    sub = "A few things still need to fall into place — that is normal. Here is exactly what we do for you. A counsellor sends your personal shortlist on WhatsApp within two hours.";
     block = '<div class="lpr-tiers">' + ORB_TIERS.map(function(t){
         return '<div class="lpr-tier' + (t.best ? " best" : "") + '"><span>Orbuni ' + esc(t.name) + "</span><b>$" + t.price.toLocaleString() + "</b><small>" + esc(t.who) + "</small></div>";
       }).join("") + '</div><p class="lpr-fine">Applying is free. You pay the service fee only after a university sends your offer letter.</p>'
@@ -28076,8 +28064,21 @@ function lpOnPage(){
   if(ag && ag.classList.contains("on")) agreementPage();
 }
 function agreementPage(){
-  var b = document.getElementById("agr-body"); if(!b || b.dataset.ready) return;
+  var b = document.getElementById("agr-body"); if(!b) return;
+  // the full agreement (services and prices) is for signed-in students; it is also shown in the checkout before paying
+  var signed = !!(typeof ME !== "undefined" && ME && ME.id);
+  if(!signed){
+    b.dataset.ready = "";
+    b.innerHTML = '<div class="lg-plain"><b>Your Student Service Agreement is in your student portal.</b><p>Applying through Orbuni is free. '
+      + 'If you choose an optional service after your offer, its agreement is shown to you in full, in your portal, before anything is paid.</p>'
+      + '<p style="margin-top:12px"><a class="btn btn-p" onclick="openPortal(\'choose\')">Sign in to your portal</a></p></div>';
+    var cc = document.getElementById("agr-course"); if(cc) cc.innerHTML = ""; 
+    var d = document.getElementById("agr-date"); if(d) d.style.display = "none"; var ch = document.getElementById("agr-course-head"); if(ch) ch.style.display = "none";
+    return;
+  }
+  if(b.dataset.ready) return;
   b.dataset.ready = "1";
+  var d2 = document.getElementById("agr-date"); if(d2) d2.style.display = ""; var ch2 = document.getElementById("agr-course-head"); if(ch2) ch2.style.display = "";
   b.innerHTML = orbDocHtml(ORB_AGREEMENT);
   var c = document.getElementById("agr-course"); if(c) c.innerHTML = [ORB_TERMS.masterclass, ORB_TERMS.partner_program].map(function(d){ return '<h3 class="agr-h" style="font-size:22px;margin-top:34px">' + esc(d.title) + "</h3>" + orbDocHtml(d); }).join("");
 }
@@ -28206,8 +28207,8 @@ lpResult = function(res, name, noPush){
     body = '<div class="lpr-card lpr-call" id="lpr-call-card"><div class="lpr-h"><span class="lpr-ic">' + lpIc("cal") + '</span><div><b>Book your free 30-minute call</b>'
       + "<small>A real counsellor, on Google Meet. Pick a time that suits you.</small></div></div>"
       + '<div id="lpr-call" class="lpr-slots"><div class="lpr-load"><i></i>Finding free times…</div></div></div>'
-      + '<div class="lpf-sec"><span class="lp-eyebrow">What it costs</span><h3>Applying is free. Our fee comes <em>after your offer</em>.</h3>'
-      + '<p class="lp-sub">Three packages, one price each. University tuition is always paid straight to the university — never to Orbuni.</p>'
+      + '<div class="lpf-sec"><span class="lp-eyebrow">What you get</span><h3>Everything you need, <em>free</em>.</h3>'
+      + '<p class="lp-sub">A dedicated counsellor, your application, scholarship matching and your student portal. Tuition is always paid straight to the university.</p>'
       + '<div class="lp-tiers">' + lpTiersHtml() + "</div></div>";
   } else if(res.pathway === "medium"){
     head = "You are close" + (first ? ", " + first : "") + ".";
@@ -36570,25 +36571,6 @@ window.ulineStop = function(btn){
 })();
 </script>
 
-<!--orb-wa--><style>
-.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
-padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
-font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
-.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
-@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
-body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
-@media print{.orb-wa{display:none}}
-</style>
-<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
-<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
-<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
-var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
-var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
-if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
-a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
-var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
-s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
-<!--/orb-wa-->
 <!-- ==ORB-MOTION== public-site motion layer: rolling numbers, staggered
      reveals, hero headline. Public pages only; the portal is untouched, and
      everything is skipped for people who ask their device for less motion. -->
@@ -37068,5 +37050,24 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   }, 900);
 })();
 </script>
+<!--orb-wa--><style>
+.orb-wa{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:9px;
+padding:12px 18px 12px 13px;border-radius:100px;background:#25D366;color:#fff!important;text-decoration:none!important;
+font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .15s}
+.orb-wa:hover{transform:translateY(-2px)}.orb-wa svg{width:24px;height:24px;flex:0 0 auto;fill:#fff}
+@media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
+body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
+@media print{.orb-wa{display:none}}
+</style>
+<a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
+<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
+<script>(function(){var a=document.getElementById("orb-wa");if(!a)return;
+var h=document.querySelector("h1"),t=h?h.textContent.replace(/\s+/g," ").trim().slice(0,90):"";
+var p=location.pathname,m="Hi Orbuni, I'd like to study abroad.";
+if(t&&p!=="/"&&p!=="/index.html")m="Hi Orbuni, I'm on your page about \u201c"+t+"\u201d and I have a question.";
+a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
+var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
+s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
+<!--/orb-wa-->
 </body>
 </html>
