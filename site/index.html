@@ -27743,7 +27743,7 @@ if(orbMarketingOk()) orbPixelsStart(); else orbTrack("page");
     + '#orb-cc .cc-on{font-size:12px;color:#7ee2a8;white-space:nowrap;padding-top:2px}'
     + '#orb-cc input[type=checkbox]{width:22px;height:22px;accent-color:#f4b03f;flex:none;margin-top:2px}'
     + '@media (max-width:520px){#orb-cc{left:10px;right:10px;bottom:10px;padding:16px}}';
-  function shut(){ var b = document.getElementById("orb-cc"); if(b) b.remove(); }
+  function shut(){ var b = document.getElementById("orb-cc"); if(b) b.remove(); document.body.style.paddingBottom = ""; }
   function save(m){
     var had = orbMarketingOk();
     try{ localStorage.setItem(ORB_CONSENT_KEY, JSON.stringify({ v:1, marketing: !!m, ts: new Date().toISOString() })); }catch(e){}
@@ -27778,6 +27778,10 @@ if(orbMarketingOk()) orbPixelsStart(); else orbTrack("page");
       else if(k === "save"){ var cb = document.getElementById("cc-m"); save(!!(cb && cb.checked)); }
     });
     document.body.appendChild(box);
+    // Leave room under the page so the banner never sits on top of a form's last button
+    // (on phones it covered "Save my free seat" on the webinar form).
+    var pad = function(){ if(document.getElementById("orb-cc")) document.body.style.paddingBottom = (box.offsetHeight + 28) + "px"; };
+    pad(); setTimeout(pad, 300);
   }
   window.orbCookieSettings = function(){ show(true); return false; };
   function first(){ if(!orbConsent() && !orbGpc()) setTimeout(function(){ if(!orbConsent()) show(false); }, 1200); }
@@ -37261,7 +37265,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<div class="wb-vipcard">' + miniVsl("webinarVip", "Why VIP · 60 seconds") + vipStack(price,
           '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Yes, make me VIP for $' + E(price) + " <span aria-hidden=\"true\">→</span></button>")
       + "</div>"
-      + '<button class="wb-no" onclick="wbKeepFree()">No thanks, keep my free seat</button>'
+      + '<button class="wb-no" onclick="wbKeepFree()">No thanks, keep my free seat and join the WhatsApp group</button>'
       + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added.</p>");
     wireMini();
   }
