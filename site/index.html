@@ -4125,6 +4125,108 @@ html[data-theme="light"] [style*="color:var(--gold)"]:not([style*="background"])
   .wb-row{grid-template-columns:1fr}
   .wb-count div{min-width:62px}
 }
+
+/* ===== webinar landing v2 (long-form) ===== */
+#pg-webinar .wb:not(.in-flow) .wb-topcta{background:linear-gradient(100deg,#F6BD3F,#EE9B2F);color:#1A1204}
+#pg-webinar .wb:not(.in-flow) .wb-myseat{color:#fff}
+#pg-webinar .lp-top{position:absolute;left:0;right:0;top:0;z-index:5;background:transparent;border-bottom-color:transparent}
+#pg-webinar .lp-top .lp-brand,#pg-webinar .lp-top .lp-mark{color:#fff}
+#pg-webinar .wb.in-flow .lp-top{position:sticky;background:var(--l-bg)}
+#pg-webinar .wb.in-flow .lp-top .lp-brand,#pg-webinar .wb.in-flow .lp-top .lp-mark{color:var(--l-ink)}
+.wbx-hero{position:relative;overflow:hidden;background:#060B16;color:#fff;padding:118px 0 70px;text-align:center}
+.wbx-bg{position:absolute;inset:0;background:url(photos/webinar/istanbul.webp) center 65%/cover no-repeat;opacity:.38;filter:saturate(.9)}
+.wbx-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(1000px 520px at 50% 18%,rgba(242,181,68,.20),transparent 60%),linear-gradient(180deg,rgba(6,11,22,.55),rgba(6,11,22,.86) 55%,#060B16)}
+.wbx-hero-in{position:relative}
+.wbx-proof{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:14px;font-weight:600;color:rgba(255,255,255,.86);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:7px 14px 7px 8px;border-radius:100px;backdrop-filter:blur(8px)}
+.wbx-live{display:inline-flex;align-items:center;gap:7px;background:#E5251B;color:#fff;font-weight:800;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;padding:5px 11px 5px 9px;border-radius:100px}
+.wbx-live i{width:8px;height:8px;border-radius:50%;background:#fff;animation:wbxp 1.6s infinite}
+@keyframes wbxp{0%,100%{opacity:1}50%{opacity:.35}}
+.wbx-h1{font-family:var(--disp);font-weight:800;letter-spacing:-.045em;line-height:1.02;font-size:clamp(36px,6.2vw,72px);max-width:17ch;margin:22px auto 18px;text-wrap:balance}
+.wbx-h1 em{font-style:normal;background:linear-gradient(100deg,#F6BD3F,#FFD98A 50%,#EE9B2F);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wbx-sub{font-size:clamp(16px,2vw,19.5px);line-height:1.6;color:rgba(255,255,255,.78);max-width:58ch;margin:0 auto}
+.wbx-vsl{position:relative;max-width:860px;margin:34px auto 0;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#0B1220;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12)}
+.wbx-vsl iframe,.wbx-vsl video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.wbx-poster{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;padding:0;border:0;background:#000}
+.wbx-poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--e)}
+.wbx-poster:hover img{transform:scale(1.02)}
+.wbx-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 10px 40px rgba(0,0,0,.45);color:#0D1321;font-size:28px;padding-left:5px}
+.wbx-play::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.5);animation:wbxr 2s infinite}
+@keyframes wbxr{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.25);opacity:0}}
+.wbx-poster-cap{position:absolute;left:14px;bottom:14px;background:rgba(6,11,22,.78);color:#fff;font-size:13px;font-weight:600;padding:6px 11px;border-radius:9px;backdrop-filter:blur(6px)}
+.wbx-cta{margin-top:28px}
+.wbx-under{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:14px;font-size:14px;color:rgba(255,255,255,.72)}
+.wbx-under span::before{content:"✓";color:#3ED598;font-weight:800;margin-right:6px}
+.wbx-count{margin-top:26px}
+#pg-webinar .wbx-count>div{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+#pg-webinar .wbx-count b{color:#fff}#pg-webinar .wbx-count span{color:rgba(255,255,255,.6)}
+.wbx-strip{background:#0B1220;color:#fff;padding:26px 0;border-top:1px solid rgba(255,255,255,.08)}
+.wbx-strip-in{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;text-align:center}
+.wbx-strip b{display:block;font:800 clamp(24px,3vw,34px)/1.1 var(--disp);letter-spacing:-.03em;color:#F6BD3F}
+.wbx-strip span{display:block;font-size:13.5px;color:rgba(255,255,255,.66);margin-top:4px}
+.wbx-traps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+.wbx-traps>div{background:#fff;border:1px solid var(--l-line);border-radius:20px;padding:24px;text-align:left}
+.wbx-traps i{font-style:normal;font:800 13px var(--mono,monospace);color:#E5251B;letter-spacing:.1em}
+.wbx-traps b{display:block;font:700 20px/1.25 var(--disp);letter-spacing:-.02em;margin:10px 0 8px;color:var(--l-ink)}
+.wbx-traps p{color:var(--l-mute);font-size:15px;line-height:1.6;margin:0}
+.wbx-ladder-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}
+.wbx-ladder-tx .lp-h2{text-align:left}
+.wbx-rungs-why{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:10px}
+.wbx-rungs-why li{position:relative;padding-left:30px;color:var(--l-ink2);font-size:15.5px;line-height:1.55}
+.wbx-rungs-why li::before{content:"↑";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:#FFF4DC;color:#B8791A;font-weight:800;font-size:13px;display:grid;place-items:center}
+.wbx-ladder{display:grid;gap:10px}
+.wbx-ladder .r{display:flex;align-items:center;gap:16px;border-radius:16px;padding:16px 20px;color:#fff;box-shadow:0 10px 26px rgba(13,19,33,.12)}
+.wbx-ladder .r b{font:800 30px/1 var(--disp);letter-spacing:-.03em;min-width:92px}
+.wbx-ladder .r span{font-size:14.5px;opacity:.92}
+.wbx-ladder .r4{background:linear-gradient(100deg,#0D1321,#1E2A44);margin-left:0}
+.wbx-ladder .r4 b{color:#F6BD3F}
+.wbx-ladder .r3{background:linear-gradient(100deg,#1FA971,#178A5C);margin-left:6%}
+.wbx-ladder .r2{background:linear-gradient(100deg,#2563EB,#1D4FC4);margin-left:12%}
+.wbx-ladder .r1{background:linear-gradient(100deg,#64748B,#475569);margin-left:18%}
+.wbx-table{max-width:860px;margin:30px auto 0;background:#fff;border:1px solid var(--l-line);border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(13,19,33,.07)}
+.wbx-table>div{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:16px 22px;border-top:1px solid var(--l-line);font-size:15.5px;color:var(--l-ink)}
+.wbx-table>div.h{border-top:0;background:#F6F6F3;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--l-faint);font-weight:700}
+.wbx-table>div span:first-child b{display:block;font-weight:700}
+.wbx-table>div span:first-child{color:var(--l-mute);font-size:14px}
+.wbx-table .g{color:#1FA971;font-weight:800}.wbx-table .y{font-weight:800;font-size:17px}
+.wbx-note{margin:0;padding:14px 22px;font-size:13px;color:var(--l-faint);background:#FBFBF9;border-top:1px solid var(--l-line)}
+.wbx-agenda{list-style:none;padding:0;margin:30px 0 0;display:grid;gap:12px}
+.wbx-agenda li{display:flex;gap:18px;background:#fff;border:1px solid var(--l-line);border-radius:18px;padding:18px 20px}
+.wbx-agenda time{font:700 14px var(--mono,monospace);color:#B8791A;background:#FFF4DC;border-radius:10px;padding:6px 10px;height:fit-content;flex:0 0 auto}
+.wbx-agenda b{display:block;font:700 17.5px/1.3 var(--disp);color:var(--l-ink);letter-spacing:-.015em}
+.wbx-agenda span{display:block;color:var(--l-mute);font-size:15px;line-height:1.55;margin-top:4px}
+.wbx-who{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+.wbx-who-ph{margin:0;border-radius:24px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 24px 60px rgba(13,19,33,.16)}
+.wbx-who-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.wbx-check{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:12px}
+.wbx-check li{position:relative;padding-left:32px;color:var(--l-ink2);font-size:16px;line-height:1.55}
+.wbx-check li::before{content:"✓";position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:#E6F6EE;color:#1FA971;font-weight:800;font-size:13px;display:grid;place-items:center}
+.wbx-final{position:relative;overflow:hidden;background:#060B16;color:#fff;padding:96px 0}
+.wbx-final .lp-h2{color:#fff}.wbx-final .lp-lead{color:rgba(255,255,255,.75)}
+.wbx-final .wb-ps{color:rgba(255,255,255,.72)}
+.wbx-final-bg{position:absolute;inset:0;background:url(photos/webinar/hats.webp) center/cover;opacity:.45}
+.wbx-final-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,11,22,.4),rgba(6,11,22,.85))}
+.wbx-mini-vsl{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#0B1220;margin:0 0 18px}
+.wbx-mini-vsl iframe,.wbx-mini-vsl video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.wbx-mini-vsl .wbx-play{width:62px;height:62px;font-size:22px}
+.wbx-group{display:flex;gap:14px;align-items:center;background:#E9F9F0;border:1px solid #BFEBD3;border-radius:18px;padding:16px 18px;margin-top:16px}
+.wbx-group .gi{width:46px;height:46px;border-radius:14px;background:#25D366;color:#fff;display:grid;place-items:center;flex:0 0 auto}
+.wbx-group b{display:block;color:var(--l-ink);font-size:16px}.wbx-group span{display:block;color:var(--l-mute);font-size:14px;margin-top:2px}
+.wbx-group a{margin-left:auto;flex:0 0 auto}
+.wbx-group.vip{background:#16120A;border-color:#3A2F14}.wbx-group.vip b{color:#fff}.wbx-group.vip span{color:#C9BFA8}.wbx-group.vip .gi{background:#F6BD3F;color:#16120A}
+@media(max-width:900px){
+  .wbx-traps,.wbx-ladder-wrap,.wbx-who{grid-template-columns:1fr}
+  .wbx-strip-in{grid-template-columns:1fr 1fr;row-gap:20px}
+  .wbx-ladder .r{margin-left:0!important}
+  .wbx-table>div{grid-template-columns:1.6fr .8fr .8fr .9fr;padding:14px;font-size:14px;gap:6px}
+  .wbx-hero{padding:100px 0 56px}
+  .wbx-group{flex-wrap:wrap}.wbx-group a{margin-left:0;width:100%}
+}
+@media(max-width:520px){
+  .wbx-proof{font-size:12.5px;padding:6px 12px 6px 6px;gap:8px}.wbx-live{font-size:11px;padding:4px 9px 4px 8px}
+  .wbx-table>div{grid-template-columns:1fr 1fr 1fr}
+  .wbx-table>div>span:first-child{grid-column:1/-1}
+  .wbx-table>div.h>span:first-child{display:none}
+}
 </style>
 
 <style id="orb-phone">
@@ -8580,62 +8682,113 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   </header>
 
   <div id="wb-land">
-  <section class="lp-hero wb-hero">
-    <div class="lp-w lp-hero-in">
-      <span class="lp-badge"><i></i><span id="wb-when-badge">Free live webinar · Saturday 6 February 2027</span></span>
-      <h1 class="lp-h1 wb-h1">How Turkish scholarships <em>really</em> work, and what a 100% scholarship actually costs</h1>
-      <p class="lp-lead">One honest live session with the Orbuni team. Real prices, real universities, and your questions answered on the spot. Free for students and parents.</p>
-      <div class="lp-vsl wb-vsl" id="wb-vsl" aria-label="Webinar invitation video"></div>
-      <div class="lp-cta lp-cta-under">
+  <section class="wbx-hero">
+    <div class="wbx-bg" aria-hidden="true"></div>
+    <div class="lp-w wbx-hero-in">
+      <div class="wbx-proof"><span class="wbx-live"><i></i>Free live masterclass</span><span id="wb-when-badge">Saturday 6 February 2027 · 16:00 WAT</span></div>
+      <h1 class="wbx-h1">How international students win <em>25% to 100%</em> scholarships at universities in Türkiye</h1>
+      <p class="wbx-sub">90 minutes, live: which universities give the biggest scholarships, what a “100% scholarship” really costs, and the exact steps to apply for the September 2027 intake.</p>
+      <div class="wbx-vsl" id="wb-vsl" aria-label="Webinar invitation video"></div>
+      <div class="wbx-cta">
         <button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbStart('hero')">Save my free seat <span aria-hidden="true">→</span></button>
+        <p class="wbx-under"><span>Free</span><span>Live Q&amp;A</span><span>Replay included</span><span id="wb-reg-count" hidden></span></p>
       </div>
-      <div class="wb-count" id="wb-count" aria-live="off"></div>
-      <ul class="lp-ticks"><li>Free to join</li><li>Live questions and answers</li><li>Link sent on WhatsApp and email</li></ul>
+      <div class="wb-count wbx-count" id="wb-count" aria-live="off"></div>
+    </div>
+  </section>
+
+  <section class="wbx-strip">
+    <div class="lp-w wbx-strip-in">
+      <div><b>2,698</b><span>programmes analysed</span></div>
+      <div><b>48</b><span>partner universities</span></div>
+      <div><b>Up to 75%</b><span>tuition scholarships, plus 100% places</span></div>
+      <div><b>6</b><span>countries</span></div>
     </div>
   </section>
 
   <section class="lp-sec">
-    <div class="lp-w lp-w-narrow">
+    <div class="lp-w">
       <div class="lp-head">
-        <span class="lp-eyebrow">In one hour</span>
-        <h2 class="lp-h2">What you will know <em>by the end</em></h2>
+        <span class="lp-eyebrow">The problem</span>
+        <h2 class="lp-h2">Why so many families pay <em>more</em> for a “free” scholarship</h2>
+        <p class="lp-sub">Three traps cost students a year, or thousands of dollars. You will see each one, with real numbers, in the first 20 minutes.</p>
       </div>
-      <ol class="wb-learn">
-        <li><b>Why "100% scholarship" does not mean free</b><span>What you actually pay, once, and why one payment often beats four yearly bills.</span></li>
-        <li><b>Which universities give what, to whom</b><span>The real discount bands for average, good and excellent results. No guessing.</span></li>
-        <li><b>The documents that decide everything</b><span>The short list that makes or breaks an application, and how to get them ready this month.</span></li>
-        <li><b>The mistakes that cost families money</b><span>Agents who disappear, fees that change after payment, tuition paid into the wrong account.</span></li>
-        <li><b>Your exact next step</b><span>Live answers to your questions, and a two-minute check of where you stand.</span></li>
-      </ol>
+      <div class="wbx-traps">
+        <div><i>01</i><b>The “100% scholarship” that isn't</b><p>A place advertised as free, with fees that appear only after the deposit. We show what a genuine 100% place costs, in full, before anyone commits.</p></div>
+        <div><i>02</i><b>The right grades, the wrong university</b><p>The same results can win 25% at one university and 75% at another. Most students never compare, so they pay the higher price.</p></div>
+        <div><i>03</i><b>Applying a month too late</b><p>The biggest scholarship bands fill first. Late applications get what is left, even with excellent grades.</p></div>
+      </div>
     </div>
   </section>
 
   <section class="lp-sec lp-sec-tint">
-    <div class="lp-w">
-      <div class="lp-head">
-        <span class="lp-eyebrow">Your hosts</span>
-        <h2 class="lp-h2">Real people you can <em>ask anything</em></h2>
+    <div class="lp-w wbx-ladder-wrap">
+      <div class="wbx-ladder-tx">
+        <span class="lp-eyebrow">The method</span>
+        <h2 class="lp-h2">The Scholarship <em>Ladder</em></h2>
+        <p class="lp-sub" style="text-align:left;margin-left:0">Turkish universities do not hand out scholarships at random. Each one has bands, and four things decide which band you land on. In the masterclass we walk through every rung.</p>
+        <ul class="wbx-rungs-why">
+          <li><b>Your results</b> and how the university reads your certificate</li>
+          <li><b>The programme</b> you choose: some give far more than others</li>
+          <li><b>When you apply</b>: early files get the top bands</li>
+          <li><b>How complete your file is</b> on the first submission</li>
+        </ul>
       </div>
-      <div class="wb-hosts">
-        <figure><img src="photos/feed/founder-nurudeen.jpg" alt="Nurudeen Muhammad Abdulkareem" loading="lazy"><figcaption><b>Nurudeen Muhammad Abdulkareem</b><span>Founder &amp; Managing Director</span></figcaption></figure>
-        <figure><img src="photos/feed/lenns-1.jpg" alt="Lenns Wordjy Coutilien" loading="lazy"><figcaption><b>Lenns Wordjy Coutilien</b><span>Creative Director</span></figcaption></figure>
-        <figure><img src="photos/feed/founder-godfrey-desk.jpg" alt="Godfrey Emmanuel Wudaba" loading="lazy"><figcaption><b>Godfrey Emmanuel Wudaba</b><span>Co-Founder &amp; COO, Istanbul</span></figcaption></figure>
+      <div class="wbx-ladder" aria-label="Scholarship bands">
+        <div class="r r4"><b>100%</b><span>Limited places, first come first served</span></div>
+        <div class="r r3"><b>75%</b><span>Strong results, early application</span></div>
+        <div class="r r2"><b>50%</b><span>Good results, right programme</span></div>
+        <div class="r r1"><b>25%</b><span>Most students qualify</span></div>
       </div>
     </div>
   </section>
 
   <section class="lp-sec">
+    <div class="lp-w">
+      <div class="lp-head">
+        <span class="lp-eyebrow">Real numbers</span>
+        <h2 class="lp-h2">This is what a scholarship <em>looks like</em></h2>
+        <p class="lp-sub">Three real bachelor's programmes from the Orbuni catalogue: the university's published fee, the scholarship, and what the student pays each year.</p>
+      </div>
+      <div class="wbx-table">
+        <div class="h"><span>University · programme</span><span>Published fee</span><span>Scholarship</span><span>You pay / year</span></div>
+        <div><span><b>Beykoz University</b>Artificial Intelligence</span><span>$7,000</span><span class="g">50%</span><span class="y">$3,500</span></div>
+        <div><span><b>Istanbul Kültür University</b>Business Administration</span><span>$9,000</span><span class="g">50%</span><span class="y">$4,500</span></div>
+        <div><span><b>Yeditepe University</b>Biomedical Engineering</span><span>$20,000</span><span class="g">50%</span><span class="y">$10,000</span></div>
+        <p class="wbx-note">Published 2026/27 figures. Tuition is paid directly to the university. Bachelor's programmes in the catalogue start from $1,600 a year after scholarship.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-sec lp-sec-tint">
     <div class="lp-w lp-w-narrow">
       <div class="lp-head">
-        <span class="lp-eyebrow">Why listen to us</span>
-        <h2 class="lp-h2">We put the <em>numbers</em> on the page</h2>
+        <span class="lp-eyebrow">The 90 minutes</span>
+        <h2 class="lp-h2">What we cover, <em>minute by minute</em></h2>
       </div>
-      <ul class="wb-proof">
-        <li><b>Every fee is published.</b> The university's own price, with its own discount, on our site before you ask.</li>
-        <li><b>Tuition goes to the university.</b> Never to us, never into a personal account.</li>
-        <li><b>Our fee comes after your offer letter.</b> Applying is free.</li>
-        <li><b>A named counsellor.</b> One person who knows your file, not a call centre.</li>
-      </ul>
+      <ol class="wbx-agenda">
+        <li><time>00:00</time><div><b>What a “100% scholarship” really costs</b><span>The full price of a genuine 100% place, and the warning signs of a fake one.</span></div></li>
+        <li><time>15:00</time><div><b>The Scholarship Ladder, university by university</b><span>Who gives 25%, 50%, 75% and 100%, and to which students.</span></div></li>
+        <li><time>35:00</time><div><b>The documents that decide your band</b><span>The short list that makes or breaks an application, and how to get it ready this month.</span></div></li>
+        <li><time>50:00</time><div><b>Visa, housing and the first month</b><span>What a year in Türkiye really costs beyond tuition, and how to plan it.</span></div></li>
+        <li><time>65:00</time><div><b>Live questions and your next step</b><span>Your questions answered live, and how to apply for September 2027.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="lp-sec">
+    <div class="lp-w wbx-who">
+      <figure class="wbx-who-ph"><picture><source type="image/webp" srcset="photos/webinar/group.webp"><img src="photos/webinar/group.jpg" alt="International students on a university campus" loading="lazy"></picture></figure>
+      <div>
+        <span class="lp-eyebrow">Who it is for</span>
+        <h2 class="lp-h2" style="text-align:left">Made for students <em>and</em> the people paying</h2>
+        <ul class="wbx-check">
+          <li><b>Students</b> finishing school, or with a degree, who want to study abroad from 2027</li>
+          <li><b>Parents and sponsors</b> who want the real numbers before paying anything</li>
+          <li><b>Anyone helping</b> a student apply: a relative, a teacher, a guardian</li>
+        </ul>
+        <div class="lp-cta lp-cta-left" style="margin-top:22px"><button class="lp-pill lp-pill-gold" onclick="wbStart('who')">Save my free seat <span aria-hidden="true">→</span></button></div>
+      </div>
     </div>
   </section>
 
@@ -8644,7 +8797,7 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="lp-head">
         <span class="lp-eyebrow">Optional upgrade</span>
         <h2 class="lp-h2">The VIP seat, <em>$10</em></h2>
-        <p class="lp-lead" style="margin-top:14px">Your free seat is enough to attend. VIP is for people who want to move faster.</p>
+        <p class="lp-lead" style="margin-top:14px">Your free seat is enough to attend. VIP is for students who want to move faster.</p>
       </div>
       <div class="wb-vipcard" id="wb-vip-stack-land"></div>
     </div>
@@ -8655,19 +8808,20 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       <div class="lp-head"><span class="lp-eyebrow">Questions</span><h2 class="lp-h2">Before you <em>sign up</em></h2></div>
       <details><summary>Is it really free?</summary><p>Yes. The free seat costs nothing and you can attend the whole live session. The $10 VIP seat is optional.</p></details>
       <details><summary>Can my parents join?</summary><p>Please bring them. Many questions are about money and safety, and parents ask the best ones.</p></details>
-      <details><summary>How do I get the link?</summary><p>On WhatsApp and by email, and on your personal seat page. The link opens 15 minutes before we start.</p></details>
-      <details><summary>Will there be a replay?</summary><p>Free seats can watch the replay for 3 days after the live session. VIP seats keep it for life.</p></details>
-      <details><summary>Is a 100% scholarship free?</summary><p>No. A 100% scholarship place has one payment that secures it, and we show that number in full. Anyone who promises "free" without a price is not being straight with you.</p></details>
-      <details><summary>Do you guarantee a scholarship?</summary><p>No one honest can. Universities decide. We show you the real discount bands and help you prepare an application that gives you the best chance.</p></details>
+      <details><summary>How do I get the link?</summary><p>On WhatsApp and by email, and on your personal seat page. The join button opens 15 minutes before we start.</p></details>
+      <details><summary>Will there be a replay?</summary><p>Free seats can watch the replay for 3 days. VIP seats keep it for life.</p></details>
+      <details><summary>Is a 100% scholarship completely free?</summary><p>A 100% scholarship covers tuition. You still plan for housing, living costs and the visa, and in the masterclass we show you those numbers in full.</p></details>
+      <details><summary>Do I need IELTS?</summary><p>Not always. Many universities accept their own English test or proof of English-medium schooling. We cover this live.</p></details>
     </div>
   </section>
 
-  <section class="lp-sec lp-sec-tint wb-final">
-    <div class="lp-w lp-w-narrow" style="text-align:center">
-      <h2 class="lp-h2">Save your seat <em>now</em></h2>
+  <section class="wbx-final">
+    <div class="wbx-final-bg" aria-hidden="true"></div>
+    <div class="lp-w lp-w-narrow" style="text-align:center;position:relative">
+      <h2 class="lp-h2">Your place in <em>September 2027</em> starts here</h2>
       <p class="lp-lead" style="margin-top:14px">It takes a minute. We send the link on WhatsApp and by email.</p>
       <div class="lp-cta" style="margin-top:26px"><button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbStart('bottom')">Save my free seat <span aria-hidden="true">→</span></button></div>
-      <p class="wb-ps"><b>P.S.</b> If you only remember one thing: a scholarship that "costs nothing" usually costs the most later. Come and see the real numbers, then decide.</p>
+      <p class="wb-ps"><b>P.S.</b> The biggest scholarship bands fill first. Ninety minutes now can be the difference between paying 25% less and 75% less, every year of your degree.</p>
     </div>
   </section>
   </div>
@@ -27451,6 +27605,9 @@ var ORB_WHOP = {
   pixel: "biz_340OHdZOPCa81N"
 };
 var ORB_FUNNEL = { vsl: "", vsl_low: "", vsl_medium: "", vsl_high: "", whatsappGroup: "", community: "" };
+/* the webinar page (its own script) reads the same settings and helpers */
+window.ORB_FUNNEL = ORB_FUNNEL;
+try{ window.lpMountVideo = lpMountVideo; window.orbUTM = orbUTM; }catch(e){}
 function whopPlanOf(k){ return (String(ORB_WHOP.checkout[k] || "").match(/plan_[A-Za-z0-9]+/) || [""])[0]; }
 
 var WHOP_CFG_READY = false;
@@ -27465,6 +27622,11 @@ async function whopLoadConfig(){
       else if(x.key.indexOf("product_") === 0) ORB_WHOP.products[x.key.slice(8)] = v;
       else if(x.key === "vsl") ORB_FUNNEL.vsl = v;
       else if(x.key === "webinar_vsl") ORB_FUNNEL.webinar = v;
+      else if(x.key === "webinar_vip_vsl") ORB_FUNNEL.webinarVip = v;
+      else if(x.key === "webinar_seat_vsl") ORB_FUNNEL.webinarSeat = v;
+      else if(x.key === "webinar_vipseat_vsl") ORB_FUNNEL.webinarVipSeat = v;
+      else if(x.key === "webinar_group_free") ORB_FUNNEL.webinarGroupFree = v;
+      else if(x.key === "webinar_group_vip") ORB_FUNNEL.webinarGroupVip = v;
       else if(x.key === "whatsapp_group") ORB_FUNNEL.whatsappGroup = v;
       else if(x.key === "vsl_low" || x.key === "vsl_medium" || x.key === "vsl_high") ORB_FUNNEL[x.key] = v;
       else if(x.key === "community_url") ORB_FUNNEL.community = v;
@@ -27514,6 +27676,7 @@ function orbSendPixels(ev, data){
   try{
     if(window.fbq && ev !== "page" && ORB_META_EVENTS[ev]){
       var d = {}; if(data && data.value) { d.value = Number(data.value) || 0; d.currency = data.currency || "USD"; }
+      if(data && data.content_name) d.content_name = String(data.content_name).slice(0, 60);
       window.fbq("track", ORB_META_EVENTS[ev], d, (data && data.event_id) ? { eventID: String(data.event_id) } : undefined);
     } else if(window.fbq && ev === "page"){ window.fbq("track", "PageView"); }
   }catch(e){}
@@ -27830,6 +27993,7 @@ window.lpBack = function(){ if(LPQ_STATE.i > 0){ LPQ_STATE.i--; lpRenderStep(); 
 var LP_COUNTRIES = ["Nigeria","Ghana","Kenya","Cameroon","Uganda","Tanzania","Ethiopia","Sierra Leone","Liberia","The Gambia","Senegal",
   "South Africa","Zambia","Zimbabwe","Rwanda","Sudan","Somalia","Egypt","Morocco","Algeria","Tunisia","Libya","Pakistan","Bangladesh",
   "India","Afghanistan","Iraq","Iran","Syria","Jordan","Yemen","Azerbaijan","Kazakhstan","Uzbekistan","Turkmenistan","Kyrgyzstan","Other"];
+window.LP_COUNTRIES = LP_COUNTRIES;
 function lpContactStep(){
   var box = document.getElementById("lp-quiz"); if(!box) return;
   box.innerHTML = lpProgress(LPQ.length, LPQ.length)
@@ -36793,7 +36957,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     ["The replay for life", "Free seats keep the replay for 3 days."],
     ["Your question answered first", "VIP questions go to the top of the live Q&A."],
     ["48-hour early access to 100% scholarship places", "Places are limited and go in the order applications arrive."],
-    ["The documents checklist for your level", "Bachelor's, master's or PhD: exactly what to get ready."]
+    ["The documents checklist for your level", "Bachelor's, master's or PhD: exactly what to get ready."],
+    ["The private VIP WhatsApp group", "Updates, early offers and answers, with a smaller group."]
   ];
   var $ = function(id){ return document.getElementById(id); };
   var E = function(s){ return (typeof esc === "function") ? esc(s) : String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
@@ -36827,14 +36992,50 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + "<ul>" + VIP_STACK.map(function(x){ return "<li><span><b>" + E(x[0]) + "</b><br>" + E(x[1]) + "</span></li>"; }).join("") + "</ul>"
       + (withButtons || "");
   }
+  /* a video at every step: ORB_FUNNEL keys come from whop_config (webinar_vsl, webinar_vip_vsl,
+     webinar_seat_vsl, webinar_vipseat_vsl). Until a video exists, the landing shows its cover and the
+     other steps simply leave the slot out. */
+  function fv(k){ return (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL[k]) || ""; }
+  function poster(cap){
+    return '<button class="wbx-poster" type="button" aria-label="Play the video"><picture><source type="image/webp" srcset="photos/webinar/vsl-poster.webp">'
+      + '<img src="photos/webinar/vsl-poster.jpg" alt="" loading="lazy"></picture><span class="wbx-play" aria-hidden="true">▶</span>'
+      + (cap ? '<span class="wbx-poster-cap">' + E(cap) + "</span>" : "") + "</button>";
+  }
+  function mountInto(box, url, label){
+    if(typeof lpMountVideo === "function" && lpMountVideo(box, url, label, "vsl_started")) return true;
+    return false;
+  }
   function videoBox(){
     var box = $("wb-vsl"); if(!box || box.dataset.ready) return;
     box.dataset.ready = "1";
-    var v = (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL.webinar) || "";
-    if(v && typeof lpMountVideo === "function" && lpMountVideo(box, v, "Scholarship 1.0 · invitation", "vsl_started")) return;
-    box.innerHTML = '<div class="wb-ph"><img src="photos/feed/founder-nurudeen.jpg" alt=""><img src="photos/feed/lenns-1.jpg" alt=""></div>'
-      + '<div class="wb-ph-cap"><b>Nurudeen and Lenns, live</b>One honest hour about scholarships in Türkiye. Bring your questions and your parents.</div>';
+    var v = fv("webinar");
+    box.innerHTML = poster("");
+    box.querySelector(".wbx-poster").onclick = function(){
+      ev("webinar_vsl_click");
+      if(v && mountInto(box, v, "Scholarship masterclass · invitation")) return;
+      wbStart("vsl");
+    };
   }
+  function miniVsl(key, cap){
+    var v = fv(key); if(!v) return "";
+    return '<div class="wbx-mini-vsl" data-vsl="' + E(key) + '">' + poster(cap) + "</div>";
+  }
+  function wireMini(){
+    document.querySelectorAll("#wb-flow .wbx-mini-vsl").forEach(function(box){
+      var b = box.querySelector(".wbx-poster"); if(!b) return;
+      b.onclick = function(){ ev("webinar_vsl_" + box.dataset.vsl); mountInto(box, fv(box.dataset.vsl), cap(box.dataset.vsl)); };
+    });
+    function cap(k){ return k; }
+  }
+  function groupBlock(vip){
+    var url = vip ? (fv("webinarGroupVip") || "") : (fv("webinarGroupFree") || fv("whatsappGroup") || "");
+    if(!/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com|whop\.com)\//.test(url)) return "";
+    return '<div class="wbx-group' + (vip ? " vip" : "") + '"><span class="gi">' + (vip ? "★" : "✆") + "</span><div><b>"
+      + (vip ? "Join the VIP WhatsApp group" : "Join the free webinar WhatsApp group") + "</b><span>"
+      + (vip ? "Early access to 100% scholarship places, the replay and your questions first." : "Reminders, the live link and the replay, in one place.")
+      + '</span></div><a class="lp-pill ' + (vip ? "lp-pill-gold" : "lp-pill-ink") + '" href="' + E(url) + '" target="_blank" rel="noopener" onclick="wbGroupClick(' + (vip ? 1 : 0) + ')">Join the group</a></div>';
+  }
+  window.wbGroupClick = function(vip){ ev(vip ? "webinar_group_vip" : "webinar_group_free"); };
 
   async function loadInfo(){
     if(WB.info || typeof sb === "undefined" || !sb) return WB.info;
@@ -36846,7 +37047,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var land = $("wb-vip-stack-land"); if(land && !land.dataset.ready){ land.dataset.ready = "1"; land.innerHTML = vipStack(info ? info.vip_price : 10); }
     videoBox();
     if(info){
-      var b = $("wb-when-badge"); if(b) b.textContent = "Free live webinar · " + whenText(info.starts_at, false);
+      var b = $("wb-when-badge"); if(b) b.textContent = whenText(info.starts_at, false);
+      var rc = $("wb-reg-count"); if(rc && Number(info.registered) >= 50){ rc.hidden = false; rc.textContent = Number(info.registered).toLocaleString() + " already registered"; }
       countdown("wb-count", info.starts_at);
     }
     var ms = $("wb-myseat"); if(ms) ms.hidden = !stored();
@@ -36912,7 +37114,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       if(btn){ btn.disabled = false; btn.textContent = "Save my free seat →"; }
       return bad((r.error && r.error.message) || "We could not save that just now. Please try again in a moment.");
     }
-    try{ if(typeof orbTrack === "function") orbTrack("lead", {}); }catch(e){}
+    try{ if(typeof orbTrack === "function") orbTrack("lead", { content_name:"webinar_registered" }); }catch(e){}
     if(r.data.duplicate){
       ev("webinar_duplicate");
       return flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Already registered</span>'
@@ -36929,16 +37131,18 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     flow('<span class="wb-step-n" style="display:block;text-align:center">Your free seat is saved</span>'
       + '<h2 class="wb-tk-h">' + (first ? E(first) + ", one" : "One") + " choice before you go</h2>"
       + '<p class="wb-tk-sub">You are in for free. If you want to move faster, the VIP seat gives you the Scholarship Masterclass today, the replay for life and first access to 100% scholarship places.</p>'
-      + '<div class="wb-vipcard">' + vipStack(price,
+      + '<div class="wb-vipcard">' + miniVsl("webinarVip", "Why VIP · 60 seconds") + vipStack(price,
           '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Yes, make me VIP for $' + E(price) + " <span aria-hidden=\"true\">→</span></button>")
       + "</div>"
       + '<button class="wb-no" onclick="wbKeepFree()">No thanks, keep my free seat</button>'
       + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added.</p>");
+    wireMini();
   }
   window.wbKeepFree = function(){ ev("webinar_keep_free"); wbSeat(WB.token || stored(), { fresh:true }); };
   window.wbVip = async function(){
     var tok = WB.token || stored(); if(!tok) return;
     ev("webinar_vip_click");
+    try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:(WB.info && WB.info.vip_price) || 10, currency:"USD", content_name:"webinar_vip" }); }catch(e){}
     var who = {};
     try{ var r = await sb.rpc("webinar_vip_checkout", { p_token: tok }); if(r.data) who = r.data; }catch(e){}
     if(typeof orbCheckout !== "function") return;
@@ -36973,8 +37177,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var after = s.state === "after"
       ? '<div class="wb-note"><b>Your next step:</b> the free 2-minute assessment. It skips the video you have already seen and tells you exactly where you stand.</div>'
         + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div>' : "";
-    var wa = (typeof ORB_FUNNEL !== "undefined" && ORB_FUNNEL.whatsappGroup) || "";
     var html = '<div class="wb-seat">'
+      + miniVsl(vip ? "webinarVipSeat" : "webinarSeat", vip ? "Welcome, VIP · watch first" : "Watch this before the webinar")
       + '<span class="wb-tag ' + (vip ? "vip" : "free") + '">' + (vip ? "VIP seat" : "Free seat") + "</span>"
       + (s.vip_pending && !vip ? ' <span class="wb-tag free" style="margin-left:6px">VIP payment being confirmed</span>' : "")
       + "<h2>" + (opts.fresh ? "You're in, " : opts.vip ? "You're VIP, " : "Welcome back, ") + E(first) + "</h2>"
@@ -36983,8 +37187,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<div class="wb-acts">' + join
       + '<div class="wb-row"><a class="lp-pill lp-pill-ghost" href="' + gcal + '" target="_blank" rel="noopener">Add to Google Calendar</a>'
       + '<button class="lp-pill lp-pill-ghost" onclick="wbIcs()">Add to my phone calendar</button></div>'
-      + (wa ? '<a class="lp-pill lp-pill-ghost" href="' + E(wa) + '" target="_blank" rel="noopener">Join the free WhatsApp community</a>' : "")
       + "</div>"
+      + groupBlock(vip)
       + '<div class="wb-note">We send the link and reminders on WhatsApp and by email. <b>Keep this page:</b> it is your personal seat, myorbuni.com/s/…</div>'
       + after + "</div>";
     if(vip){
@@ -36997,7 +37201,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     } else if(s.state !== "after"){
       html += '<div class="wb-vipcard">' + vipStack(w.vip_price, '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Upgrade to VIP for $' + E(w.vip_price) + " →</button>") + "</div>";
     }
-    flow(html);
+    flow(html); wireMini();
     if(s.state === "before") countdown("wb-seat-count", w.starts_at);
     var ms = $("wb-myseat"); if(ms) ms.hidden = true;
   }
@@ -37035,6 +37239,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       return wbSeat(t, {});
     }
     var f = $("wb-flow"); if(f && !f.hidden) return;
+    try{ if(!sessionStorage.getItem("orb-wb-viewed")){ sessionStorage.setItem("orb-wb-viewed", "1"); if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_landing" }); } }catch(e){}
     paintLanding();
   }
   window.addEventListener("orbuni:page", function(){ setTimeout(onPage, 20); });
