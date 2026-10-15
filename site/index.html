@@ -37535,6 +37535,99 @@ font:700 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:
 @media(max-width:600px){.orb-wa{padding:13px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.orb-wa span{display:none}}
 body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
 @media print{.orb-wa{display:none}}
+/* ================================================================
+   Round 15 — ONE design system for all three portals (student,
+   partner, team). Everything below is written against the shared
+   tokens (--p1 surface, --p2 raised, --line, --txt, --dim, --faint,
+   --gold) and the shared class names, so a change here reaches every
+   portal and both themes at once. Rules: flat surfaces, one radius
+   scale (card 16 / control 12 / chip pill), colour only where it
+   carries meaning (gold = action, blue = in, orange = out, mint =
+   done, red = needs attention), no tinted gradient fills.
+   ================================================================ */
+#portal{
+  --ds-card:16px; --ds-ctl:12px; --ds-pad:20px; --ds-gap:14px;
+  --ds-shadow:0 1px 0 rgba(255,255,255,.03) inset;
+}
+/* ---- shell: calm sidebar, flat top bar ---- */
+#portal aside{background:var(--p1);border-right:1px solid var(--line)}
+#portal .sb-top{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;
+  margin:0;padding:18px 18px 16px}
+#portal .sb-top .tg{border-color:var(--line2);color:var(--faint);background:var(--p2)}
+#portal .sb-grp{padding:18px 18px 6px;color:var(--faint);letter-spacing:.18em}
+#portal nav.sb{padding:0 10px}
+#portal .sb-i{border-radius:var(--ds-ctl);padding:9px 12px;font-size:14px;font-weight:500;color:var(--dim);position:relative}
+#portal .sb-i:hover{background:var(--p2);color:var(--txt)}
+#portal .sb-i.on{background:color-mix(in srgb,var(--gold) 12%,transparent);color:var(--gold);font-weight:600}
+#portal .sb-i.on::before{content:"";position:absolute;left:-10px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--gold)}
+#portal .sb-user{border-top:1px solid var(--line)}
+@media(min-width:901px){
+  #portal header.app{margin:0;border-radius:0;border:0;border-bottom:1px solid var(--line);
+    background:color-mix(in srgb,var(--bg) 88%,transparent);box-shadow:none;padding:0 28px;height:64px}
+  #portal .body{padding-top:22px}
+}
+#portal header.app .sub{color:var(--faint)}
+#portal header.app .h1x{font-size:20px;letter-spacing:-.03em}
+#portal .icb{border-radius:var(--ds-ctl);background:var(--p1)}
+#portal .icb:hover{background:var(--p2)}
+/* ---- every card/panel speaks one language ---- */
+#portal .panel,#portal .o6-card,#portal .o6-kpi,#portal .kpi,#portal .dstat,#portal .fd-kpi,
+#portal .nas-hero,#portal .dbanner,#portal .gc-card{
+  background:var(--p1);background-image:none;border:1px solid var(--line);border-radius:var(--ds-card);
+  box-shadow:var(--ds-shadow)}
+#portal .panel{padding:var(--ds-pad)}
+#portal .kpi .v,#portal .o6-kpi b,#portal .dstat .dstat-n{letter-spacing:-.035em}
+#portal .kpi.gold .v{background:none;color:var(--gold);-webkit-text-fill-color:currentColor}
+#portal .kpi .lb,#portal .o6-kpi small,#portal .dstat .dstat-l{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:500}
+#portal .dstat .dstat-n,#portal .o6-kpi b{font-size:30px;font-weight:700}
+#portal .dstat,#portal .o6-kpi,#portal .kpi{transition:border-color .2s var(--e),background .2s var(--e)}
+#portal .dstat:hover,#portal .o6-kpi:hover,#portal .kpi:hover{border-color:var(--line2);background:var(--p1)}
+/* ---- quick actions: flat tile, colour lives only in the icon ---- */
+#portal .dact{background:var(--p1);border:1px solid var(--line);border-radius:var(--ds-card);
+  flex-direction:row;justify-content:flex-start;gap:12px;min-height:64px;padding:14px 16px;text-align:left}
+#portal .dact:hover{transform:none;background:var(--p2);border-color:var(--line2)}
+#portal .dact::after{display:none}
+#portal .dact .dact-ic{width:34px;height:34px;border-radius:10px;flex:none;
+  background:color-mix(in srgb,var(--ac) 14%,transparent)}
+#portal .dact .dact-ic svg{width:18px;height:18px}
+#portal .dact .dact-tag{top:9px;right:10px;border:0;background:color-mix(in srgb,var(--ac) 16%,transparent);padding:2px 7px}
+/* ---- next-step cards ---- */
+#portal .dstep{background:var(--p1);border:1px solid var(--line);border-radius:var(--ds-card)}
+#portal .dstep:hover{transform:none;background:var(--p2)}
+#portal .dstep.done{background:var(--p1);border-color:var(--line)}
+#portal .dstep.done:hover{background:var(--p1);border-color:var(--line)}
+#portal .dstep.done b{color:var(--txt)}
+#portal .dstep.done span{color:var(--faint)}
+#portal .dstep.done .dstep-ic{background:color-mix(in srgb,var(--mint) 18%,transparent);color:var(--mint)}
+#portal .dnext-h h3,#portal .dhello h2{letter-spacing:-.03em}
+/* ---- buttons: solid gold primary, quiet outline, 12px corners ---- */
+#portal .btn{border-radius:var(--ds-ctl);font-weight:600;letter-spacing:-.005em}
+#portal .btn-p{background:var(--gold);color:var(--gold-ink,#1A1204);box-shadow:none}
+#portal .btn-p:hover{transform:none;box-shadow:none;filter:brightness(1.06)}
+#portal .btn-o{background:transparent;border:1px solid var(--line2)}
+#portal .btn-o:hover{background:var(--p2);border-color:var(--line2);color:var(--txt)}
+#portal .btn:focus-visible,#portal .sb-i:focus-visible,#portal .icb:focus-visible,#portal .dact:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* ---- fields ---- */
+#portal .fld input,#portal .fld select,#portal .fld textarea,#portal input.in,#portal select.in,#portal textarea.in{
+  border-radius:var(--ds-ctl);background:var(--p2);border:1px solid var(--line);color:var(--txt)}
+#portal .fld input:focus,#portal .fld select:focus,#portal .fld textarea:focus{border-color:var(--gold);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 20%,transparent);outline:0}
+#portal .fld label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500}
+/* ---- tables ---- */
+#portal .tbl{border-collapse:separate;border-spacing:0;width:100%}
+#portal .tbl th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  font-weight:500;padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;background:transparent}
+#portal .tbl td{padding:13px 14px;border-bottom:1px solid var(--line)}
+#portal .tbl tbody tr{transition:background .15s var(--e)}
+#portal .tbl tbody tr:hover{background:var(--p2)}
+#portal .tbl tbody tr:last-child td{border-bottom:0}
+/* ---- phone: keep the floating pill bar, tighten tiles ---- */
+@media(max-width:900px){
+  #portal .dacts{grid-template-columns:1fr 1fr;gap:10px}
+  #portal .dact{padding:12px 12px;min-height:58px;gap:10px;font-size:13px}
+  #portal .panel{padding:16px}
+  #portal header.app{border-radius:var(--ds-card)}
+}
 </style>
 <a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
 <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
