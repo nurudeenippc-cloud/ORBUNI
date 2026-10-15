@@ -214,7 +214,8 @@ async function answer(contactId: string, messageId: string | null) {
   // the reply: text, plus at most one video/file, plus buttons or one link
   const quick = out.handoff ? [] : out.buttons;
   let link = out.handoff || out.link === "none" ? null : out.link === "seat" ? (seatLink ? { title: "Open my seat", url: seatLink } : LINKS.webinar) : LINKS[out.link] || null;
-  if (out.link === "seat" && out.media === "vip_offer" && seatLink) link = { title: "Get VIP · $10", url: seatLink };
+  // the VIP button opens the VIP page (video, free vs VIP, one button): /v/<token> instead of the seat /s/<token>
+  if (out.link === "seat" && out.media === "vip_offer" && seatLink) link = { title: "Get VIP · $10", url: seatLink.replace("/s/", "/v/") };
   const m = !out.handoff && out.media !== "none" && !sentMedia.includes(out.media) ? (lib || []).find((x: any) => x.key === out.media) : null;
   await sendRich(db, c, { author: "ai", body: out.reply, quick: link ? [] : quick, link, media: m ? { key: m.key, kind: m.kind, url: m.url, title: m.title } : null });
 

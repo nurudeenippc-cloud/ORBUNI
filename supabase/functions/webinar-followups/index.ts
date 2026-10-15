@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
         if (prev && prev.length) { skip("video already sent in chat"); continue; }
         const claim = await db.from("wa_followups").insert({ contact_id: c.id, trigger: "webinar", dedupe_key: j.key, status: "sending" });
         if (claim.error) { skip("already sent"); continue; }
-        const res = await sendRich(db as any, c, { author: "system", body: j.rich.body, link: { title: j.rich.btn, url: seat(j.r) }, media: { key: m.key, kind: m.kind, url: m.url } });
+        const res = await sendRich(db as any, c, { author: "system", body: j.rich.body, link: { title: j.rich.btn, url: `${SITE}/v/${j.r.token}` }, media: { key: m.key, kind: m.kind, url: m.url } });
         await db.from("wa_followups").update({ status: res.ok ? "sent" : "failed: " + String(res.error || "").slice(0, 200) }).eq("dedupe_key", j.key);
         if (res.ok) sent.push(j.key); else skip("Twilio refused");
         continue;
