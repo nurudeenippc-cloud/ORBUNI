@@ -83,4 +83,9 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /study/psychology-in-turkiye/  /study/psychology-in-turkey/  301
 /study/physiotherapy-in-turkiye/  /study/physiotherapy-in-turkey/  301
 /study/nutrition-and-dietetics-in-turkiye/  /study/nutrition-and-dietetics-in-turkey/  301
+
+# One link for ads: counts the click, fires the pixels, opens the WhatsApp chat (site/chat/index.html).
+/ad  /chat/?src=whop-ad&utm_source=whop&utm_medium=paid&utm_campaign=wa_funnel  302
+/ad2  /chat/?src=meta-ad&utm_source=meta&utm_medium=paid&utm_campaign=wa_funnel  302
+
 /*    /index.html   200

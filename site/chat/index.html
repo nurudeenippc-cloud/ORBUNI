@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chat with Orbuni on WhatsApp</title>
+<meta name="description" content="Ask Orbuni anything about studying in Türkiye: universities, fees and 25% to 100% scholarships. Free, on WhatsApp.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Chat with Orbuni on WhatsApp">
+<meta property="og:description" content="Free answers about universities, fees and scholarships in Türkiye.">
+<meta property="og:image" content="https://myorbuni.com/share.png">
+<link rel="icon" href="/icon-192.png">
+<style>
+:root{--bg:#070C16;--p1:#0E1626;--line:rgba(255,255,255,.1);--txt:#EEF3FA;--dim:#9BABC3;--gold:#F2B544;--wa:#25D366}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;display:grid;place-items:center;padding:24px 16px}
+.c{width:100%;max-width:400px;text-align:center}
+.orb{width:54px;height:54px;border-radius:50%;margin:0 auto 18px;border:3px solid var(--gold);display:grid;place-items:center;font:800 22px system-ui;color:var(--gold)}
+h1{font:800 26px/1.2 'Bricolage Grotesque',Inter,system-ui,sans-serif;letter-spacing:-.03em;margin:0 0 10px}
+p{color:var(--dim);margin:0 0 22px}
+.b{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 20px;border-radius:99px;background:var(--wa);color:#04210F;font:800 17px Inter,system-ui,sans-serif;text-decoration:none}
+.b svg{width:22px;height:22px}
+.s{margin-top:16px;font-size:13px;color:var(--dim)}
+.s a{color:var(--dim)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--wa);margin-right:6px;animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.25}}
+</style></head><body>
+<main class="c">
+  <div class="orb">O</div>
+  <h1>Opening WhatsApp…</h1>
+  <p><span class="dot"></span>Ask us anything about universities, fees and scholarships in Türkiye. It's free.</p>
+  <a class="b" id="go" href="https://wa.me/14434481577"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.6-.3z"/></svg>Chat with us on WhatsApp</a>
+  <div class="s">Didn't open? Tap the green button. Prefer the website? <a href="/?go=start">Start here</a>.</div>
+</main>
+<script>
+/* One link for every ad and post: myorbuni.com/chat?src=whop-ad (or ?utm_source=…).
+   Counts the click (first-party, no cookies), tells the ad pixels it was a lead (only where they are
+   allowed, see orb-px below), then opens the WhatsApp chat with a ready-made first message.
+   The "(ref: …)" at the end lets the inbox show where the person came from. */
+(function(){
+  var q = new URLSearchParams(location.search);
+  var clean = function(s, n){ return String(s || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, n || 24); };
+  var src = clean(q.get("src") || q.get("ref") || [q.get("utm_source"), q.get("utm_medium")].filter(Boolean).join("-")) || "link";
+  var msg = "Hi Orbuni! How can I get a scholarship to study in Türkiye? (ref: " + src + ")";
+  var url = "https://wa.me/14434481577?text=" + encodeURIComponent(msg);
+  document.getElementById("go").href = url;
+  try{
+    var sid = ""; try{ sid = sessionStorage.getItem("orb-sid") || ""; }catch(e){}
+    if(!sid){ sid = "c" + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try{ sessionStorage.setItem("orb-sid", sid); }catch(e){} }
+    fetch("https://ytsebzdykfeiiuxbdtvr.supabase.co/rest/v1/funnel_events", { method:"POST", keepalive:true,
+      headers:{ "apikey":"sb_publishable_mG66ec2eJvB1MCkfVTI8vA_6b-cZYmG", "Content-Type":"application/json", "Prefer":"return=minimal" },
+      body: JSON.stringify({ session_id: sid.slice(0, 64), event:"cta_click", detail:"wa_chat:" + src,
+        utm_source: (q.get("utm_source") || src).slice(0, 120), utm_medium: (q.get("utm_medium") || "").slice(0, 120) || null,
+        utm_campaign: (q.get("utm_campaign") || "wa_funnel").slice(0, 200) }) }).catch(function(){});
+  }catch(e){}
+  setTimeout(function(){
+    try{ if(window.whop) window.whop.track("lead"); }catch(e){}
+    try{ if(window.fbq) window.fbq("track", "Contact", { content_name: "whatsapp_chat" }); }catch(e){}
+  }, 150);
+  setTimeout(function(){ location.href = url; }, 1400);
+})();
+</script>
+<script id="orb-px">/* Ad measurement (Whop + Meta pixels). EU/EEA/UK/CH visitors: only after they press Accept on the main site. Elsewhere: on, unless switched off in Cookie settings. */
+(function(){try{
+if(navigator.globalPrivacyControl===true)return;
+var c=null;try{c=JSON.parse(localStorage.getItem("orb-consent-v1")||"null")}catch(e){}
+if(c){if(c.marketing!==true)return}else{var tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
+if(!tz||/^(Europe\/(?!Istanbul|Moscow|Kaliningrad|Samara|Volgograd|Saratov|Ulyanovsk|Astrakhan|Kirov|Minsk|Kiev|Kyiv|Simferopol|Chisinau|Belgrade|Sarajevo|Skopje|Podgorica|Tirane|Uzhgorod|Zaporozhye)|Atlantic\/(Canary|Madeira|Azores|Reykjavik|Faroe)|Africa\/Ceuta|Arctic\/Longyearbyen)/.test(tz))return}
+!function(w,d,s,u,n,a,b){if(w[n])return;a=w[n]={q:[],t:+new Date,s:[],o:u,track:function(){a.q.push([+new Date].concat([].slice.call(arguments)))},setScope:function(){a.s=[].slice.call(arguments).filter(function(x){return typeof x==="string"});a.q.push([+new Date,"setScope"].concat(a.s))},scope:function(){var c=[].slice.call(arguments);return{track:function(){a.q.push([+new Date].concat([].slice.call(arguments)).concat([{__scope:c}]))}}}};b=d.createElement(s);b.async=1;b.src=u+"/s.js";d.getElementsByTagName(s)[0].parentNode.insertBefore(b,d.getElementsByTagName(s)[0])}(window,document,"script","https://t.whop.tw","whop");
+window.whop.setScope("biz_340OHdZOPCa81N");window.whop.track("page");
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+fbq("init","1662842908878793");fbq("track","PageView");
+}catch(e){}})();</script>
+</body></html>

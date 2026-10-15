@@ -83,8 +83,13 @@ Deno.serve(async (req: Request) => {
     body: body || (media ? `[${media.map((m) => (m.type || "file").split("/")[0]).join(", ")}]` : ""),
     media, twilio_sid: sid, status: "received",
   }).select("id").single();
+  // came from an ad or a tracked link (myorbuni.com/chat?src=…): the first message ends with "(ref: …)"
+  const ref = (body.match(/\(ref:\s*([a-z0-9_-]{2,24})\)\s*$/i) || [])[1];
+  const labels: string[] = Array.isArray(contact.labels) ? contact.labels : [];
+  if (ref && !labels.includes("from:" + ref.toLowerCase())) labels.push("from:" + ref.toLowerCase());
   await db.from("wa_contacts").update({
     wa_name: params.ProfileName || contact.wa_name,
+    ...(ref ? { labels } : {}),
     last_inbound_at: now, last_message_at: now,
     last_preview: (body || "[attachment]").slice(0, 120),
     unread: (contact.unread || 0) + 1,
