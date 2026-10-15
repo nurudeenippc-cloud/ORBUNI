@@ -228,7 +228,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + button("Open my seat", safeLink(v.seat))
       + (cal ? para(`<a href="${cal}" style="color:${GOLD};font-weight:600">Add it to Google Calendar</a> so you don't miss it.`) : "")
       + note("Keep this email", "The button above is your personal seat link. It shows the countdown, the join button on the day and, afterwards, the replay. We will also remind you on WhatsApp.", "green")
-      + (vip ? "" : note("Want to start now?", `The VIP seat (${g(v,"vip_price","$10")}) gives you the Scholarship Masterclass today, the replay for life and 48-hour early access to 100% scholarship places. You can upgrade from your seat page.`)
+      + (vip ? "" : note("Want to start now?", `The VIP seat (${g(v,"vip_price","$10")}) gives you the Scholarship Masterclass today, a free ticket to our Istanbul meetup, the replay for life and 48-hour early access to 100% scholarship places. You can upgrade from your seat page.`)
                  + video("vip_offer", "30 seconds: what the VIP seat adds"))
       + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
   },
@@ -283,7 +283,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + h1("Want to start before the webinar?")
       + para(`Hello ${g(v,"first_name","there")}, your free seat is saved and that is all you need to attend. Some people want to move faster, so there is a VIP seat for ${g(v,"vip_price","$10")}, paid once:`)
       + video("vip_offer", "Watch: what the VIP seat adds (30 seconds)")
-      + rows([["Today", "The Scholarship Masterclass: 9 short lessons, yours for life"], ["On the day", "Your question goes first in the live Q&amp;A"], ["After", "The replay for life (free seats: 3 days)"], ["First", "48-hour early access to 100% scholarship places"]])
+      + rows([["Today", "The Scholarship Masterclass: 9 short lessons, yours for life"], ["In Istanbul", "A free ticket to the Orbuni Istanbul Meetup: our team, students from all over the world, food, drinks and prize games"], ["On the day", "Your question goes first in the live Q&amp;A"], ["After", "The replay for life (free seats: 3 days)"], ["First", "48-hour early access to 100% scholarship places"]])
       + button("Upgrade from my seat page", safeLink(v.seat))
       + small("We send this offer once. Your free seat stays whatever you decide." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
   },
@@ -302,7 +302,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       kick("VIP confirmed")
       + h1(`You're VIP, ${g(v,"first_name","there")}`)
       + para(`Payment received. Your VIP seat for <b>${g(v,"title","the webinar")}</b> is confirmed. Here is everything that comes with it:`)
-      + rows([["Masterclass", "Create your free Orbuni account with this email and the 9 lessons unlock by themselves"], ["Live Q&amp;A", "Your question goes first"], ["Replay", "Yours for life, on your seat page"], ["100% scholarship places", "You see them 48 hours before everyone else"]])
+      + rows([["Masterclass", "Create your free Orbuni account with this email and the 9 lessons unlock by themselves"], ["Istanbul Meetup", "Your free ticket. We send the date and venue to your WhatsApp and this email"], ["Live Q&amp;A", "Your question goes first"], ["Replay", "Yours for life, on your seat page"], ["100% scholarship places", "You see them 48 hours before everyone else"]])
       + button("Open my VIP seat", safeLink(v.seat))
       + note("Your receipt", "Your payment receipt comes in a separate email. Questions? Reply to this email.", "green")
       + small("You are getting this because you bought a VIP seat at myorbuni.com.")),

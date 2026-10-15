@@ -37554,11 +37554,12 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   ];
   var VIP_STACK = [
     ["The Scholarship Masterclass, today", "9 short lessons: how scholarships work, what to prepare, how to plan the money. Yours for life."],
+    ["A free ticket to the Orbuni Istanbul Meetup", "One day in Istanbul with our team and students from all over the world: food and drinks, games with prizes worth thousands of Turkish lira, and real answers on life, jobs and opportunities in Türkiye. Date and venue go to VIPs first; travel to Istanbul is not included."],
     ["The replay for life", "Free seats keep the replay for 3 days."],
     ["Your question answered first", "VIP questions go to the top of the live Q&A."],
     ["48-hour early access to 100% scholarship places", "Places are limited and go in the order applications arrive."],
     ["The documents checklist for your level", "Bachelor's, master's or PhD: exactly what to get ready."],
-    ["The private VIP WhatsApp group", "Updates, early offers and answers, with a smaller group."]
+    ["The private VIP WhatsApp group", "A community that stays with you after the webinar: updates, early offers and answers, with a smaller group."]
   ];
   var $ = function(id){ return document.getElementById(id); };
   var E = function(s){ return (typeof esc === "function") ? esc(s) : String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
@@ -37734,7 +37735,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var price = (WB.info && WB.info.vip_price) || 10, first = String(name || "").split(" ")[0];
     flow('<span class="wb-step-n" style="display:block;text-align:center">Your free seat is saved</span>'
       + '<h2 class="wb-tk-h">' + (first ? E(first) + ", one" : "One") + " choice before you go</h2>"
-      + '<p class="wb-tk-sub">You are in for free. If you want to move faster, the VIP seat gives you the Scholarship Masterclass today, the replay for life and first access to 100% scholarship places.</p>'
+      + '<p class="wb-tk-sub">You are in for free. If you want to move faster, the VIP seat gives you the Scholarship Masterclass today, a ticket to our Istanbul meetup, the replay for life and first access to 100% scholarship places.</p>'
       + '<div class="wb-vipcard">' + vipVideo() + vipStack(price,
           '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVip()">Yes, make me VIP for $' + E(price) + " <span aria-hidden=\"true\">→</span></button>")
       + "</div>"
@@ -37805,6 +37806,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       html += '<div class="wb-vipcard"><h3>Your VIP extras</h3><ul>'
         + "<li><span><b>The Scholarship Masterclass is yours.</b><br>Create your free account with the email you paid with and it unlocks by itself.</span></li>"
         + "<li><span><b>Early access: 100% scholarship places.</b><br>Places are limited. See the live list now, before it goes to everyone.</span></li>"
+        + "<li><span><b>Your ticket to the Orbuni Istanbul Meetup.</b><br>Meet our team and students from all over the world, with food, drinks and prize games. We send the date and venue to your WhatsApp and email.</span></li>"
         + "<li><span><b>Your question goes first</b> in the live Q&amp;A, and the replay is yours for life.</span></li></ul>"
         + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="go(\'schol\')">See the 100% scholarship places →</button>'
         + '<button class="lp-pill lp-pill-ghost" style="background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)" onclick="openPortal(\'student-up\')">Open the Masterclass</button></div></div>';
@@ -37841,7 +37843,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + vipVideo()
       + '<div class="wbv-cmp">'
       + '<div class="wbv-col free"><h3>Free seat <span>$0</span></h3><ul>'
-      + li("y", "The live webinar and Q&amp;A") + li("h", "The replay for 3 days") + li("n", "The Scholarship Masterclass")
+      + li("y", "The live webinar and Q&amp;A") + li("h", "The replay for 3 days") + li("n", "The Scholarship Masterclass") + li("n", "The Orbuni Istanbul Meetup")
       + li("n", "Early access to 100% scholarship places") + li("n", "Your question answered first") + li("n", "The private VIP WhatsApp group") + "</ul></div>"
       + '<div class="wbv-col vip"><h3>VIP seat <span>$' + E(price) + "</span></h3><ul>"
       + li("y", "Everything in the free seat")
