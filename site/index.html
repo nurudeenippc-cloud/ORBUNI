@@ -10724,7 +10724,11 @@ document.addEventListener('keydown',function(e){
   var d=document.getElementById('dlg');
   if(d&&d.open){ return; }                        /* native <dialog> closes itself */
   var portal=document.getElementById('portal');
-  if(portal&&portal.classList.contains('on')){ closePortal(); return; }
+  if(portal&&portal.classList.contains('on')){
+    /* Escape belongs to whatever is open on top (a sheet, a menu) or to the box you are typing in, never to the whole portal then */
+    var tg=e.target, typing=tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable);
+    if(typing||document.querySelector('#f3-sheet.on')) return;
+    closePortal(); return; }
   var ud=document.getElementById('uni-detail');
   if(ud&&ud.style.display==='block'){ closeUni(); return; }
   var jd=document.getElementById('job-detail');
@@ -27730,6 +27734,9 @@ async function whopLoadConfig(){
       else if(x.key === "webinar_vipseat_vsl") ORB_FUNNEL.webinarVipSeat = v;
       else if(x.key === "webinar_group_free") ORB_FUNNEL.webinarGroupFree = v;
       else if(x.key === "webinar_group_vip") ORB_FUNNEL.webinarGroupVip = v;
+      else if(x.key === "webinar_group_bsc") ORB_FUNNEL.webinarGroupBsc = v;
+      else if(x.key === "webinar_group_msc") ORB_FUNNEL.webinarGroupMsc = v;
+      else if(x.key === "webinar_group_phd") ORB_FUNNEL.webinarGroupPhd = v;
       else if(x.key === "whatsapp_group") ORB_FUNNEL.whatsappGroup = v;
       else if(x.key === "vsl_low" || x.key === "vsl_medium" || x.key === "vsl_high") ORB_FUNNEL[x.key] = v;
       else if(x.key === "community_url") ORB_FUNNEL.community = v;
@@ -30266,7 +30273,10 @@ var GC_WEB_VIDEOS = [
 ];
 var GC_WEB_GROUPS = [
   ["webinar_group_free", "webinarGroupFree", "Free webinar group", "Shown on every free seat. Announcement-only works best."],
-  ["webinar_group_vip", "webinarGroupVip", "VIP group", "Shown only on VIP seats."]
+  ["webinar_group_vip", "webinarGroupVip", "VIP group", "Shown only on VIP seats."],
+  ["webinar_group_bsc", "webinarGroupBsc", "Bachelor's group (optional)", "Free seats who chose a bachelor's degree. Empty: they get the free group."],
+  ["webinar_group_msc", "webinarGroupMsc", "Master's group (optional)", "Free seats who chose a master's degree. Empty: they get the free group."],
+  ["webinar_group_phd", "webinarGroupPhd", "PhD group (optional)", "Free seats who chose a PhD. Empty: they get the free group."]
 ];
 async function gcWebinar(owner){
   var el = $("gc-web"); if(!el) return;
@@ -30291,7 +30301,9 @@ async function gcWebinar(owner){
     + '<div class="gc-flow">' + kpi("Registered", total, "all sign-ups") + kpi("VIP ($10)", vip, total ? Math.round(vip / total * 100) + "% of sign-ups" : "")
       + kpi("Started VIP, not paid", started, "followed up automatically") + kpi("Opened free group", gf, "last 60 days") + kpi("Opened VIP group", gv, "last 60 days") + kpi("Joined live", came, "") + "</div>"
     + '<div class="gc-two" style="margin-top:12px"><div>'
-    + '<h4 class="gc-sub">WhatsApp groups</h4>' + GC_WEB_GROUPS.map(function(g){
+    + '<h4 class="gc-sub">WhatsApp groups</h4>'
+    + (!ORB_FUNNEL.webinarGroupVip ? '<div class="gc-warn" style="margin:6px 0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,122,107,.35);background:rgba(255,122,107,.08);font-size:13px;line-height:1.5"><b>VIP group link is missing.</b> People who pay $10 see no group to join until you paste the VIP invite link below.</div>' : "")
+    + GC_WEB_GROUPS.map(function(g){
         var val = ORB_FUNNEL[g[1]] || "";
         return '<div class="gc-vrow"><span class="gc-dot t-mint"></span><div class="gc-vi"><b>' + esc(g[2]) + (val ? ' · <a href="' + esc(val) + '" target="_blank" rel="noopener">open</a>' : "") + "</b><small>" + esc(g[3]) + "</small>"
           + input("gcw-" + g[0], "gcSaveWeb(\'" + g[0] + "\', \'" + g[1] + "\')", val, "https://chat.whatsapp.com/…") + "</div></div>";
@@ -35952,6 +35964,7 @@ function fdTip(ev, html){
   var t = document.getElementById("fd-tip");
   if(!t){ t = document.createElement("div"); t.id = "fd-tip"; t.setAttribute("role", "tooltip"); document.body.appendChild(t); }
   if(!html){ t.style.opacity = 0; return; }
+  var cw = document.querySelector(".fd-cashwrap"); if(!cw || !cw.offsetParent){ t.style.opacity = 0; return; }
   t.innerHTML = html; t.style.opacity = 1;
   var x = ev.clientX + 14, y = ev.clientY - 12, w = t.offsetWidth, h = t.offsetHeight;
   if(x + w > innerWidth - 8) x = ev.clientX - w - 14;
@@ -35959,6 +35972,29 @@ function fdTip(ev, html){
   t.style.left = Math.max(8, x) + "px"; t.style.top = Math.max(8, y) + "px";
 }
 window.fdTipOff = function(){ fdTip(null, ""); };
+/* The tip is fixed to the page, so anything that takes you away from the chart
+   must hide it: a tap or click elsewhere, scrolling, leaving the view, or simply
+   time on a phone (touch has no "mouse left"). Otherwise it stays pinned on top
+   of whatever screen comes next. */
+(function(){
+  var timer = 0;
+  function off(){ clearTimeout(timer); var t = document.getElementById("fd-tip"); if(t) t.style.opacity = 0; }
+  function outside(e){ if(!(e.target && e.target.closest && e.target.closest(".fd-cashwrap"))) off(); }
+  document.addEventListener("pointerdown", outside, true);
+  document.addEventListener("touchstart", outside, { capture:true, passive:true });
+  window.addEventListener("scroll", off, { capture:true, passive:true });
+  window.addEventListener("hashchange", off); window.addEventListener("popstate", off);
+  window.addEventListener("blur", off); document.addEventListener("visibilitychange", off);
+  document.addEventListener("touchend", function(e){ if(e.target && e.target.closest && e.target.closest(".fd-cashwrap")){ clearTimeout(timer); timer = setTimeout(off, 1800); } }, { passive:true });
+  // and if the chart itself is no longer on screen (navigated away), never show it
+  var queued = false;
+  var mo = new MutationObserver(function(){
+    var t = document.getElementById("fd-tip"); if(!t || t.style.opacity !== "1" || queued) return;
+    queued = true; requestAnimationFrame(function(){ queued = false; var w = document.querySelector(".fd-cashwrap"); if(!w || !w.offsetParent) off(); });
+  });
+  mo.observe(document.body, { childList:true, subtree:true });
+  window.__fdTipOff = off;
+})();
 
 /* ---- Round 14 · the money dashboard, redesigned (Figma: "Orbuni Finance Dashboard Redesign") ----
    One headline number, one colour per meaning (blue in, orange out, gold kept),
@@ -36159,8 +36195,8 @@ function fdPnl(){
     + '<div class="fd-margin"><b style="width:' + Math.max(0, Math.min(100, margin || 0)) + '%"></b></div>';
 }
 
-/* ---- assemble ---- */
-function fdHtml(){
+/* ---- assemble (v2, kept for reference; v3 below replaces it) ---- */
+function fdHtmlV2(){
   var t = fdTotals(), P = FD.period, lab = P === 365 ? "12 months" : P + " days";
   var heroLab = P === 365 ? "LAST 12 MONTHS" : "LAST " + P + " DAYS";
   var pend = FD.pend, owed = fdSum(pend, function(){ return true; });
@@ -36202,7 +36238,7 @@ async function fdLoad(){
   var since = fdIso(Date.now() - 400 * 864e5);
   var r = await sb.from("finance_transactions").select("id,kind,direction,amount,currency,status,description,source,occurred_on,created_at,partner_id,beneficiary_id")
     .gte("occurred_on", since).order("occurred_on", { ascending: false }).limit(2000);
-  var all = r.data || []; FD.all = all.length; FD.rows = all.filter(fdUsdOnly);
+  var all = r.data || []; FD.all = all.length; FD.allRows = all; FD.rows = all.filter(fdUsdOnly);
   FD.pend = FD.rows.filter(function(x){ return x.direction === "out" && x.status === "pending"; })
     .sort(function(a, b){ return String(a.created_at || fdDay(a)).localeCompare(String(b.created_at || fdDay(b))); });
   FD.canWrite = !!(typeof PROF !== "undefined" && PROF && PROF.is_owner) || (typeof canManageSec === "function" && canManageSec("finance"));
@@ -36220,13 +36256,14 @@ window.fdMount = fdMount;
 async function fdMount(){
   var box = document.getElementById("a-live"); if(!box) return;
   try{ await fdLoad(); }catch(e){ return; }
-  var old = document.getElementById("fd"); if(old) old.remove();
+  var old = document.getElementById("fd");
+  if(old){ [].forEach.call(old.querySelectorAll("[data-f3slot]"), function(el){ box.appendChild(el); }); old.remove(); }
   box.insertAdjacentHTML("afterbegin", fdHtml());
   // live: new ledger rows redraw the dashboard
   try{
     if(FD.sub){ sb.removeChannel(FD.sub); FD.sub = null; }
     if(sb.channel) FD.sub = sb.channel("fd-live").on("postgres_changes", { event: "*", schema: "public", table: "finance_transactions" }, function(){
-      clearTimeout(FD.t); FD.t = setTimeout(async function(){ var d = document.getElementById("fd"); if(!d) return; await fdLoad(); var tmp = document.createElement("div"); tmp.innerHTML = fdHtml(); d.replaceWith(tmp.firstChild); }, 600);
+      clearTimeout(FD.t); FD.t = setTimeout(async function(){ if(!document.getElementById("fd")) return; await fdLoad(); fdSwap(); }, 600);
     }).subscribe();
   }catch(e){}
 }
@@ -36255,6 +36292,7 @@ if(typeof aFinance === "function" && !aFinance.__fd){
       else if(el.id === "whop-orders") pick.orders = el;
       else if(el.id === "r6-comm") pick.comm = el;
       else if(el.id === "fin-ledger") pick.ledger = el;
+      else if(el.id === "r13-finbar") pick.bar = el;
       else if(el.id === "fin-form-slot") pick.form = el;
       else if(el.classList.contains("nas-hero")){ pick.hero = el; el.style.setProperty("display", "none", "important"); }
       else if(/^Income, all time/i.test(t) || /^This week/i.test(t) || (/Owed, not yet paid/i.test(t) && /Net position/i.test(t))) el.style.setProperty("display", "none", "important");
@@ -36267,6 +36305,8 @@ if(typeof aFinance === "function" && !aFinance.__fd){
     if(pick.whop) [].slice.call(pick.whop.querySelectorAll("*")).forEach(function(n){
       if(n.children.length <= 4 && /^(collected|payments)\b/i.test(head(n)) && n.parentElement && n.parentElement !== pick.whop) n.style.setProperty("display", "none", "important");
     });
+    // v3: the older panels move into the tab they belong to
+    if(pick.fd.classList.contains("fd3")){ box.insertBefore(pick.fd, box.firstChild); f3Place(pick); return; }
     // one compact row of actions instead of four big coloured tiles
     var bar = document.getElementById("r13-finbar");
     if(!bar){
@@ -36289,6 +36329,225 @@ if(typeof aFinance === "function" && !aFinance.__fd){
     order.forEach(function(el){ if(!el) return; if(!anchor) box.insertBefore(el, box.firstChild); else anchor.after(el); anchor = el; });
   };
 })();
+
+
+/* Round 17 — Finance v3: a money app, not a report. Phone first, like the wallet
+   screens of Paystack, Payoneer, Opay and Whop: one balance card, round quick
+   actions, tabs (Overview · Activity · Payouts · Reports · Manage), and every
+   entry opens a detail sheet with its actions. The older finance panels (Whop
+   orders, commissions, ledger, record form, rails, tiers) are moved into the tab
+   they belong to, so nothing is lost and nothing repeats. */
+FD.tab = FD.tab || "overview"; FD.q = ""; FD.f = "all"; FD.lim = 40;
+window.FD = FD; // the tab, search and filter buttons talk to it from inline handlers
+try{ FD.hide = localStorage.getItem("orb_fd_hide") === "1"; }catch(e){ FD.hide = false; }
+var F3_ICO = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  send: '<path d="M7 17 17 7M9 7h8v8"/>',
+  sync: '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4"/>',
+  uni: '<path d="m3 9 9-5 9 5-9 5-9-5Z"/><path d="M7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5"/>',
+  dl: '<path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.4-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  in: '<path d="M17 7 7 17M15 17H7V9"/>',
+  out: '<path d="M7 17 17 7M9 7h8v8"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>'
+};
+function f3i(n){ return '<svg class="f3i" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (F3_ICO[n] || "") + "</svg>"; }
+function f3Cur(r){ return String(r.currency || "USD").toUpperCase(); }
+function f3Amt(r){
+  var c = f3Cur(r), n = fdNum(r.amount);
+  if(c === "USD") return fdUsd(n);
+  return c + " " + Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+function f3Sign(r){ return r.kind === "income" ? "in" : r.direction === "out" ? "out" : "adj"; }
+function f3Who(r){ return FD.names[r.partner_id] || FD.names[r.beneficiary_id] || ""; }
+function f3Title(r){ return r.description || FIN_KIND_LABEL[r.kind] || r.kind || "Entry"; }
+function f3Mask(s){ return FD.hide ? "••••" : s; }
+function f3DayLabel(iso){
+  var t = fdIso(Date.now()), y = fdIso(Date.now() - 864e5);
+  if(iso === t) return "Today"; if(iso === y) return "Yesterday";
+  var d = new Date(iso + "T12:00:00"); if(isNaN(d)) return iso || "No date";
+  return d.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric" }) + (d.getFullYear() !== new Date().getFullYear() ? ", " + d.getFullYear() : "");
+}
+function f3Pill(r){
+  if(r.status === "void") return '<span class="f3-pill void">Void</span>';
+  if(r.status === "pending") return '<span class="f3-pill pend">' + (r.direction === "out" ? "To pay" : "Pending") + "</span>";
+  return "";
+}
+function f3Row(r){
+  var s = f3Sign(r), pend = r.status === "pending", vd = r.status === "void", who = f3Who(r);
+  var sub = [who, r.kind === "income" ? fdCat(r) : (FIN_KIND_LABEL[r.kind] || r.kind), fdLabelDay(fdDay(r))].filter(Boolean).join(" · ");
+  return '<button type="button" class="f3-row' + (vd ? " void" : "") + '" onclick="f3Open(\'' + jsq(r.id) + '\')">'
+    + '<span class="f3-ic ' + (pend ? "pend" : s) + '">' + f3i(pend ? "clock" : s === "in" ? "in" : "out") + "</span>"
+    + '<span class="f3-rt"><b>' + esc(f3Title(r)) + "</b><small>" + esc(sub) + "</small></span>"
+    + '<span class="f3-ra"><b class="' + s + '">' + (s === "in" ? "+" : s === "out" ? "−" : "") + esc(f3Amt(r)).replace("−", "") + "</b>" + f3Pill(r) + "</span></button>";
+}
+function f3Filtered(){
+  var q = String(FD.q || "").trim().toLowerCase(), f = FD.f;
+  return (FD.allRows || FD.rows).filter(function(r){
+    if(f === "in" && !(r.kind === "income" && r.status !== "void")) return false;
+    if(f === "out" && !(r.direction === "out" && r.status !== "void")) return false;
+    if(f === "pending" && r.status !== "pending") return false;
+    if(f === "void" && r.status !== "void") return false;
+    if(!q) return true;
+    return [f3Title(r), FIN_KIND_LABEL[r.kind], f3Who(r), r.source, String(r.amount), fdCat(r), fdDay(r)].join(" ").toLowerCase().indexOf(q) >= 0;
+  });
+}
+function f3ActivityList(){
+  var rows = f3Filtered(), shown = rows.slice(0, FD.lim), out = "", day = null;
+  if(!rows.length) return '<div class="f3-empty">' + ((FD.allRows || FD.rows).length ? "Nothing matches. Try another word or filter." : "No entries yet. Whop and Paystack payments land here on their own.") + "</div>";
+  shown.forEach(function(r){
+    var d = fdDay(r);
+    if(d !== day){
+      if(day !== null) out += "</div>";
+      day = d;
+      var net = rows.filter(function(x){ return fdDay(x) === d && f3Cur(x) === "USD"; }).reduce(function(n, x){ return n + (fdIsIn(x) ? fdNum(x.amount) : fdIsOut(x) ? -fdNum(x.amount) : 0); }, 0);
+      out += '<div class="f3-day"><div class="f3-dh"><span>' + esc(f3DayLabel(d)) + "</span>" + (net ? "<em>" + (net > 0 ? "+" : "") + fdUsd(net) + "</em>" : "") + "</div>";
+    }
+    out += f3Row(r);
+  });
+  if(day !== null) out += "</div>";
+  if(rows.length > shown.length) out += '<button type="button" class="f3-more" onclick="FD.lim+=40;f3Refresh(\'activity\')">Show more · ' + (rows.length - shown.length) + " left</button>";
+  return out;
+}
+function f3Sources(){
+  var askOwed = 0, askN = 0;
+  (FD.ask || []).forEach(function(a){ if(String(a.status || "").toLowerCase() !== "paid"){ var v = a.remaining != null ? fdNum(a.remaining) : fdNum(a.amount); if(v > 0){ askOwed += v; askN++; } } });
+  return '<div class="f3-card"><div class="f3-ch"><h3>Connected</h3><span class="f3-sub">where money comes in</span></div>'
+    + '<div class="f3-src"><span class="f3-logo wh">W</span><span class="f3-rt"><b>Whop</b><small>Card payments · synced every 10 minutes</small></span>'
+    + '<span class="f3-sb"><button type="button" class="fd-btn sm" onclick="whopSyncNow(this)">Sync</button><a class="fd-btn sm ghost" href="https://whop.com/dashboard/biz_340OHdZOPCa81N" target="_blank" rel="noopener" aria-label="Open Whop">↗</a></span></div>'
+    + '<div class="f3-src"><span class="f3-logo ps">P</span><span class="f3-rt"><b>Paystack</b><small>Naira payments · recorded automatically</small></span>'
+    + '<span class="f3-sb"><a class="fd-btn sm ghost" href="https://dashboard.paystack.com" target="_blank" rel="noopener" aria-label="Open Paystack">↗</a></span></div>'
+    + '<div class="f3-src"><span class="f3-logo au">A</span><span class="f3-rt"><b>AskUni</b><small>' + (FD.askOk ? (askN ? "owes " + f3Mask(fdUsd(askOwed)) + " on " + askN + " application" + (askN === 1 ? "" : "s") : "no commission waiting") : "placement commissions") + "</small></span>"
+    + '<span class="f3-sb"><button type="button" class="fd-btn sm" onclick="askuniCheck()">Check</button><a class="fd-btn sm ghost" href="https://apply.askuni.com" target="_blank" rel="noopener" aria-label="Open AskUni">↗</a></span></div></div>';
+}
+function f3PayList(lim){
+  var list = FD.pend, now = Date.now(), tones = ["c0", "c1", "c2", "c3", "c4"];
+  if(!list.length) return '<div class="f3-empty ok">' + f3i("check") + " Nobody is waiting on you. Every payout is settled.</div>";
+  return '<ul class="f3-pays">' + list.slice(0, lim || list.length).map(function(r, i){
+    var name = f3Who(r) || r.description || "Payout";
+    var why = (FIN_KIND_LABEL[r.kind] || r.kind || "Payout") + (r.description && f3Who(r) ? " · " + r.description : "");
+    var age = Math.max(0, Math.floor((now - new Date(r.created_at || fdDay(r)).getTime()) / 864e5));
+    return '<li><button type="button" class="f3-pl" onclick="f3Open(\'' + jsq(r.id) + '\')"><span class="fd-av ' + tones[i % 5] + '">' + esc(fdInitials(name)) + '</span><span class="f3-rt"><b>' + esc(name) + "</b><small>" + esc(why) + "</small></span>"
+      + '<span class="f3-ra"><b>' + esc(f3Amt(r)) + '</b><small class="' + (age > 14 ? "late" : "") + '">' + (age ? age + " day" + (age === 1 ? "" : "s") : "today") + "</small></span></button>"
+      + (FD.canWrite ? '<button type="button" class="fd-btn sm gold" onclick="finMarkPaid(\'' + jsq(r.id) + '\', event)">Paid</button>' : "") + "</li>";
+  }).join("") + "</ul>" + (lim && list.length > lim ? '<button type="button" class="f3-more" onclick="f3Tab(\'payouts\')">See all ' + list.length + " payouts →</button>" : "");
+}
+function f3Pane(name, html){ return '<div class="f3-pane" data-pane="' + name + '"' + (FD.tab === name ? "" : " hidden") + ' role="tabpanel" aria-label="' + name + '">' + html + "</div>"; }
+function f3Slot(n){ return '<div class="f3-slot" data-slot="' + n + '"></div>'; }
+function fdHtml(){
+  var t = fdTotals(), P = FD.period, lab = P === 365 ? "last 12 months" : "last " + P + " days";
+  var pend = FD.pend, owed = fdSum(pend, function(){ return true; });
+  var other = (FD.all || 0) - FD.rows.length, recent = (FD.allRows || FD.rows).slice(0, 6);
+  var tabs = [["overview", "Overview"], ["activity", "Activity"], ["payouts", "Payouts", pend.length], ["reports", "Reports"], ["manage", "Manage"]];
+  var acts = [["plus", "Record", "f3Record()"], ["send", "Pay out", "f3Tab('payouts')"], ["sync", "Sync", "whopSyncNow(this)"], ["uni", "AskUni", "askuniCheck()"], ["dl", "Export", "fdExport()"]];
+  var income = (function(){ var h = fdIncome(), k = h.indexOf('<div class="fd-src">'); return k > 0 ? h.slice(0, k) : h; })();
+  return '<div class="fd fd3" id="fd" role="region" aria-label="Finance">'
+    + '<div class="f3-top"><div><span class="fd-kick">FINANCE</span><h2>Money</h2><p><i class="fd-live"></i>Live · updates as payments land' + (other > 0 ? " · " + other + " non-USD in Activity" : "") + "</p></div>"
+    + '<div class="fd-seg" role="group" aria-label="Period">' + [[30, "30D"], [90, "90D"], [365, "12M"]].map(function(p){ return '<button type="button" class="' + (P === p[0] ? "on" : "") + '" aria-pressed="' + (P === p[0]) + '" onclick="fdSetPeriod(' + p[0] + ')">' + p[1] + "</button>"; }).join("") + "</div></div>"
+    + '<div class="f3-bal"><div class="f3-bh"><span>Net balance · ' + lab + '</span><button type="button" class="f3-eye" onclick="f3Hide()" aria-label="' + (FD.hide ? "Show amounts" : "Hide amounts") + '">' + f3i(FD.hide ? "eyeoff" : "eye") + "</button></div>"
+    + '<div class="f3-bn"><b class="' + (t.net < 0 ? "neg" : "") + '">' + f3Mask(fdUsd(t.net)) + "</b>" + (FD.hide ? "" : fdDelta(t.net, t.netP, true).replace("</span>", " vs before</span>")) + "</div>"
+    + '<div class="f3-cells"><div><span class="f3-dot in">' + f3i("in") + "</span><small>Money in</small><b>" + f3Mask(fdUsd(t.inC)) + "</b></div>"
+    + '<div><span class="f3-dot out">' + f3i("out") + "</span><small>Money out</small><b>" + f3Mask(fdUsd(t.outC)) + "</b></div>"
+    + '<button type="button" onclick="f3Tab(\'payouts\')"><span class="f3-dot pend">' + f3i("clock") + "</span><small>Owed · " + pend.length + "</small><b>" + f3Mask(fdUsd(owed)) + "</b></button></div></div>"
+    + '<div class="f3-acts">' + acts.map(function(a){ return '<button type="button" onclick="' + a[2] + '"><span>' + f3i(a[0]) + "</span>" + a[1] + "</button>"; }).join("") + "</div>"
+    + '<div class="f3-tabs" role="tablist" aria-label="Finance sections">' + tabs.map(function(x){ return '<button type="button" role="tab" data-tab="' + x[0] + '" aria-selected="' + (FD.tab === x[0]) + '" onclick="f3Tab(\'' + x[0] + '\')">' + x[1] + (x[2] ? "<i>" + x[2] + "</i>" : "") + "</button>"; }).join("") + "</div>"
+    + f3Pane("overview", '<div class="f3-grid"><div class="f3-col">'
+        + '<div class="f3-card"><div class="f3-ch"><h3>Profit building up</h3><span class="f3-sub">' + lab + "</span></div>" + fdHeroChart() + "</div>"
+        + '<div class="f3-card"><div class="f3-ch"><h3>Recent activity</h3><button type="button" class="f3-lnk" onclick="f3Tab(\'activity\')">See all →</button></div>'
+        + (recent.length ? '<div class="f3-list">' + recent.map(f3Row).join("") + "</div>" : '<div class="f3-empty">No entries yet. Whop and Paystack payments land here on their own.</div>') + "</div></div>"
+        + '<div class="f3-col"><div class="f3-card"><div class="f3-ch"><h3>Waiting on you</h3><span class="f3-sub">' + (pend.length ? pend.length + " · " + f3Mask(fdUsd(owed)) : "all clear") + "</span></div>" + f3PayList(3) + "</div>" + f3Sources() + "</div></div>")
+    + f3Pane("activity", '<div class="f3-card"><div class="f3-find"><label class="f3-search">' + f3i("search") + '<input type="search" id="f3-q" placeholder="Search name, amount, note" value="' + esc(FD.q) + '" oninput="FD.q=this.value;FD.lim=40;f3Refresh(\'activity\')" aria-label="Search activity"></label>'
+        + '<div class="f3-chips" role="group" aria-label="Filter">' + [["all", "All"], ["in", "Money in"], ["out", "Money out"], ["pending", "Pending"], ["void", "Void"]].map(function(c){ return '<button type="button" class="' + (FD.f === c[0] ? "on" : "") + '" aria-pressed="' + (FD.f === c[0]) + '" onclick="FD.f=\'' + c[0] + '\';FD.lim=40;f3Refresh(\'activity\')">' + c[1] + "</button>"; }).join("") + "</div></div>"
+        + '<div class="f3-list" id="f3-act">' + f3ActivityList() + "</div></div>")
+    + f3Pane("payouts", '<div class="f3-card"><div class="f3-ch"><h3>Payouts to send</h3>' + (FD.canWrite && pend.length > 1 ? '<button type="button" class="fd-btn sm gold" onclick="fdPayAll(event)">Mark all paid · ' + fdUsd(owed) + "</button>" : '<span class="f3-sub">' + (pend.length ? fdUsd(owed) + " owed" : "all clear") + "</span>") + "</div>"
+        + '<p class="f3-note">Send the money from Whop or your bank first, then tap <b>Paid</b> here to record it.</p>' + f3PayList(0) + "</div>" + f3Slot("payouts"))
+    + f3Pane("reports", '<div class="f3-card"><div class="f3-ch"><h3>Cash flow</h3><div class="fd-lg"><span><i class="sw in"></i>In</span><span><i class="sw out"></i>Out</span><span><i class="sw kept"></i>Kept</span></div></div>' + fdCash() + "</div>"
+        + '<div class="f3-grid2"><div class="f3-card" id="fd-income">' + income + '</div><div class="f3-card" id="fd-pnl">' + fdPnl() + "</div></div>" + f3Slot("reports"))
+    + f3Pane("manage", '<div class="f3-card"><div class="f3-ch"><h3>Record an entry</h3><span class="f3-sub">income, a payout, pay, a cost or a correction</span></div>'
+        + '<button type="button" class="fd-btn gold" onclick="f3Record()">' + f3i("plus") + " New entry</button></div>" + f3Slot("manage"))
+    + "</div>";
+}
+window.f3Tab = function(name){
+  FD.tab = name; var d = document.getElementById("fd"); if(!d) return;
+  [].forEach.call(d.querySelectorAll(".f3-pane"), function(p){ p.hidden = p.getAttribute("data-pane") !== name; });
+  [].forEach.call(d.querySelectorAll(".f3-tabs [role=tab]"), function(b){ var on = b.getAttribute("data-tab") === name; b.setAttribute("aria-selected", on); if(on && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "center" }); });
+  if(window.__fdTipOff) window.__fdTipOff();
+  var tb = d.querySelector(".f3-tabs"); if(tb && tb.getBoundingClientRect().top < 0) tb.scrollIntoView({ block: "start" });
+};
+window.f3Refresh = function(pane){
+  if(pane === "activity"){ var el = document.getElementById("f3-act"); if(el) el.innerHTML = f3ActivityList();
+    var d = document.getElementById("fd"); if(d) [].forEach.call(d.querySelectorAll(".f3-chips button"), function(b){ var on = b.getAttribute("onclick").indexOf("'" + FD.f + "'") > 0; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); }
+};
+window.f3Hide = function(){ FD.hide = !FD.hide; try{ localStorage.setItem("orb_fd_hide", FD.hide ? "1" : "0"); }catch(e){} fdSwap(); };
+window.f3Record = function(){ f3Tab("manage"); try{ finForm(); }catch(e){} setTimeout(function(){ var s = document.getElementById("fin-form-slot"); if(s) s.scrollIntoView({ behavior: "smooth", block: "start" }); }, 350); };
+
+/* detail sheet: bottom sheet on a phone, centred panel on a computer */
+window.f3Close = function(){
+  var s = document.getElementById("f3-sheet"); if(!s) return;
+  if(F3S.mo){ F3S.mo.disconnect(); F3S.mo = null; }
+  s.classList.remove("on"); setTimeout(function(){ if(s.parentNode && !s.classList.contains("on")) s.remove(); }, 220);
+  if(F3S.back && F3S.back.focus) try{ F3S.back.focus({ preventScroll: true }); }catch(e){}
+};
+var F3S = {};
+window.addEventListener("hashchange", function(){ f3Close(); }); window.addEventListener("popstate", function(){ f3Close(); });
+document.addEventListener("keydown", function(e){ if(e.key === "Escape") f3Close(); });
+window.f3Open = function(id){
+  var r = (FD.allRows || FD.rows).filter(function(x){ return String(x.id) === String(id); })[0]; if(!r) return;
+  f3Close(); var old = document.getElementById("f3-sheet"); if(old) old.remove();
+  F3S.back = document.activeElement;
+  var s = f3Sign(r), who = f3Who(r);
+  function line(k, v){ return v ? "<div><dt>" + k + "</dt><dd>" + esc(v) + "</dd></div>" : ""; }
+  var st = r.status === "void" ? "Void — no longer counts" : r.status === "pending" ? (r.direction === "out" ? "Waiting to be paid" : "Pending") : r.direction === "out" ? "Paid" : "Received";
+  var acts = "";
+  if(FD.canWrite && r.status === "pending" && r.direction === "out") acts += '<button type="button" class="fd-btn gold" onclick="finMarkPaid(\'' + jsq(r.id) + '\', event);f3Close()">' + f3i("check") + " Mark paid</button>";
+  if(FD.canWrite && r.status !== "void") acts += '<button type="button" class="fd-btn" onclick="finVoid(\'' + jsq(r.id) + '\', event)">Void</button>';
+  acts += '<button type="button" class="fd-btn ghost" onclick="f3Copy(\'' + jsq(r.id) + '\', this)">' + f3i("copy") + " Copy reference</button>";
+  var el = document.createElement("div"); el.id = "f3-sheet"; el.className = "f3-sheet";
+  el.innerHTML = '<div class="f3-scrim" onclick="f3Close()"></div><div class="f3-panel" role="dialog" aria-modal="true" aria-labelledby="f3-st">'
+    + '<div class="f3-grab"></div><button type="button" class="f3-x" onclick="f3Close()" aria-label="Close">' + f3i("x") + "</button>"
+    + '<div class="f3-sh"><span class="f3-ic big ' + (r.status === "pending" ? "pend" : s) + '">' + f3i(r.status === "pending" ? "clock" : s === "in" ? "in" : "out") + "</span>"
+    + '<b class="f3-sa ' + s + (r.status === "void" ? " void" : "") + '">' + (s === "in" ? "+" : s === "out" ? "−" : "") + esc(f3Amt(r)).replace("−", "") + "</b>"
+    + '<h3 id="f3-st">' + esc(f3Title(r)) + "</h3>" + '<span class="f3-stat ' + esc(r.status || "") + '">' + esc(st) + "</span></div>"
+    + "<dl>" + line("Date", f3DayLabel(fdDay(r))) + line("Type", FIN_KIND_LABEL[r.kind] || r.kind) + (r.kind === "income" ? line("Category", fdCat(r)) : "")
+    + line(r.direction === "out" ? "Paid to" : "From", who) + line("Source", r.source === "automatic" ? "Automatic (Whop / Paystack)" : r.source) + line("Currency", f3Cur(r)) + line("Reference", String(r.id).slice(0, 18)) + "</dl>"
+    + '<div class="f3-sx">' + acts + "</div></div>";
+  document.body.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add("on"); var x = el.querySelector(".f3-x"); if(x) x.focus({ preventScroll: true }); });
+  // if Finance leaves the screen while this is open, close it
+  F3S.mo = new MutationObserver(function(){ var d = document.getElementById("fd"); if(!d || !d.offsetParent) f3Close(); });
+  F3S.mo.observe(document.body, { childList: true, subtree: true });
+};
+window.f3Copy = function(id, btn){
+  var done = function(){ toast("Reference copied."); };
+  try{ navigator.clipboard.writeText(String(id)).then(done, function(){ prompt("Reference", String(id)); }); }catch(e){ prompt("Reference", String(id)); }
+};
+
+/* re-render without losing the older panels that live inside the tabs */
+function fdSwap(){
+  var d = document.getElementById("fd"), box = document.getElementById("a-live"); if(!d || !box) return;
+  var keep = [].slice.call(d.querySelectorAll("[data-f3slot]"));
+  var hold = document.createElement("div"); hold.hidden = true; keep.forEach(function(el){ hold.appendChild(el); });
+  var y = window.scrollY, tmp = document.createElement("div"); tmp.innerHTML = fdHtml(); var nd = tmp.firstChild;
+  d.replaceWith(nd);
+  keep.forEach(function(el){ var s = nd.querySelector('.f3-slot[data-slot="' + el.getAttribute("data-f3slot") + '"]'); (s || box).appendChild(el); });
+  if(Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
+}
+window.fdSwap = fdSwap;
+window.fdSetPeriod = function(p){ FD.period = p; fdSwap(); };
+function f3Place(pick){
+  var d = pick.fd; if(!d) return;
+  var map = [["payouts", [pick.req, pick.comm]], ["reports", [pick.whop, pick.orders, pick.top]], ["manage", [pick.form, pick.ledger, pick.rails, pick.tiers]]];
+  map.forEach(function(m){
+    var slot = d.querySelector('.f3-slot[data-slot="' + m[0] + '"]'); if(!slot) return;
+    m[1].forEach(function(el){ if(!el) return; el.setAttribute("data-f3slot", m[0]); slot.appendChild(el); });
+  });
+  var bar = document.getElementById("r13-finbar"); if(bar) bar.remove();
+}
 
 try{ if(typeof A_TITLE !== "undefined" && !A_TITLE.home) A_TITLE.home = "Today"; }catch(e){}
 
@@ -37289,8 +37548,9 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     });
     function cap(k){ return k; }
   }
-  function groupBlock(vip){
-    var url = vip ? (fv("webinarGroupVip") || "") : (fv("webinarGroupFree") || fv("whatsappGroup") || "");
+  function groupBlock(vip, level){
+    var lv = String(level || "").toLowerCase(), lvKey = /bach/.test(lv) ? "webinarGroupBsc" : /mast/.test(lv) ? "webinarGroupMsc" : /phd/.test(lv) ? "webinarGroupPhd" : "";
+    var url = vip ? (fv("webinarGroupVip") || "") : ((lvKey && fv(lvKey)) || fv("webinarGroupFree") || fv("whatsappGroup") || "");
     if(!/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com|whop\.com)\//.test(url)) return "";
     return '<div class="wbx-group' + (vip ? " vip" : "") + '"><span class="gi">' + (vip ? "★" : "✆") + "</span><div><b>"
       + (vip ? "Join the VIP WhatsApp group" : "Join the free webinar WhatsApp group") + "</b><span>"
@@ -37459,7 +37719,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<div class="wb-row"><a class="lp-pill lp-pill-ghost" href="' + gcal + '" target="_blank" rel="noopener">Add to Google Calendar</a>'
       + '<button class="lp-pill lp-pill-ghost" onclick="wbIcs()">Add to my phone calendar</button></div>'
       + "</div>"
-      + groupBlock(vip)
+      + groupBlock(vip, s.level || (WB.ans && WB.ans.level))
       + '<div class="wb-note">We send the link and reminders on WhatsApp and by email. <b>Keep this page:</b> it is your personal seat, myorbuni.com/s/…</div>'
       + after + "</div>";
     if(vip){
@@ -37671,6 +37931,138 @@ body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
   .mqt,.lrt,.uline-track{animation:none!important}
 }
+/* ---------- Round 17: Finance v3 — wallet layout, phone first ---------- */
+#portal .fd3{gap:16px;max-width:1180px}
+#portal .fd3 svg.f3i{width:20px;height:20px;flex:0 0 auto}
+#portal .f3-top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+#portal .f3-top h2{font:800 clamp(28px,3.2vw,38px)/1.05 var(--disp,var(--round));letter-spacing:-.03em;margin:4px 0 6px;color:var(--txt)}
+#portal .f3-top p{margin:0;color:var(--dim);font-size:13px;display:flex;align-items:center;gap:8px}
+#portal .f3-bal{position:relative;overflow:hidden;border-radius:28px;padding:22px 22px 18px;color:#F4F7FC;background:radial-gradient(120% 140% at 100% 0%,rgba(242,181,68,.28),transparent 55%),radial-gradient(90% 120% at 0% 100%,rgba(76,155,255,.22),transparent 60%),linear-gradient(135deg,#14213A,#0B1322 70%);border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 40px -18px rgba(5,10,25,.55)}
+#portal .f3-bh{display:flex;align-items:center;justify-content:space-between;gap:10px;font:600 13px var(--round);color:rgba(244,247,252,.72)}
+#portal .f3-eye{border:0;background:rgba(255,255,255,.08);color:#F4F7FC;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;cursor:pointer}
+#portal .f3-eye:hover{background:rgba(255,255,255,.14)}
+#portal .f3-bn{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 18px}
+#portal .f3-bn b{font:800 clamp(40px,6vw,64px)/1.05 var(--disp,var(--round));letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:#fff}
+#portal .f3-bn b.neg{color:#FF9A8C}
+#portal .f3-bal .fd-chip.flat{background:rgba(255,255,255,.1);color:rgba(244,247,252,.8)}
+#portal .f3-cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#portal .f3-cells>*{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:12px 14px;color:inherit;font:inherit;min-width:0}
+#portal .f3-cells>button{cursor:pointer}#portal .f3-cells>button:hover{background:rgba(255,255,255,.1)}
+#portal .f3-cells small{font:600 12px var(--round);color:rgba(244,247,252,.66);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal .f3-cells b{grid-column:2;font:800 18px var(--round);font-variant-numeric:tabular-nums;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal .f3-dot{grid-row:1/3;width:34px;height:34px;border-radius:11px;display:grid;place-items:center}
+#portal .f3-dot svg{width:17px;height:17px}
+#portal .f3-dot.in{background:rgba(76,155,255,.2);color:#8CC0FF}#portal .f3-dot.out{background:rgba(255,138,76,.2);color:#FFB089}#portal .f3-dot.pend{background:rgba(242,181,68,.2);color:#F7CB73}
+#portal .f3-acts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#portal .f3-acts button{display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;color:var(--txt);font:700 12.5px var(--round);cursor:pointer;padding:6px 2px;border-radius:16px;min-width:0;text-align:center}
+#portal .f3-acts button span{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:var(--p1);border:1px solid var(--line);color:var(--fd-gold);transition:background .15s,border-color .15s}
+#portal .f3-acts button:first-child span{background:var(--fd-gold);border-color:var(--fd-gold);color:#0a1020}
+#portal .f3-acts button:hover span{border-color:var(--line2);background:var(--p2)}
+#portal .f3-acts button:first-child:hover span{background:var(--fd-gold);filter:brightness(1.06)}
+#portal .f3-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin:4px 0 0;-webkit-overflow-scrolling:touch}
+#portal .f3-tabs::-webkit-scrollbar{display:none}
+#portal .f3-tabs button{flex:0 0 auto;border:0;background:transparent;color:var(--dim);font:700 14px var(--round);padding:12px 14px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+#portal .f3-tabs button[aria-selected="true"]{color:var(--txt);border-bottom-color:var(--fd-gold)}
+#portal .f3-tabs i{font:800 11px var(--round);font-style:normal;background:var(--fd-gold);color:#0a1020;border-radius:99px;padding:2px 7px;min-width:20px;text-align:center}
+#portal .f3-pane{display:grid;gap:16px;min-width:0}
+#portal .f3-pane[hidden]{display:none!important}
+#portal .f3-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+#portal .f3-grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+#portal .f3-col{display:grid;gap:16px;min-width:0}
+#portal .f3-card{background:var(--p1);border:1px solid var(--line);border-radius:24px;padding:20px;min-width:0;display:flex;flex-direction:column;gap:14px}
+#portal .f3-card .fd-h h3,#portal .f3-ch h3{margin:0;font:800 17px var(--round);color:var(--txt);letter-spacing:-.01em}
+#portal .f3-card .fd-h p{margin:3px 0 0;color:var(--dim);font-size:13px}
+#portal .f3-ch{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#portal .f3-sub{color:var(--dim);font-size:13px}
+#portal .f3-lnk{border:0;background:transparent;color:var(--fd-gold);font:700 13px var(--round);cursor:pointer;padding:6px 0}
+#portal .f3-note{margin:-4px 0 0;color:var(--dim);font-size:13px;line-height:1.5}
+#portal .f3-list{display:flex;flex-direction:column;margin:0 -8px}
+#portal .f3-row,#portal .f3-pl{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;color:var(--txt);font:inherit;text-align:left;padding:11px 8px;border-radius:16px;cursor:pointer;min-width:0}
+#portal .f3-row:hover,#portal .f3-pl:hover{background:var(--p2)}
+#portal .f3-row.void{opacity:.55}#portal .f3-row.void .f3-ra b{text-decoration:line-through}
+#portal .f3-ic{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto}
+#portal .f3-ic.in{background:rgba(76,155,255,.14);color:var(--fd-in)}#portal .f3-ic.out,#portal .f3-ic.adj{background:rgba(255,138,76,.14);color:var(--fd-out)}#portal .f3-ic.pend{background:rgba(242,181,68,.16);color:var(--fd-gold)}
+#portal .f3-rt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+#portal .f3-rt b{font:700 14.5px var(--round);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal .f3-rt small{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal .f3-ra{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto}
+#portal .f3-ra b{font:800 15px var(--round);font-variant-numeric:tabular-nums;white-space:nowrap}
+#portal .f3-ra b.in{color:var(--mint)}#portal .f3-ra small{font-size:12px;color:var(--dim)}#portal .f3-ra small.late{color:var(--red)}
+#portal .f3-pill{font:800 10.5px var(--round);letter-spacing:.02em;padding:2px 8px;border-radius:99px}
+#portal .f3-pill.pend{background:rgba(242,181,68,.16);color:var(--fd-gold)}#portal .f3-pill.void{background:var(--p2);color:var(--dim)}
+#portal .f3-day+.f3-day{margin-top:6px}
+#portal .f3-dh{display:flex;justify-content:space-between;align-items:center;padding:10px 8px 4px;font:700 12px var(--round);color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+#portal .f3-dh em{font-style:normal;font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}
+#portal .f3-more{border:1px dashed var(--line2);background:transparent;color:var(--txt);font:700 13px var(--round);border-radius:14px;padding:12px;margin:8px 8px 0;cursor:pointer}
+#portal .f3-empty{padding:16px 4px;color:var(--faint);font-size:13.5px;display:flex;gap:8px;align-items:center}
+#portal .f3-empty.ok{color:var(--mint)}
+#portal .f3-pays{list-style:none;margin:0 -8px;padding:0;display:flex;flex-direction:column}
+#portal .f3-pays li{display:flex;align-items:center;gap:6px}
+#portal .f3-pays .fd-av{width:42px;height:42px;flex:0 0 auto}
+#portal .f3-src{display:flex;align-items:center;gap:12px;min-width:0}
+#portal .f3-src+.f3-src{border-top:1px solid var(--line);padding-top:12px}
+#portal .f3-logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:800 15px var(--round);flex:0 0 auto}
+#portal .f3-logo.wh{background:#FA4616;color:#fff}#portal .f3-logo.ps{background:#0BA4DB;color:#fff}#portal .f3-logo.au{background:#6B4EFF;color:#fff}
+#portal .f3-sb{display:flex;gap:4px;flex:0 0 auto}
+#portal .f3-find{display:flex;flex-direction:column;gap:12px}
+#portal .f3-search{display:flex;align-items:center;gap:10px;background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:0 14px;color:var(--dim)}
+#portal .f3-search input{flex:1;min-width:0;border:0;background:transparent;color:var(--txt);font:600 15px var(--round);padding:13px 0;outline:none}
+#portal .f3-search:focus-within{border-color:var(--fd-gold)}
+#portal .f3-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:0 2px}
+#portal .f3-chips::-webkit-scrollbar{display:none}
+#portal .f3-chips button{flex:0 0 auto;border:1px solid var(--line2);background:transparent;color:var(--dim);font:700 13px var(--round);padding:8px 14px;border-radius:99px;cursor:pointer}
+#portal .f3-chips button.on{background:var(--txt);border-color:var(--txt);color:var(--bg,#0a1020)}
+#portal .f3-slot{display:grid;gap:16px;min-width:0}
+#portal .f3-slot:empty{display:none}
+#portal .f3-slot>*{margin:0!important}
+#portal .fd3 .fd-hchart svg{height:150px}
+#portal .fd3 .f3-card .fd-btn.gold svg{width:16px;height:16px}
+#portal .fd3 .f3-card>.fd-btn{align-self:flex-start}
+/* detail sheet */
+.f3-sheet{position:fixed;inset:0;z-index:2500;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.f3-sheet.on{pointer-events:auto}
+.f3-scrim{position:absolute;inset:0;background:rgba(4,8,18,.55);opacity:0;transition:opacity .2s}
+.f3-sheet.on .f3-scrim{opacity:1}
+.f3-panel{position:relative;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;background:var(--p1,#101a2c);color:var(--txt,#eef2f8);border:1px solid var(--line,rgba(255,255,255,.08));border-radius:26px;padding:26px 22px 22px;box-shadow:0 30px 70px rgba(0,0,0,.45);opacity:0;transform:translateY(12px) scale(.98);transition:opacity .2s,transform .2s;font-family:var(--round,system-ui)}
+.f3-sheet.on .f3-panel{opacity:1;transform:none}
+.f3-panel svg.f3i{width:20px;height:20px;flex:0 0 auto}
+.f3-grab{display:none}
+.f3-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:12px;border:0;background:var(--p2,rgba(255,255,255,.06));color:var(--dim,#9aa6bb);display:grid;place-items:center;cursor:pointer}
+.f3-sh{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:6px 0 16px;border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.f3-sh .f3-ic.big{width:56px;height:56px;border-radius:18px;display:grid;place-items:center}
+.f3-sh .f3-ic.in{background:rgba(76,155,255,.14);color:#4C9BFF}.f3-sh .f3-ic.out,.f3-sh .f3-ic.adj{background:rgba(255,138,76,.14);color:#FF8A4C}.f3-sh .f3-ic.pend{background:rgba(242,181,68,.16);color:#F2B544}
+.f3-sa{font:800 36px/1.1 var(--disp,var(--round,system-ui));letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.f3-sa.in{color:var(--mint,#3ED598)}.f3-sa.void{text-decoration:line-through;opacity:.6}
+.f3-sh h3{margin:0;font:700 16px var(--round,system-ui);max-width:34ch}
+.f3-stat{font:800 11.5px var(--round,system-ui);padding:4px 10px;border-radius:99px;background:rgba(62,213,152,.14);color:var(--mint,#3ED598)}
+.f3-stat.pending{background:rgba(242,181,68,.16);color:#F2B544}.f3-stat.void{background:var(--p2,rgba(255,255,255,.06));color:var(--dim,#9aa6bb)}
+.f3-panel dl{margin:8px 0 0;display:flex;flex-direction:column}
+.f3-panel dl div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line,rgba(255,255,255,.06));font-size:14px}
+.f3-panel dt{color:var(--dim,#9aa6bb)}.f3-panel dd{margin:0;font-weight:700;text-align:right;word-break:break-word}
+.f3-sx{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.f3-sx .fd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line2,rgba(255,255,255,.14));background:transparent;color:var(--txt,#eef2f8);font:700 14px var(--round,system-ui);padding:13px 18px;border-radius:14px;cursor:pointer;width:100%}
+.f3-sx .fd-btn.gold{background:var(--gold,#F2B544);border-color:var(--gold,#F2B544);color:#0a1020}
+.f3-sx .fd-btn.ghost{border-color:transparent;color:var(--dim,#9aa6bb)}
+html[data-theme="light"] #portal .f3-chips button.on{color:#fff}
+@media(max-width:1000px){#portal .f3-grid,#portal .f3-grid2{grid-template-columns:1fr}}
+@media(max-width:700px){
+  #portal .fd3{gap:14px}
+  #portal .f3-top{flex-direction:column;align-items:stretch}#portal .f3-top .fd-seg{width:100%}#portal .f3-top .fd-seg button{flex:1;padding:10px 0}
+  #portal .f3-bal{padding:18px 16px 14px;border-radius:24px}
+  #portal .f3-cells{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  #portal .f3-cells>*{grid-template-columns:1fr;padding:10px;border-radius:14px;row-gap:2px}
+  #portal .f3-cells .f3-dot{grid-row:auto;width:26px;height:26px;border-radius:8px;margin-bottom:4px}
+  #portal .f3-cells .f3-dot svg{width:14px;height:14px}
+  #portal .f3-cells b{grid-column:1;font-size:15px}
+  #portal .f3-cells small{font-size:11px}
+  #portal .f3-acts{gap:2px}#portal .f3-acts button{font-size:11.5px}#portal .f3-acts button span{width:50px;height:50px;border-radius:16px}
+  #portal .f3-card{padding:16px;border-radius:20px}
+  #portal .f3-rt b{font-size:14px}
+  .f3-sheet{align-items:flex-end}
+  .f3-panel{width:100%;max-height:88vh;border-radius:26px 26px 0 0;padding:12px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%)}
+  .f3-grab{display:block;width:40px;height:5px;border-radius:3px;background:var(--line2,rgba(255,255,255,.2));margin:0 auto 10px}
+}
+@media (prefers-reduced-motion:reduce){.f3-panel,.f3-scrim{transition:none}}
 </style>
 <a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
 <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
