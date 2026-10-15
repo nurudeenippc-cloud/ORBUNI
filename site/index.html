@@ -37628,6 +37628,28 @@ body:has(#portal.on) .orb-wa,.orb-wa.off{display:none!important}
   #portal .panel{padding:16px}
   #portal header.app{border-radius:var(--ds-card)}
 }
+/* Round 15b — the section pages (The stack → Settings) now share one
+   tab control and one header strip instead of four different ones. */
+#portal .lh-chips,#portal .r6-tabs,#portal .proj-tabs,#portal .nas-tabs{
+  display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--p2);border:1px solid var(--line);
+  border-radius:var(--ds-ctl);width:fit-content;max-width:100%;margin:0 0 14px}
+#portal .lh-chips>*,#portal .r6-tabs>*,#portal .proj-tabs>*,#portal .nas-tabs>*,
+#portal .proj-tabs .btn{
+  background:transparent;color:var(--dim);border:0;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;
+  box-shadow:none;transition:background .15s var(--e),color .15s var(--e)}
+#portal .lh-chips>*:hover,#portal .r6-tabs>*:hover,#portal .proj-tabs>*:hover,#portal .nas-tabs>*:hover{color:var(--txt);background:transparent}
+#portal .lh-chips>.on,#portal .r6-tabs>.on,#portal .proj-tabs>.btn-p,#portal .proj-tabs>.on,#portal .nas-tabs>.on,#portal .nas-tabs>.act{
+  background:var(--p1);color:var(--gold);box-shadow:0 0 0 1px var(--line2)}
+#portal .lh-chips .n,#portal .lh-chips small,#portal .lh-chips span{opacity:.75}
+/* header strip above lists (was a mint wash, different on every page) */
+#portal .lhead{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding-left:0;padding-right:0}
+#portal .lhead .lh-chips{margin-bottom:12px}
+/* hero banners: same surface as every other card, accent via the kicker only */
+#portal .nas-hero,#portal .mk-hero,#portal .o6-hero{background:var(--p1);background-image:none}
+#portal .r6-tabs{background:var(--p2)!important}
+#portal .r6-tabs>button{background:transparent!important;color:var(--dim)!important;box-shadow:none!important}
+#portal .r6-tabs>button.on{background:var(--p1)!important;color:var(--gold)!important;box-shadow:0 0 0 1px var(--line2)!important}
+#portal .gc-hero{background:var(--p1)!important;background-image:none!important;border:1px solid var(--line);border-radius:var(--ds-card)}
 </style>
 <a class="orb-wa" id="orb-wa" href="https://wa.me/14434481577?text=Hi%20Orbuni%2C%20I%27d%20like%20to%20study%20abroad." target="_blank" rel="noopener" aria-label="Chat with Orbuni on WhatsApp">
 <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 4.9 16 4.9s11.1 4.9 11.1 10.9S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1.1-2.6c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.8 5.1.8.3 1.4.5 1.9.7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.7-.4z"/></svg><span>Chat on WhatsApp</span></a>
