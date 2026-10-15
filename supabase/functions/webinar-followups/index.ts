@@ -9,6 +9,7 @@
 // template, only to people who ticked the consent box, never after STOP. Reminders and
 // "live" are tied to the webinar time and always go; the rest wait for 07–19 UTC.
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { sendRich } from "./wa.ts";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
 const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
@@ -73,14 +74,17 @@ Deno.serve(async (req) => {
   const { data: tpls } = await db.from("wa_templates").select("key,content_sid,approval,body").like("key", "orbuni_webinar_%");
   const T: Record<string, any> = {}; for (const t of tpls || []) if (t.approval === "approved" && t.content_sid) T[t.key] = t;
 
-  type Job = { r: any; tpl: string; key: string; vars: Record<string, string>; anyHour?: boolean };
+  // rich: inside the 24-hour window send this media-library item with buttons instead of the template
+  type Job = { r: any; tpl: string; key: string; vars: Record<string, string>; anyHour?: boolean; rich?: { media: string; body: string; btn: string } };
   const jobs: Job[] = [];
-  const sel = "id,token,name,phone,country,consent,ticket,vip_checkout_at,attended_at,lead_id,created_at,webinars(title,starts_at,duration_min,replay_url)";
+  const sel = "id,token,name,phone,country,consent,ticket,vip_checkout_at,attended_at,lead_id,created_at,utm_campaign,webinars(title,starts_at,duration_min,replay_url)";
 
   if (body.kind === "reg" || body.kind === "vip") {
     const { data: r } = await db.from("webinar_registrations").select(sel).eq("id", String(body.id || "")).maybeSingle();
     if (!r) return json(200, { skipped: "no registration" });
     const w: any = (r as any).webinars;
+    // saved with one tap inside WhatsApp: the chat reply already carried the seat link
+    if (body.kind === "reg" && r.utm_campaign === "wa_one_tap") return json(200, { skipped: "registered in the WhatsApp chat" });
     if (body.kind === "reg") jobs.push({ r, tpl: "orbuni_webinar_seat", key: `web:wa:reg:${r.id}`, vars: { "1": first(r.name), "2": whenText(w.starts_at), "3": seat(r) }, anyHour: true });
     else jobs.push({ r, tpl: "orbuni_webinar_vip", key: `web:wa:vip:${r.id}`, vars: { "1": first(r.name), "2": seat(r) }, anyHour: true });
   } else {
@@ -100,6 +104,11 @@ Deno.serve(async (req) => {
         if (r.attended_at) jobs.push({ r, tpl: "orbuni_webinar_next", key: `web:wa:next:${r.id}`, vars: { "1": n, "2": `${SITE}/quiz` } });
         else if (w.replay_url) jobs.push({ r, tpl: "orbuni_webinar_replay", key: `web:wa:replay:${r.id}`, vars: { "1": n, "2": seat(r) } });
       }
+      // the VIP video, once, 2–72 hours after a free seat was saved (never to someone who already started paying)
+      if (r.ticket === "free" && !r.vip_checkout_at && now >= Date.parse(r.created_at) + 2 * H && now <= Date.parse(r.created_at) + 72 * H && now < st)
+        jobs.push({ r, tpl: "orbuni_webinar_vip_vid", key: `web:wa:vipvid:${r.id}`, vars: { "1": n, "2": r.token },
+          rich: { media: "vip_offer", btn: "Get VIP · $10",
+            body: `${n}, your free seat is saved. Want a head start before the webinar? This 30-second video shows what the $10 VIP seat adds. Your free seat stays either way.` } });
       if (r.ticket === "free" && r.vip_checkout_at) {
         const t = Date.parse(r.vip_checkout_at);
         if (now >= t + H && now <= t + 48 * H) jobs.push({ r, tpl: "orbuni_webinar_vip_unpaid", key: `web:wa:vipunpaid:${r.id}`, vars: { "1": n, "2": seat(r) } });
@@ -113,10 +122,27 @@ Deno.serve(async (req) => {
   for (const j of jobs) {
     if (sent.length >= 60) { skip("run limit"); continue; }
     if (!j.r.consent) { skip("no consent"); continue; }
-    if (!T[j.tpl]) { skip("template not approved yet"); continue; }
     if (quiet && !j.anyHour) { skip("quiet hours"); continue; }
     const phone = intl(j.r.phone, j.r.country);
     if (!phone) { skip("no usable number"); continue; }
+    if (j.rich) {
+      // inside the 24-hour window: the video + button as a normal chat message (no template needed)
+      const { data: c } = await db.from("wa_contacts").select("*").eq("phone", phone).maybeSingle();
+      const open = c && !c.opted_out && c.last_inbound_at && Date.parse(c.last_inbound_at) > Date.now() - 23 * H;
+      if (open) {
+        const { data: m } = await db.from("wa_media").select("key,kind,url").eq("key", j.rich.media).eq("active", true).maybeSingle();
+        const { data: prev } = await db.from("wa_messages").select("id").eq("contact_id", c.id).contains("media", [{ name: j.rich.media }]).limit(1);
+        if (!m) { skip("media missing"); continue; }
+        if (prev && prev.length) { skip("video already sent in chat"); continue; }
+        const claim = await db.from("wa_followups").insert({ contact_id: c.id, trigger: "webinar", dedupe_key: j.key, status: "sending" });
+        if (claim.error) { skip("already sent"); continue; }
+        const res = await sendRich(db as any, c, { author: "system", body: j.rich.body, link: { title: j.rich.btn, url: seat(j.r) }, media: { key: m.key, kind: m.kind, url: m.url } });
+        await db.from("wa_followups").update({ status: res.ok ? "sent" : "failed: " + String(res.error || "").slice(0, 200) }).eq("dedupe_key", j.key);
+        if (res.ok) sent.push(j.key); else skip("Twilio refused");
+        continue;
+      }
+    }
+    if (!T[j.tpl]) { skip("template not approved yet"); continue; }
     const t = T[j.tpl];
     const res = await waOnce(phone, first(j.r.name), j.key, "webinar", { lead_id: j.r.lead_id || undefined },
       () => twilio(phone, t.content_sid, j.vars), fill(String(t.body), j.vars), j.tpl);

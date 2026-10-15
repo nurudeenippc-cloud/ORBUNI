@@ -7,7 +7,7 @@
 // the chat is flagged in the portal inbox and they get an email.
 // STOP / START work as the student expects.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { sb, e164, twilioValid, sendAndLog, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping, buttonContent, LINKS } from "./wa.ts";
+import { sb, e164, twilioValid, sendAndLog, sendRich, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping, LINKS } from "./wa.ts";
 
 const TWIML_EMPTY = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
 const twiml = () => new Response(TWIML_EMPTY, { headers: { "Content-Type": "text/xml" } });
@@ -180,7 +180,14 @@ async function answer(contactId: string, messageId: string | null) {
   }
 
   const lastText = history[history.length - 1].content;
-  const out = await runAgent(history, file, c.wa_name || "");
+  // what the AI may attach, where this person stands with the webinar, and what was already sent
+  const [{ data: lib }, { data: web }, { data: sentRows }] = await Promise.all([
+    db.from("wa_media").select("key,kind,title,url,use_when,level").eq("active", true).order("sort"),
+    db.rpc("wa_webinar_status", { p_phone: c.phone }),
+    db.from("wa_messages").select("media").eq("contact_id", contactId).eq("direction", "out").not("media", "is", null).limit(200),
+  ]);
+  const sentMedia = [...new Set((sentRows || []).flatMap((r: any) => (Array.isArray(r.media) ? r.media : []).map((x: any) => x?.name).filter(Boolean)))] as string[];
+  const out = await runAgent(history, file, c.wa_name || "", { library: lib || [], webinar: web, sentMedia });
 
   if (!out) {
     // AI unavailable: never leave the student unanswered, and tell the team.
@@ -189,16 +196,22 @@ async function answer(contactId: string, messageId: string | null) {
     return;
   }
 
-  // the reply carries tap buttons when the AI asked a question with clear answers or points to one page
-  const quick = out.handoff ? [] : out.buttons, link = out.handoff || out.link === "none" ? null : out.link;
-  const csid = (quick.length || link) ? await buttonContent(db, out.reply, quick, link) : null;
-  if (csid) {
-    await sendAndLog(db, c, { author: "ai", contentSid: csid, body: out.reply,
-      buttons: link ? [{ type: "url", title: LINKS[link].title, url: LINKS[link].url }] : quick.map((t) => ({ type: "reply", title: t })) });
-  } else {
-    // no buttons (or Twilio refused them): plain text, with the link written out
-    await sendAndLog(db, c, { author: "ai", body: out.reply + (link && out.reply.indexOf(LINKS[link].url) < 0 ? "\n" + LINKS[link].url : "") });
+  // "Save my free seat" tapped: register them for the webinar right here (their own request is the consent)
+  let seatLink: string | null = (web as any)?.seat_link || null;
+  if (!out.handoff && out.action === "register_webinar" && (web as any)?.webinar_open && !(web as any)?.registered) {
+    const f: any = file || {};
+    const name = f.student?.first_name ? `${f.student.first_name} ${f.student.last_name || ""}`.trim() : (f.lead?.name || c.wa_name || "");
+    const { data: reg } = await db.rpc("webinar_register_wa", { p_phone: c.phone, p_name: name, p_level: f.lead?.level || null, p_country: f.lead?.country || null });
+    if ((reg as any)?.seat_link) seatLink = (reg as any).seat_link;
+    else console.warn("webinar_register_wa", JSON.stringify(reg));
   }
+
+  // the reply: text, plus at most one video/file, plus buttons or one link
+  const quick = out.handoff ? [] : out.buttons;
+  let link = out.handoff || out.link === "none" ? null : out.link === "seat" ? (seatLink ? { title: "Open my seat", url: seatLink } : LINKS.webinar) : LINKS[out.link] || null;
+  if (out.link === "seat" && out.media === "vip_offer" && seatLink) link = { title: "Get VIP · $10", url: seatLink };
+  const m = !out.handoff && out.media !== "none" && !sentMedia.includes(out.media) ? (lib || []).find((x: any) => x.key === out.media) : null;
+  await sendRich(db, c, { author: "ai", body: out.reply, quick: link ? [] : quick, link, media: m ? { key: m.key, kind: m.kind, url: m.url, title: m.title } : null });
 
   const forced = HANDOFF_WORDS.test(lastText);
   if (out.handoff || forced) {

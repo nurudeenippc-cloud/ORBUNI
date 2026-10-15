@@ -32,6 +32,12 @@ const note = (title: string, text: string, tone: "gold" | "green" = "gold") => {
 <div style="font:700 13.5px/1.4 ${SANS};color:${bd};margin-bottom:5px">${title}</div>
 <div style="font:400 14px/1.6 ${SANS};color:${BODY}">${text}</div></td></tr></table></td></tr>`;
 };
+// A short video: email can't play video, so it is the poster (with a play button drawn on it) linking to the
+// video itself. Only our own videos, served by jsDelivr from the public repo, pinned to one commit.
+const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
+const video = (key: "webinar_invite" | "vip_offer" | "assessment", caption: string) => `<tr><td class="pad" style="padding:24px 32px 0" align="center">
+<a href="${VID}${key}.mp4" style="text-decoration:none"><img src="${VID}${key}-poster.jpg" width="300" height="300" alt="Play the video: ${caption}" style="display:block;width:300px;max-width:100%;height:auto;border:0;border-radius:16px"></a>
+<div style="font:400 13px/1.5 ${SANS};color:${MUTE};margin-top:8px">${caption}</div></td></tr>`;
 const rows = (pairs: [string, string][]) => `<tr><td class="pad" style="padding:24px 32px 0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${WASH}" style="background:${WASH};border-radius:12px"><tr><td style="padding:6px 18px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
@@ -151,6 +157,8 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
         + para(`${g(v,"first_name","Hello")}, most universities in Türkiye and Northern Cyprus give international students 25% to 100% off the published fee — but only if the application is complete, on time and sent the right way.`)
         + rows([["1. Shortlist", "Programmes that match your results and budget"], ["2. Documents", "Passport, diploma, transcript — we check them first"], ["3. Apply", "We submit to the universities for you"], ["4. Offer & visa", "Offer letter, deposit, visa letter, airport pickup"]])
         + para("You can do all of it from your phone. Your counsellor is on WhatsApp the whole way.")
+        + video("webinar_invite", "40 seconds: the free live scholarship webinar")
+        + para(`Want the whole picture first? Save a free seat at the live webinar: <a href="${SITE}/webinar" style="color:${GOLD};font-weight:600">myorbuni.com/webinar</a>.`)
         + button(lower ? "Learn the steps — $10 Masterclass" : "Start my application", SITE + (lower ? "/?buy=masterclass#start" : "/#start"));
     } else {
       body = kick("A quick question")
@@ -220,7 +228,8 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + button("Open my seat", safeLink(v.seat))
       + (cal ? para(`<a href="${cal}" style="color:${GOLD};font-weight:600">Add it to Google Calendar</a> so you don't miss it.`) : "")
       + note("Keep this email", "The button above is your personal seat link. It shows the countdown, the join button on the day and, afterwards, the replay. We will also remind you on WhatsApp.", "green")
-      + (vip ? "" : note("Want to start now?", `The VIP seat (${g(v,"vip_price","$10")}) gives you the Scholarship Masterclass today, the replay for life and 48-hour early access to 100% scholarship places. You can upgrade from your seat page.`))
+      + (vip ? "" : note("Want to start now?", `The VIP seat (${g(v,"vip_price","$10")}) gives you the Scholarship Masterclass today, the replay for life and 48-hour early access to 100% scholarship places. You can upgrade from your seat page.`)
+                 + video("vip_offer", "30 seconds: what the VIP seat adds"))
       + small("You are getting this because you signed up for an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
   },
   webinar_reminder: v => {
@@ -262,6 +271,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + h1(`Thank you for coming, ${g(v,"first_name","there")}`)
       + para("You now know how Turkish scholarships really work. The next step is to see where <b>you</b> stand: which universities fit your results, and what your place would really cost.")
       + para("The free assessment takes 2 minutes. It skips the video you have already seen and goes straight to the questions.")
+      + video("assessment", "25 seconds: how the assessment works")
       + button("Take the 2-minute assessment", safeLink(v.quiz))
       + note("Prefer to talk?", "At the end of the assessment you can book a free call with a counsellor, or just reply to this email.", "green")
       + small("You are getting this because you joined an Orbuni webinar." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
@@ -272,6 +282,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       kick("Optional upgrade")
       + h1("Want to start before the webinar?")
       + para(`Hello ${g(v,"first_name","there")}, your free seat is saved and that is all you need to attend. Some people want to move faster, so there is a VIP seat for ${g(v,"vip_price","$10")}, paid once:`)
+      + video("vip_offer", "Watch: what the VIP seat adds (30 seconds)")
       + rows([["Today", "The Scholarship Masterclass: 9 short lessons, yours for life"], ["On the day", "Your question goes first in the live Q&amp;A"], ["After", "The replay for life (free seats: 3 days)"], ["First", "48-hour early access to 100% scholarship places"]])
       + button("Upgrade from my seat page", safeLink(v.seat))
       + small("We send this offer once. Your free seat stays whatever you decide." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));

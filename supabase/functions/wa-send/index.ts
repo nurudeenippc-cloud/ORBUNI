@@ -7,9 +7,10 @@
 //   { action:"read",     contact_id }                       clear the unread count
 //   { action:"media",    contact_id, path, type, caption }  send a file the browser uploaded to wa-media/out/…
 //   { action:"typing",   contact_id }                       show "typing…" to the student while a team member writes
+//   { action:"library",  contact_id, key, caption }         send a video / image / PDF from the media library (public.wa_media)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { sb, json, CORS, e164, sendAndLog, signedUrl, twilioTyping, SUPABASE_URL, ANON_KEY } from "./wa.ts";
+import { sb, json, CORS, e164, sendAndLog, sendRich, signedUrl, twilioTyping, SUPABASE_URL, ANON_KEY } from "./wa.ts";
 
 const DAY = 24 * 3600 * 1000;
 
@@ -37,7 +38,18 @@ Deno.serve(async (req: Request) => {
     if (!contact) return json(404, { error: "chat not found" });
   }
 
-  if (["read", "ai", "resolve", "reply", "media", "typing"].includes(action) && !contact) return json(400, { error: "pick a chat first" });
+  if (["read", "ai", "resolve", "reply", "media", "typing", "library"].includes(action) && !contact) return json(400, { error: "pick a chat first" });
+  if (action === "library") {
+    if (contact.opted_out) return json(409, { error: "This student sent STOP. You can't message them until they reply START." });
+    const last = contact.last_inbound_at ? Date.parse(contact.last_inbound_at) : 0;
+    if (Date.now() - last > DAY) return json(409, { error: "More than 24 hours since their last message — send a template first.", needs_template: true });
+    const { data: m } = await db.from("wa_media").select("key,kind,url,caption").eq("key", String(b.key || "")).maybeSingle();
+    if (!m) return json(404, { error: "That item is not in the media library." });
+    const caption = String(b.caption ?? m.caption ?? "").trim().slice(0, 1000);
+    const r = await sendRich(db, contact, { author: "staff", staffId: uid, body: caption, media: { key: m.key, kind: m.kind, url: m.url } });
+    await db.from("wa_contacts").update({ unread: 0, assigned_to: contact.assigned_to || uid }).eq("id", contact.id);
+    return r.ok ? json(200, { ok: true, id: r.id }) : json(502, { error: "WhatsApp didn't accept it: " + r.error });
+  }
 
   if (action === "typing") {
     // WhatsApp shows "typing…" against the student's latest message, for up to 25 seconds or until we reply

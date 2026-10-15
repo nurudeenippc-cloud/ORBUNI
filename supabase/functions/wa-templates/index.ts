@@ -18,7 +18,9 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 // Keep these short and factual: Meta rejects pushy or vague marketing wording,
 // and "utility" templates (about something the student already started) are cheaper.
 type Btn = { title: string; id?: string; url?: string };
-export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn }[] = [
+// Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
+const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
+export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
   { key: "orbuni_quiz_followup", category: "MARKETING",
@@ -84,8 +86,21 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
   { key: "orbuni_webinar_next", category: "MARKETING",
     body: "Hi {{1}}, thank you for joining the Orbuni scholarship webinar. Your next step is the free 2-minute assessment, which skips the video: {{2}} Reply here with any question. Reply STOP to opt out.",
     vars: { "1": "Aisha", "2": "https://myorbuni.com/quiz" } },
+  // 15 Oct 2026: video versions (a short video on top, one button). Senders prefer "<key>_vid" once Meta approves it.
+  { key: "orbuni_quiz_followup_vid", category: "MARKETING", media: VID + "webinar_invite.mp4", footer: "Reply STOP to opt out",
+    body: "Hi {{1}}, thanks for taking the Orbuni study assessment. This short video explains our free live scholarship webinar: how international students win 25% to 100% scholarships at universities in Türkiye.",
+    link: { title: "Save my free seat", url: "https://myorbuni.com/webinar" } },
+  { key: "orbuni_checkin_vid", category: "MARKETING", media: VID + "assessment.mp4", footer: "Reply STOP to opt out",
+    body: "Hi {{1}}, it is Orbuni checking in. Are you still planning to study in Türkiye? This short video shows how to see where you stand in two minutes.",
+    link: { title: "Start the assessment", url: "https://myorbuni.com/quiz" } },
+  { key: "orbuni_webinar_vip_vid", category: "MARKETING", media: VID + "vip_offer.mp4", footer: "Reply STOP to opt out",
+    body: "Hi {{1}}, your free seat for the Orbuni scholarship webinar is saved. Want a head start? This short video shows what the 10 dollar VIP seat adds. Your free seat stays either way.",
+    vars: { "1": "Aisha", "2": "3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" },
+    link: { title: "See the VIP seat", url: "https://myorbuni.com/s/{{2}}" } },
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
+  if (t.media) return { "twilio/card": { title: t.body, ...(t.footer ? { subtitle: t.footer } : {}), media: [t.media],
+    actions: t.link ? [{ type: "URL", title: t.link.title, url: t.link.url }] : (t.quick || []).map((q) => ({ type: "QUICK_REPLY", title: q.title, id: q.id || q.title })) } };
   if (t.quick) return { "twilio/quick-reply": { body: t.body, actions: t.quick.map((q) => ({ title: q.title, id: q.id || q.title })) } };
   if (t.link) return { "twilio/call-to-action": { body: t.body, actions: [{ type: "URL", title: t.link.title, url: t.link.url }] } };
   return { "twilio/text": { body: t.body } };

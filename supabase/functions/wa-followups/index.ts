@@ -112,7 +112,8 @@ Deno.serve(async (req) => {
     const claim = await db.from("wa_followups").insert({ contact_id: c.id, trigger: j.trigger, dedupe_key: j.key, status: "sending" });
     if (claim.error) { skip("already sent"); continue; }
     // the version with tap buttons once Meta has approved it, the plain one until then
-    const tk = T[j.tpl + "_btn"] ? j.tpl + "_btn" : j.tpl, t = T[tk];
+    // the video version once Meta approves it, then the one with tap buttons, then the plain one
+    const tk = T[j.tpl + "_vid"] ? j.tpl + "_vid" : T[j.tpl + "_btn"] ? j.tpl + "_btn" : j.tpl, t = T[tk];
     const res = await sendAndLog(db, c, { author: "template", contentSid: t.content_sid, vars: { "1": j.name }, templateKey: tk, preview: String(t.body).split("{{1}}").join(j.name) });
     await db.from("wa_followups").update({ status: res.ok ? "sent" : "failed: " + (res.error || "").slice(0, 200) }).eq("dedupe_key", j.key);
     if (res.ok) sent.push(j.key); else skip("Twilio refused");

@@ -113,18 +113,28 @@ export const LINKS: Record<string, { title: string; url: string }> = {
   scholarships: { title: "Scholarships", url: "https://myorbuni.com/scholarships/" },
   full_places: { title: "100% places", url: "https://myorbuni.com/#schol" },
   housing: { title: "Student housing", url: "https://myorbuni.com/housing/" },
+  webinar: { title: "Save my free seat", url: "https://myorbuni.com/webinar" },
+  quiz: { title: "Start the assessment", url: "https://myorbuni.com/quiz" },
 };
+// "seat" is the person's own webinar seat page (where VIP is bought); its url comes from their file.
+export type Btn = { title: string; url: string };
 async function sha(t: string) {
   const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)));
   return Array.from(d).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
-export async function buttonContent(db: ReturnType<typeof sb>, body: string, quick: string[], link: string | null): Promise<string | null> {
+export async function buttonContent(db: ReturnType<typeof sb>, body: string, quick: string[], link: string | Btn | null, mediaUrl: string | null = null): Promise<string | null> {
   const text = body.trim().slice(0, 1000);
+  const L: Btn | null = typeof link === "string" ? (LINKS[link] || null) : link;
   let types: Record<string, unknown>, kind: string;
-  if (link && LINKS[link]) {
+  if (mediaUrl && (L || quick.length)) {
+    // one bubble: the video (or image / PDF) on top, the text, then the buttons
+    kind = "card";
+    types = { "twilio/card": { title: text, media: [mediaUrl],
+      actions: L ? [{ type: "URL", title: L.title, url: L.url }] : quick.map((q) => ({ type: "QUICK_REPLY", title: q, id: q.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 60) || "reply" })) } };
+  } else if (L) {
     kind = "cta";
-    types = { "twilio/call-to-action": { body: text, actions: [{ type: "URL", title: LINKS[link].title, url: LINKS[link].url }] },
-      "twilio/text": { body: text + "\n" + LINKS[link].url } };
+    types = { "twilio/call-to-action": { body: text, actions: [{ type: "URL", title: L.title, url: L.url }] },
+      "twilio/text": { body: text + "\n" + L.url } };
   } else if (quick.length) {
     kind = "quick";
     types = { "twilio/quick-reply": { body: text, actions: quick.map((q) => ({ title: q, id: q.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 60) || "reply" })) },
@@ -154,6 +164,36 @@ export function cleanButtons(b: unknown): string[] {
     if (out.length === 3) break;
   }
   return out;
+}
+
+// ---------------------------------------------------------------- rich messages
+// Text + optional video/image/PDF + optional buttons (3 answers, or 1 link), in one bubble when
+// WhatsApp allows it. If Twilio refuses the combined card, it falls back to the file first and
+// the text with its buttons right after, so the student always gets everything.
+export type Media = { key: string; kind: string; url: string; title?: string };
+const MIME: Record<string, string> = { video: "video/mp4", image: "image/jpeg", pdf: "application/pdf" };
+export async function sendRich(db: ReturnType<typeof sb>, contact: { id: string; phone: string },
+  o: { author: "ai" | "staff" | "system"; body: string; quick?: string[]; link?: Btn | null; media?: Media | null; staffId?: string | null }) {
+  const quick = o.quick || [], link = o.link || null, m = o.media || null;
+  const btnLog = link ? [{ type: "url", title: link.title, url: link.url }] : quick.map((t) => ({ type: "reply", title: t }));
+  const mediaLog = m ? [{ type: MIME[m.kind] || "application/octet-stream", url: m.url, name: m.key }] : null;
+  if (m && (link || quick.length)) {
+    const csid = await buttonContent(db, o.body, quick, link, m.url);
+    if (csid) {
+      const r = await sendAndLog(db, contact, { author: o.author, staffId: o.staffId, contentSid: csid, body: o.body, media: mediaLog, buttons: btnLog });
+      if (r.ok) return r;
+    }
+    // fallback: the file, then the text with its buttons
+    await sendAndLog(db, contact, { author: o.author, staffId: o.staffId, body: "", mediaUrls: [m.url], media: mediaLog });
+    await new Promise((r) => setTimeout(r, 2500));       // let the file land first
+    return sendRich(db, contact, { ...o, media: null });
+  }
+  if (m) return sendAndLog(db, contact, { author: o.author, staffId: o.staffId, body: o.body, mediaUrls: [m.url], media: mediaLog });
+  if (link || quick.length) {
+    const csid = await buttonContent(db, o.body, quick, link);
+    if (csid) return sendAndLog(db, contact, { author: o.author, staffId: o.staffId, contentSid: csid, body: o.body, buttons: btnLog });
+  }
+  return sendAndLog(db, contact, { author: o.author, staffId: o.staffId, body: o.body + (link && o.body.indexOf(link.url) < 0 ? "\n" + link.url : "") });
 }
 
 // ---------------------------------------------------------------- staff alert
@@ -255,8 +295,21 @@ HOW TO REPLY
 
 BUTTONS (they make replying one tap)
 - When your message ends with a question that has 2–3 clear answers, put those answers in "buttons" (each 20 characters or fewer, e.g. ["Bachelor's", "Master's", "PhD"], ["Yes, send it", "Not now"], ["Türkiye", "N. Cyprus", "Not sure"]). The student taps one and its text comes back to you as their reply.
-- When the one main thing you want them to do is open a page, set "link" instead (assessment, portal, programmes, scholarships, full_places, housing) and do NOT paste that same URL in the text — the button opens it. Use either buttons or a link, never both; for an open question, a hand-over or a plain answer use neither (empty list, "none").
+- When the one main thing you want them to do is open a page, set "link" instead (assessment, quiz, webinar, seat, portal, programmes, scholarships, full_places, housing) and do NOT paste that same URL in the text — the button opens it. Use either buttons or a link, never both; for an open question, a hand-over or a plain answer use neither (empty list, "none").
+- "seat" opens the person's own webinar seat page (countdown, join button, VIP upgrade). Use it only when WEBINAR STATUS says registered.
 - Use buttons only when they genuinely help; most short answers need none.
+
+VIDEOS AND FILES (the MEDIA LIBRARY below lists what you may send)
+- You can attach ONE item from the media library to a reply by its key in "media". A short video lands much better than a paragraph: use it at the moments its "use when" describes, with a short message (1–2 sentences) that says why it is worth watching, and with the matching button or link under it.
+- Never send the same item twice in one chat (MEDIA ALREADY SENT lists them), never more than one item per reply, and not on a hand-over, a complaint or a sensitive topic. Most replies have no media ("none").
+- For "what documents do I need", send the PDF for their level (docs_bachelors / docs_masters / docs_phd) instead of listing every document.
+
+THE WHATSAPP FUNNEL (what usually works; always follow the student's lead)
+1. New enquiry about scholarships, or not ready to apply yet → one short honest answer, then the webinar_invite video with buttons ["Save my free seat", "Ask a question"].
+2. They tap "Save my free seat" (or say they want to join) and WEBINAR STATUS says not registered → set action "register_webinar". If you do not know their name yet, the WhatsApp profile name is used; that is fine. Reply in one or two lines that their seat is saved, and set link "seat" so they can open it. Do not ask for an email; it is optional.
+3. Registered with a free seat → when it fits (they ask about VIP, the replay, the masterclass, early access, or seem keen), the vip_offer video with link "seat" (the upgrade is on the seat page; $10 once). Never push VIP more than once unless they ask.
+4. Wants to apply / asks which university or how much / after the webinar → the assessment video with link "assessment".
+5. Ready with documents → hand over is NOT needed; send the portal link and the documents PDF for their level.
 
 HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest message(s), not older ones. A short reply such as "ok", "thanks", "hello" or "noted" never needs a hand-over. Hand over when the newest message:
 - they ask for a refund, cancellation or money back; they complain or are angry; they mention a scam, fraud, police or lawyer;
@@ -266,9 +319,12 @@ HAND OVER TO A HUMAN (set handoff=true) — judge ONLY the student's newest mess
 - you have already failed to answer the same question twice, or the question needs a decision only staff can make (special discounts, exceptions, fee negotiations).
 When handing over, still send a short kind reply: say a member of the team will reply here personally soon (Istanbul working hours), and don't argue or decide anything yourself.`;
 
-export type AgentOut = { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string; model: string; usage?: Record<string, number> };
+export type AgentOut = { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string; media: string; action: string; model: string; usage?: Record<string, number> };
+export type LibItem = { key: string; kind: string; title: string; use_when: string | null; level: string | null };
 
-export async function runAgent(history: { role: "user" | "assistant"; content: string }[], file: unknown, contactName: string): Promise<AgentOut | null> {
+export async function runAgent(history: { role: "user" | "assistant"; content: string }[], file: unknown, contactName: string,
+  extra: { library?: LibItem[]; webinar?: unknown; sentMedia?: string[] } = {}): Promise<AgentOut | null> {
+  const lib = extra.library || [];
   if (!ANTHROPIC_KEY) return null;
   // The rules never change, so they are cached (a cache read costs a tenth of normal
   // input). The student's file and today's date change, so they come after the marker.
@@ -276,6 +332,9 @@ export async function runAgent(history: { role: "user" | "assistant"; content: s
     { type: "text", text: RULES + "\n\nAlways answer by calling the respond tool, exactly once.", cache_control: { type: "ephemeral" } },
     { type: "text", text: "STUDENT FILE (from Orbuni's records; may be empty for a new enquiry):\n" + JSON.stringify(file ?? {}, null, 0).slice(0, 6000) +
       (contactName ? `\nTheir WhatsApp profile name: ${contactName}` : "") +
+      "\n\nWEBINAR STATUS (for this person): " + JSON.stringify(extra.webinar ?? { webinar_open: false }) +
+      "\n\nMEDIA LIBRARY (key · kind · title · use when):\n" + (lib.length ? lib.map((m) => `- ${m.key} · ${m.kind} · ${m.title}${m.level ? " · level " + m.level : ""} · ${m.use_when || ""}`).join("\n") : "(empty)") +
+      "\nMEDIA ALREADY SENT in this chat: " + ((extra.sentMedia || []).join(", ") || "none") +
       `\nToday: ${new Date().toISOString().slice(0, 10)} (Istanbul time zone).` },
   ];
   const tools = [{
@@ -290,9 +349,11 @@ export async function runAgent(history: { role: "user" | "assistant"; content: s
         handoff: { type: "boolean", description: "true if a human from the Orbuni team must take over this chat." },
         reason: { type: "string", description: "If handoff: one short line for the team saying why. Empty otherwise." },
         buttons: { type: "array", items: { type: "string" }, description: "0–3 tap-to-answer buttons (max 20 characters each). Empty when not needed." },
-        link: { type: "string", enum: ["none", "assessment", "portal", "programmes", "scholarships", "full_places", "housing"], description: "One link button to open a page, or none." },
+        link: { type: "string", enum: ["none", "seat", ...Object.keys(LINKS)], description: "One link button to open a page, or none." },
+        media: { type: "string", enum: ["none", ...lib.map((m) => m.key)], description: "One item from the media library to attach, or none." },
+        action: { type: "string", enum: ["none", "register_webinar"], description: "register_webinar: save their free webinar seat now (only when they asked for it and are not registered)." },
       },
-      required: ["reply", "handoff", "reason", "buttons", "link"],
+      required: ["reply", "handoff", "reason", "buttons", "link", "media", "action"],
     },
   }];
   const order = GOOD_MODEL ? [GOOD_MODEL, ...MODELS.filter((m) => m !== GOOD_MODEL)] : MODELS;
@@ -318,13 +379,16 @@ export async function runAgent(history: { role: "user" | "assistant"; content: s
       const j = await r.json();
       if (j.stop_reason === "refusal") { console.warn("anthropic refusal", model); continue; }
       const use = (j.content || []).find((c: any) => c.type === "tool_use" && c.name === "respond");
-      let out: { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string } | null = null;
-      if (use?.input?.reply) out = { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || ""),
-        buttons: cleanButtons(use.input.buttons), link: LINKS[String(use.input.link || "")] ? String(use.input.link) : "none" };
-      else {
+      let out: { reply: string; handoff: boolean; reason: string; buttons: string[]; link: string; media: string; action: string } | null = null;
+      if (use?.input?.reply) {
+        const lk = String(use.input.link || ""), md = String(use.input.media || "");
+        out = { reply: String(use.input.reply), handoff: !!use.input.handoff, reason: String(use.input.reason || ""),
+          buttons: cleanButtons(use.input.buttons), link: LINKS[lk] || lk === "seat" ? lk : "none",
+          media: lib.some((m) => m.key === md) ? md : "none", action: use.input.action === "register_webinar" ? "register_webinar" : "none" };
+      } else {
         // answered in plain text instead of the tool: still a usable reply
         const txt = (j.content || []).filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim();
-        if (txt) out = { reply: txt, handoff: false, reason: "", buttons: [], link: "none" };
+        if (txt) out = { reply: txt, handoff: false, reason: "", buttons: [], link: "none", media: "none", action: "none" };
       }
       if (!out) return null;
       GOOD_MODEL = model;
