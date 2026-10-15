@@ -199,4 +199,15 @@ a.href="https://wa.me/14434481577?text="+encodeURIComponent(m);
 var P=document.getElementById("portal");function s(){a.classList.toggle("off",!!(P&&P.classList.contains("on")))}
 s();if(P&&window.MutationObserver)new MutationObserver(s).observe(P,{attributes:true,attributeFilter:["class"]});})();</script>
 <!--/orb-wa-->
+<script id="orb-px">/* Ad measurement (Whop + Meta pixels). EU/EEA/UK/CH visitors: only after they press Accept on the main site. Elsewhere: on, unless switched off in Cookie settings. */
+(function(){try{
+if(navigator.globalPrivacyControl===true)return;
+var c=null;try{c=JSON.parse(localStorage.getItem("orb-consent-v1")||"null")}catch(e){}
+if(c){if(c.marketing!==true)return}else{var tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
+if(!tz||/^(Europe\/(?!Istanbul|Moscow|Kaliningrad|Samara|Volgograd|Saratov|Ulyanovsk|Astrakhan|Kirov|Minsk|Kiev|Kyiv|Simferopol|Chisinau|Belgrade|Sarajevo|Skopje|Podgorica|Tirane|Uzhgorod|Zaporozhye)|Atlantic\/(Canary|Madeira|Azores|Reykjavik|Faroe)|Africa\/Ceuta|Arctic\/Longyearbyen)/.test(tz))return}
+!function(w,d,s,u,n,a,b){if(w[n])return;a=w[n]={q:[],t:+new Date,s:[],o:u,track:function(){a.q.push([+new Date].concat([].slice.call(arguments)))},setScope:function(){a.s=[].slice.call(arguments).filter(function(x){return typeof x==="string"});a.q.push([+new Date,"setScope"].concat(a.s))},scope:function(){var c=[].slice.call(arguments);return{track:function(){a.q.push([+new Date].concat([].slice.call(arguments)).concat([{__scope:c}]))}}}};b=d.createElement(s);b.async=1;b.src=u+"/s.js";d.getElementsByTagName(s)[0].parentNode.insertBefore(b,d.getElementsByTagName(s)[0])}(window,document,"script","https://t.whop.tw","whop");
+window.whop.setScope("biz_340OHdZOPCa81N");window.whop.track("page");
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+fbq("init","1662842908878793");fbq("track","PageView");
+}catch(e){}})();</script>
 </body></html>

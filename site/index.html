@@ -8500,10 +8500,12 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
       welcome sound. When you sign in or send a form, Cloudflare Turnstile checks you are not a robot.
       When you pay, Whop or Paystack run the checkout and use what they need to take the payment
       safely. None of this follows you to other websites.</p>
-    <p><b>Only if you say yes: ad measurement.</b> The Whop Pixel and, if we use one, the Meta Pixel
+    <p><b>Ad measurement.</b> The Whop Pixel and the Meta Pixel
       tell us which of our adverts brought people who later took the assessment, booked a call or
-      paid. They can set cookies and share that visit with Whop or Meta. They do not load at all
-      until you press <b>Accept</b> in the cookie banner. If your browser sends a Global Privacy
+      paid. They can set cookies and share that visit with Whop or Meta. If you visit from the
+      European Union, the EEA, the United Kingdom or Switzerland, they do not load at all until you
+      press <b>Accept</b> in the cookie banner. Everywhere else they are on from your first visit,
+      and you can switch them off at any time below. If your browser sends a Global Privacy
       Control signal, we treat it as a no.</p>
     <p>You can change your mind at any time: <a onclick="orbCookieSettings()" style="cursor:pointer">open cookie settings</a>.
       Saying no changes nothing else on the site.</p>
@@ -27709,7 +27711,9 @@ var ORB_WHOP = {
   products: {},
   maxOne: 2500,
   agreementVersion: "2026-09-24",
-  pixel: "biz_340OHdZOPCa81N"
+  pixel: "biz_340OHdZOPCa81N",
+  // built in so the Meta pixel still loads if the settings table is slow or down; whop_config can override it
+  metaPixel: "1662842908878793"
 };
 var ORB_FUNNEL = { vsl: "", vsl_low: "", vsl_medium: "", vsl_high: "", whatsappGroup: "", community: "" };
 /* the webinar page (its own script) reads the same settings and helpers */
@@ -27762,7 +27766,18 @@ function orbConsent(){
   try{ var c = JSON.parse(localStorage.getItem(ORB_CONSENT_KEY) || "null"); return (c && typeof c === "object") ? c : null; }catch(e){ return null; }
 }
 function orbGpc(){ try{ return navigator.globalPrivacyControl === true; }catch(e){ return false; } }
-function orbMarketingOk(){ var c = orbConsent(); return !!(c && c.marketing === true) && !orbGpc(); }
+/* Ask first only where the law says so (EU, EEA, UK, Switzerland), told apart by the browser's
+   time zone, which needs no network call. Everyone else is measured from the first page, and can
+   switch it off in Cookie settings (footer). A stored "no" and Global Privacy Control always win. */
+var ORB_ASK_TZ = /^(Europe\/(?!Istanbul|Moscow|Kaliningrad|Samara|Volgograd|Saratov|Ulyanovsk|Astrakhan|Kirov|Minsk|Kiev|Kyiv|Simferopol|Chisinau|Belgrade|Sarajevo|Skopje|Podgorica|Tirane|Uzhgorod|Zaporozhye)|Atlantic\/(Canary|Madeira|Azores|Reykjavik|Faroe)|Africa\/Ceuta|Arctic\/Longyearbyen)/;
+function orbNeedsAsk(){
+  try{ var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; return !tz || ORB_ASK_TZ.test(tz); }catch(e){ return true; }
+}
+function orbMarketingOk(){
+  if(orbGpc()) return false;
+  var c = orbConsent(); if(c) return c.marketing === true;
+  return !orbNeedsAsk();
+}
 var _orbPixQ = [];
 function orbLoadWhopPixel(){
   if(window.__orbWhopPix) return; window.__orbWhopPix = 1;
@@ -27829,7 +27844,7 @@ if(orbMarketingOk()) orbPixelsStart(); else orbTrack("page");
   function show(detail){
     shut();
     if(!document.getElementById("orb-cc-css")){ var st = document.createElement("style"); st.id = "orb-cc-css"; st.textContent = css; document.head.appendChild(st); }
-    var c = orbConsent(), on = !!(c && c.marketing), gpc = orbGpc();
+    var on = orbMarketingOk(), gpc = orbGpc();
     var box = document.createElement("div"); box.id = "orb-cc"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Cookie choices");
     if(!detail){
       box.innerHTML = '<h4>Cookies, the honest version</h4>'
@@ -27859,7 +27874,7 @@ if(orbMarketingOk()) orbPixelsStart(); else orbTrack("page");
     pad(); setTimeout(pad, 300);
   }
   window.orbCookieSettings = function(){ show(true); return false; };
-  function first(){ if(!orbConsent() && !orbGpc()) setTimeout(function(){ if(!orbConsent()) show(false); }, 1200); }
+  function first(){ if(!orbConsent() && !orbGpc() && orbNeedsAsk()) setTimeout(function(){ if(!orbConsent()) show(false); }, 1200); }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", first); else first();
 })();
 /* A naira payment, reported as a sale in dollars. The Paystack reference is the event id, and the
