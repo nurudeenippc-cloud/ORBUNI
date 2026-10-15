@@ -37,8 +37,8 @@ h1{font-size:clamp(32px,6vw,58px)}h2{font-size:clamp(24px,3.6vw,34px);margin:0 0
 /* hero */
 .hero{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
 .hero>picture,.hero>video{position:absolute;inset:0;width:100%;height:100%;z-index:-2}
-.hero img,.hero video{width:100%;height:100%;object-fit:cover}
-.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,12,22,.55),rgba(7,12,22,.78) 55%,var(--bg)),radial-gradient(60% 80% at 15% 20%,rgba(242,181,68,.16),transparent 70%)}
+.hero img,.hero video{width:100%;height:100%;object-fit:cover}.hero>video{filter:blur(9px) brightness(.72);transform:scale(1.1)}/*hero-vid-soft*/
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,12,22,.7),rgba(7,12,22,.86) 55%,var(--bg)),radial-gradient(60% 80% at 15% 20%,rgba(242,181,68,.16),transparent 70%)}
 .hero .wrap{padding-top:54px;padding-bottom:54px}
 .hero p.lead{font-size:clamp(16px,2.2vw,19px);color:#C9D4E6;max-width:60ch;margin:16px 0 0}
 .hero.tall .wrap{padding-top:90px;padding-bottom:78px}
