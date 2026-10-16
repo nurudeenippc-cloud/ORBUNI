@@ -31,6 +31,9 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /vip  /?utm_source=retarget&utm_medium=paid&utm_campaign=scholarship1_vip&go=webinar&offer=vipdirect  302
 /vip/:src  /?utm_source=:src&utm_medium=retarget&utm_campaign=scholarship1_vip&go=webinar&offer=vipdirect  302
 /quiz  /?utm_source=webinar&utm_medium=live&utm_campaign=scholarship1&go=quiz  302
+# The assessment as a short link. /start/<source> tags where it came from (partners: /start/p-xxxxxxxx).
+/start  /?utm_source=direct&utm_medium=link&utm_campaign=assessment&go=start  302
+/start/:src  /?utm_source=:src&utm_medium=link&utm_campaign=assessment&go=start  302
 
 /.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200
 /housing/gozde-student-residence-avcilar-male/  /housing/men-residence-avcilar-1/  301

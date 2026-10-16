@@ -4251,6 +4251,21 @@ html[data-theme="light"] [style*="color:var(--gold)"]:not([style*="background"])
 .wbx-final .wb-ps{color:rgba(255,255,255,.72)}
 .wbx-final-bg{position:absolute;inset:0;background:url(photos/webinar/hats.webp) center/cover;opacity:.45}
 .wbx-final-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,11,22,.4),rgba(6,11,22,.85))}
+.wbx-guests-h{font-family:var(--disp);font-size:clamp(24px,4vw,32px);letter-spacing:-.035em;text-align:center;margin:6px 0 8px}
+.wbx-guests-h em{font-style:normal;color:var(--l-gold2,#E08A33)}
+.wbx-guests-p,.wbx-guests-f{text-align:center;color:var(--l-mute);line-height:1.6;max-width:52ch;margin:0 auto 18px}
+.wbx-guests-f{font-size:13.5px;margin:16px auto 0}
+.wbx-guests-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.wbx-guests-g>div{background:#fff;border-radius:18px;padding:16px 16px 14px;box-shadow:inset 0 0 0 1px var(--l-line)}
+.wbx-guests-g b{display:block;color:var(--l-ink);font-size:15.5px;margin-bottom:4px}.wbx-guests-g span{display:block;color:var(--l-mute);font-size:14px;line-height:1.55}
+@media(max-width:720px){.wbx-guests-g{grid-template-columns:1fr}}
+.psh{display:grid;gap:10px;margin-bottom:12px}
+.psh-row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--p1);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.psh-t{flex:1 1 260px;min-width:0}.psh-t b{display:block;font-size:14.5px}.psh-t span{display:block;font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:2px}
+.psh-t code{display:inline-block;margin-top:6px;font-size:12px;color:var(--gold);background:var(--p2);padding:3px 8px;border-radius:7px;word-break:break-all}
+.psh-a{display:flex;gap:8px;flex-wrap:wrap}
+.psh-pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--p1);border:1px solid var(--line2);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+.psh-pick label{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px;flex:1 1 260px}.psh-pick select{font:inherit;padding:8px 10px;border-radius:10px;background:var(--p2);color:var(--txt);border:1px solid var(--line);max-width:100%}
 .wbx-mini-vsl{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#0B1220;margin:0 0 18px}
 .wbx-mini-vsl iframe,.wbx-mini-vsl video{position:absolute;inset:0;width:100%;height:100%;border:0}
 /* the VIP page (myorbuni.com/v/<seat>): a vertical video, free vs VIP side by side, one button */
@@ -8840,8 +8855,19 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <li><time>15:00</time><div><b>The Scholarship Ladder, university by university</b><span>Who gives 25%, 50%, 75% and 100%, and to which students.</span></div></li>
         <li><time>35:00</time><div><b>The documents that decide your band</b><span>The short list that makes or breaks an application, and how to get it ready this month.</span></div></li>
         <li><time>50:00</time><div><b>Visa, housing and the first month</b><span>What a year in Türkiye really costs beyond tuition, and how to plan it.</span></div></li>
-        <li><time>65:00</time><div><b>Live questions and your next step</b><span>Your questions answered live, and how to apply for September 2027.</span></div></li>
+        <li><time>65:00</time><div><b>Live questions with our university guests</b><span>Your questions answered live by the people who decide, and how to apply for September 2027.</span></div></li>
       </ol>
+      <div class="wbx-guests">
+        <span class="lp-eyebrow" style="display:block;text-align:center;margin-top:34px">In the live room</span>
+        <h3 class="wbx-guests-h">Ask the people who <em>decide</em></h3>
+        <p class="wbx-guests-p">We invite guests to every live session, so you hear it from the source, not only from us.</p>
+        <div class="wbx-guests-g">
+          <div><b>University representatives</b><span>Admissions and scholarship staff from partner universities, answering your questions directly.</span></div>
+          <div><b>Academic experts</b><span>Lecturers and researchers on choosing the right programme and what studying in Türkiye is really like.</span></div>
+          <div><b>The Orbuni team</b><span>Counsellors on applications, documents, visas, housing and your first month.</span></div>
+        </div>
+        <p class="wbx-guests-f">The guest line-up is shared with registered seats before the day.</p>
+      </div>
     </div>
   </section>
 
@@ -25068,6 +25094,61 @@ window.pMessageStudent = async function(id){
   pGo("chat");
 };
 
+/* Partner share links ("Get inspired"): the assessment, the webinar and the VIP seat, each tagged with the
+   agency's short ref so every lead and sign-up shows who sent it. Copy, share on WhatsApp from the
+   partner's own phone, or email one of their own students. The email goes through
+   partner_share_link() in the database, which checks everything again (own student only, fixed links,
+   daily limits, unsubscribes) — nothing here is trusted. */
+var P_SHARE = [
+  ["assessment", "Free 2-minute assessment", "start", "Shows the student which path fits them, their scholarship options and next step."],
+  ["webinar", "Free live scholarship webinar", "webinar", "90 minutes with our team and invited university guests. Free seat, VIP optional."],
+  ["vip", "VIP webinar seat ($10)", "vip", "The Scholarship Masterclass today, the Istanbul Meetup, the replay for life."]
+];
+function pShareRef(){ var id = (MYPARTNER && MYPARTNER.id) || (PROF && PROF.partner_id) || ""; return id ? "p-" + String(id).replace(/-/g, "").slice(0, 8) : ""; }
+function pShareUrl(k){ var x = P_SHARE.filter(function(r){ return r[0] === k; })[0], ref = pShareRef(); return x && ref ? "https://myorbuni.com/" + x[2] + "/" + ref : ""; }
+function pShareBox(d){
+  if(!pShareRef()) return "";
+  var studs = (d && d.students || []).filter(function(x){ return x.email; });
+  var opts = studs.map(function(x){ return '<option value="' + esc(x.id) + '">' + esc(((x.first_name || "") + " " + (x.last_name || "")).trim() || x.email) + "</option>"; }).join("");
+  return '<div class="insp-sec">' + NAVI.users + "Share with your students</div>"
+    + '<p style="font-size:13px;color:var(--dim);line-height:1.6;margin:-4px 0 12px;max-width:62ch">Your own links. Everyone who signs up through them is recorded as yours.</p>'
+    + '<div class="psh">' + P_SHARE.map(function(r){
+        var url = pShareUrl(r[0]);
+        return '<div class="psh-row"><div class="psh-t"><b>' + esc(r[1]) + "</b><span>" + esc(r[3]) + '</span><code>' + esc(url.replace("https://", "")) + "</code></div>"
+          + '<div class="psh-a"><button class="btn btn-o btn-s" onclick="pShareCopy(\'' + r[0] + '\')">Copy</button>'
+          + '<button class="btn btn-o btn-s" onclick="pShareWa(\'' + r[0] + '\')">WhatsApp</button>'
+          + (studs.length ? '<button class="btn btn-p btn-s" onclick="pShareAsk(\'' + r[0] + '\')">Email a student</button>' : "")
+          + "</div></div>";
+      }).join("") + "</div>"
+    + (studs.length ? '<div id="psh-pick" class="psh-pick" hidden><label>Send <b id="psh-what"></b> to<select id="psh-stu">' + opts + '</select></label>'
+        + '<button class="btn btn-p btn-s" id="psh-go" onclick="pShareSend()">Send email</button><button class="btn btn-o btn-s" onclick="$(\'psh-pick\').hidden=true">Cancel</button></div>' : "");
+}
+window.pShareCopy = function(k){
+  var u = pShareUrl(k); if(!u) return;
+  try{ navigator.clipboard.writeText(u).then(function(){ toast("Link copied."); }, function(){ prompt("Copy this link:", u); }); }catch(e){ prompt("Copy this link:", u); }
+};
+window.pShareWa = function(k){
+  var u = pShareUrl(k); if(!u) return;
+  var msg = { assessment:"Take this free 2-minute assessment from Orbuni. It shows which universities and scholarships fit you: ",
+              webinar:"Join the free live scholarship webinar (Orbuni, with university guests). Save your seat here: ",
+              vip:"Get the VIP seat for the Orbuni scholarship webinar ($10, includes the Scholarship Masterclass): " }[k] || "";
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg + u), "_blank", "noopener");
+};
+var P_SHARE_K = "";
+window.pShareAsk = function(k){
+  P_SHARE_K = k; var x = P_SHARE.filter(function(r){ return r[0] === k; })[0];
+  var b = $("psh-pick"); if(!b) return; $("psh-what").textContent = x ? x[1] : ""; b.hidden = false; b.scrollIntoView({ block:"nearest", behavior:"smooth" });
+};
+window.pShareSend = async function(){
+  var sel = $("psh-stu"), btn = $("psh-go"); if(!sel || !P_SHARE_K) return;
+  if(btn) btn.disabled = true;
+  var r = await sb.rpc("partner_share_link", { p_student: sel.value, p_link: P_SHARE_K });
+  if(btn) btn.disabled = false;
+  if(r.error){ toast(friendly(r.error), true); return; }
+  if(!r.data || !r.data.ok){ toast((r.data && r.data.error) || "Could not send it.", true); return; }
+  toast("Sent. It arrives in a few minutes."); $("psh-pick").hidden = true;
+};
+
 var P_LIVE = {
 
  home: async function(){
@@ -25191,6 +25272,7 @@ var P_LIVE = {
              + uniFilmCards(f)
            : "";
        })())
+     + pShareBox(d)
      + '<div class="insp-sec">' + NAVI.trending + "Pitch these</div>"
      + inspireCards(rows, "pGo('search')")
      + '<div class="insp-sec">' + NAVI.bookOpen + "Use with your students</div>"

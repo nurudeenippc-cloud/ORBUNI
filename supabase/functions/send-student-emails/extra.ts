@@ -85,7 +85,8 @@ export const EXTRA_SUBJECTS: Record<string, (v: V) => string> = {
   webinar_vip_offer:       v => `Start before the webinar, ${String(v.first_name ?? "there")}?`,
   webinar_vip_unpaid:      _v => `Your VIP seat is not confirmed yet`,
   webinar_vip_welcome:     v => `You're VIP, ${String(v.first_name ?? "there")}. Here is what you get`,
-  webinar_vip_scholarship: _v => `Your early access: 100% scholarship places`
+  webinar_vip_scholarship: _v => `Your early access: 100% scholarship places`,
+  partner_share:           v => String(v.link) === "vip" ? `${String(v.agency ?? "Your agency")} sent you a VIP webinar seat` : String(v.link) === "webinar" ? `${String(v.agency ?? "Your agency")} invited you to a free scholarship webinar` : `${String(v.agency ?? "Your agency")} sent you a free 2-minute assessment`
 };
 
 export const EXTRA_BODIES: Record<string, (v: V) => string> = {
@@ -223,7 +224,7 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
     return shell(`You're in. ${String(v.when ?? "")}`,
       kick(vip ? "VIP seat saved" : "Free seat saved")
       + h1(`You're in, ${g(v,"first_name","there")}`)
-      + para(`Your seat for <b>${g(v,"title","the Orbuni webinar")}</b> is saved. Bring your questions, and bring your parents if they help decide.`)
+      + para(`Your seat for <b>${g(v,"title","the Orbuni webinar")}</b> is saved. Bring your questions, and bring your parents if they help decide. Invited university representatives and academic experts join us live.`)
       + rows([["When", g(v,"when")], ["Where", "Online. The join link is on your seat page"], ["Your seat", vip ? "VIP" : "Free"]])
       + button("Open my seat", safeLink(v.seat))
       + (cal ? para(`<a href="${cal}" style="color:${GOLD};font-weight:600">Add it to Google Calendar</a> so you don't miss it.`) : "")
@@ -306,6 +307,22 @@ export const EXTRA_BODIES: Record<string, (v: V) => string> = {
       + button("Open my VIP seat", safeLink(v.seat))
       + note("Your receipt", "Your payment receipt comes in a separate email. Questions? Reply to this email.", "green")
       + small("You are getting this because you bought a VIP seat at myorbuni.com.")),
+  // sent by a partner agency from their portal (public.partner_share_link checks who may send what)
+  partner_share: v => {
+    const stop = unsubLink(v.unsub), k = String(v.link), url = safeLink(v.url);
+    const P: Record<string, [string, string, string, string]> = {
+      assessment: ["Free assessment", "Two minutes to see where you stand", "Eight honest questions. At the end you see which universities and scholarship bands fit your results, and your next step. Free, and nothing to pay.", "Start the assessment"],
+      webinar: ["Free live webinar", "A free seat at the scholarship webinar", "90 minutes, live: how international students win 25% to 100% scholarships at universities in Türkiye, with our team and invited university guests. Save your free seat; the link and reminders follow by email and WhatsApp.", "Save my free seat"],
+      vip: ["VIP seat", "The VIP seat for the scholarship webinar", "One payment of $10: the Scholarship Masterclass today, a free ticket to the Orbuni Istanbul Meetup, the replay for life, your question answered first and early access to 100% scholarship places.", "See the VIP seat"],
+    };
+    const x = P[k] || P.assessment;
+    return shell(x[1] + ".",
+      kick(x[0])
+      + h1(`${g(v,"first_name","Hello")}, ${esc(x[1].charAt(0).toLowerCase() + x[1].slice(1))}`)
+      + para(`<b>${g(v,"agency","Your education agency")}</b> works with Orbuni and sent you this. ${esc(x[2])}`)
+      + button(x[3], url)
+      + small("You are getting this because your education agency sent it from their Orbuni portal." + (stop ? ` <a href="${stop}" style="color:${MUTE}">Stop Orbuni emails</a>.` : "")));
+  },
   webinar_vip_scholarship: v => {
     const stop = unsubLink(v.unsub);
     return shell("You see these places 48 hours before everyone else.",
