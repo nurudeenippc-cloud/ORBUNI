@@ -86,6 +86,11 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
   { key: "orbuni_webinar_next", category: "MARKETING",
     body: "Hi {{1}}, thank you for joining the Orbuni scholarship webinar. Your next step is the free 2-minute assessment, which skips the video: {{2}} Reply here with any question. Reply STOP to opt out.",
     vars: { "1": "Aisha", "2": "https://myorbuni.com/quiz" } },
+  // 16 Oct 2026: the team alert, laid out properly (send-alerts uses it once approved, the old one until then)
+  { key: "orbuni_team_alert_v2", category: "UTILITY",
+    body: "*Orbuni · Team alert*\n\n*{{1}}*\n{{2}}\n\n*Who:* {{3}}\n*Next step:* {{4}}\n\nSent automatically by the Orbuni system.",
+    vars: { "1": "A WhatsApp chat needs a reply", "2": "Reason: payment problem. Last message: \"My card was declined\"", "3": "Aisha Bello, +234 801 234 5678", "4": "Reply in the WhatsApp inbox, then press Done" },
+    link: { title: "Open the team portal", url: "https://myorbuni.com/#portal=admin" } },
   // 15 Oct 2026: video versions (a short video on top, one button). Senders prefer "<key>_vid" once Meta approves it.
   { key: "orbuni_quiz_followup_vid", category: "MARKETING", media: VID + "webinar_invite.mp4", footer: "Reply STOP to opt out",
     body: "Hi {{1}}, thanks for taking the Orbuni study assessment. This short video explains our free live scholarship webinar: how international students win 25% to 100% scholarships at universities in Türkiye.",
