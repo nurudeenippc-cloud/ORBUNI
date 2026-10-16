@@ -30474,6 +30474,7 @@ async function gcWebinar(owner){
         return '<div class="gc-vrow"><span class="gc-dot t-butter"></span><div class="gc-vi"><b>' + esc(v[2]) + "</b><small>" + esc(v[3]) + "</small>"
           + input("gcw-" + v[0], "gcSaveWeb(\'" + v[0] + "\', \'" + v[1] + "\')", val, "https://youtu.be/…") + "</div></div>";
       }).join("") + "</div></div>"
+    + gcShareLinks()
     + '<h4 class="gc-sub">Latest sign-ups</h4>'
     + (regs.length ? '<div class="gc-list">' + regs.slice(0, 12).map(function(r){
         return '<div class="gc-call"><div class="gc-when"><b>' + esc(new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })) + "</b><span>" + esc(r.utm_source || "direct") + "</span></div>"
@@ -30481,6 +30482,37 @@ async function gcWebinar(owner){
       }).join("") + "</div>" : '<div class="gc-empty">No sign-ups yet. Share myorbuni.com/webinar (or /webinar/ig, /webinar/tt) to start.</div>')
     + '<p class="gc-fine">The groups live on a separate WhatsApp Business number (Meta\'s group API allows only 8 people per group). Clicks are counted here; members are managed in WhatsApp.</p>';
 }
+/* Links to share (team): the funnel links everyone uses, and the same links tagged with your own
+   name, so a sign-up you brought in shows "t-yourname" as its source in the lists above. */
+var GC_LINKS = [
+  ["Webinar · Funnel A", "webinar", "Bio, posts, stories, cold ads. Video, questions, free seat or VIP."],
+  ["VIP · Funnel C", "vip", "Retargeting: people who visited or saved a free seat. Straight to the VIP offer."],
+  ["Assessment · Funnel B", "start", "Ready to apply: the 2-minute assessment, then their path or a free call."],
+  ["WhatsApp chat", "chat", "Opens a WhatsApp chat with the AI. Use /ad in Whop Ads (it tags the source)."]
+];
+function gcMyTag(){ var n = String((PROF && PROF.first_name) || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "").slice(0, 16); return n ? "t-" + n : ""; }
+function gcShareLinks(){
+  var tag = gcMyTag();
+  var row = function(label, path, sub){
+    var url = "https://myorbuni.com/" + path, mine = tag && path !== "chat" ? url + "/" + tag : "";
+    return '<div class="gc-vrow"><span class="gc-dot t-sky"></span><div class="gc-vi"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small>"
+      + '<div class="gc-vin" style="flex-wrap:wrap"><input readonly value="' + esc(url.replace("https://", "")) + '" onclick="this.select()">'
+      + '<button class="gc-btn sm" onclick="gcCopyLink(\'' + esc(url) + '\')">Copy</button>'
+      + '<button class="gc-btn sm" onclick="gcWaLink(\'' + esc(url) + '\')">WhatsApp</button></div>'
+      + (mine ? '<small style="margin-top:4px">Your own: <a href="' + esc(mine) + '" target="_blank" rel="noopener">' + esc(mine.replace("https://", "")) + '</a> · <a onclick="gcCopyLink(\'' + esc(mine) + '\')" style="cursor:pointer">copy</a></small>' : "")
+      + "</div></div>";
+  };
+  return '<h4 class="gc-sub">Links to share</h4>' + GC_LINKS.map(function(l){ return row(l[0], l[1], l[2]); }).join("")
+    + '<p class="gc-fine" style="margin-top:4px">Partners have their own tagged copies of the first three links in their portal (Get inspired), and can email them to their own students.</p>';
+}
+window.gcCopyLink = function(u){
+  if(!/^https:\/\/myorbuni\.com\//.test(u)) return;
+  try{ navigator.clipboard.writeText(u).then(function(){ toast("Link copied."); }, function(){ prompt("Copy this link:", u); }); }catch(e){ prompt("Copy this link:", u); }
+};
+window.gcWaLink = function(u){
+  if(!/^https:\/\/myorbuni\.com\//.test(u)) return;
+  window.open("https://wa.me/?text=" + encodeURIComponent(u), "_blank", "noopener");
+};
 window.gcSaveWeb = async function(key, funnelKey){
   var el = $("gcw-" + key); if(!el) return;
   var v = String(el.value || "").trim();
