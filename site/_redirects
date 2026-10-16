@@ -27,6 +27,9 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /webinar/:src  /?utm_source=:src&utm_medium=link&utm_campaign=scholarship1&go=webinar  302
 /s/:t  /?seat=:t&go=webinar  302
 /v/:t  /?seat=:t&offer=vip&go=webinar  302
+# Funnel C (retargeting): straight to the VIP offer, no questions. /vip/<source> tags where it ran.
+/vip  /?utm_source=retarget&utm_medium=paid&utm_campaign=scholarship1_vip&go=webinar&offer=vipdirect  302
+/vip/:src  /?utm_source=:src&utm_medium=retarget&utm_campaign=scholarship1_vip&go=webinar&offer=vipdirect  302
 /quiz  /?utm_source=webinar&utm_medium=live&utm_campaign=scholarship1&go=quiz  302
 
 /.well-known/apple-developer-merchantid-domain-association  https://whop.com/.well-known/apple-platform-integrator/apple-developer-merchantid-domain-association  200

@@ -37682,7 +37682,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<div class="wb-nav"><button class="lp-pill lp-pill-ghost" onclick="wbBack()">← Back</button></div>');
   }
   window.wbPick = function(k){ var s = WBQ[WB.i]; WB.ans[s.k] = s.opts[k][1]; WB.i++; if(WB.i < WBQ.length) question(); else contact(); };
-  window.wbBack = function(){ if(WB.i <= 0) return backToLanding(); WB.i--; question(); };
+  window.wbBack = function(){ if(WB.vipDirect) return wbVipDirect(); if(WB.i <= 0) return backToLanding(); WB.i--; question(); };
   function contact(){
     var countries = (typeof LP_COUNTRIES !== "undefined" ? LP_COUNTRIES : ["Nigeria","Ghana","Kenya","Cameroon","Other"]);
     var parent = WB.ans.role === "parent";
@@ -37697,7 +37697,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       + '<label class="full wb-consent"><input type="checkbox" id="wb-ok"><span>Send me the webinar link and reminders on WhatsApp and by email, and other Orbuni messages about studying abroad. I can reply STOP or unsubscribe at any time. <a onclick="go(\'privacy\')">Privacy</a></span></label>'
       + "</div>"
       + '<div class="wb-err" id="wb-err" role="alert"></div>'
-      + '<div class="wb-nav"><button class="lp-pill lp-pill-ghost" onclick="wbBack()">← Back</button><button class="lp-pill lp-pill-gold" id="wb-go" onclick="wbSubmit()">Save my free seat →</button></div>');
+      + '<div class="wb-nav"><button class="lp-pill lp-pill-ghost" onclick="wbBack()">← Back</button><button class="lp-pill lp-pill-gold" id="wb-go" onclick="wbSubmit()">' + (WB.vipDirect ? "Continue to the VIP checkout →" : "Save my free seat →") + '</button></div>');
   }
   window.wbSubmit = async function(){
     var v = function(id){ var el = $(id); return el ? String(el.value || "").trim() : ""; };
@@ -37727,6 +37727,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
         + '<div class="wb-acts"><a class="lp-pill lp-pill-gold" href="https://wa.me/14434481577?text=' + encodeURIComponent("Hi Orbuni, please resend my webinar seat link.") + '" target="_blank" rel="noopener">Ask on WhatsApp</a></div></div>');
     }
     WB.token = r.data.token; store(WB.token); ev("webinar_registered");
+    if(WB.vipDirect){ ev("webinar_vipdirect_checkout"); flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Free seat saved</span><h2>One step left</h2><p class="wb-when">Your free seat is saved either way. The secure VIP checkout is opening…</p><div class="wb-acts"><button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVip()">Pay $' + E((WB.info && WB.info.vip_price) || 10) + ' and make me VIP →</button></div></div>'); return wbVip(); }
     ticket(name);
   };
 
@@ -37808,6 +37809,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
         + "<li><span><b>Early access: 100% scholarship places.</b><br>Places are limited. See the live list now, before it goes to everyone.</span></li>"
         + "<li><span><b>Your ticket to the Orbuni Istanbul Meetup.</b><br>Meet our team and students from all over the world, with food, drinks and prize games. We send the date and venue to your WhatsApp and email.</span></li>"
         + "<li><span><b>Your question goes first</b> in the live Q&amp;A, and the replay is yours for life.</span></li></ul>"
+        + (opts.vip ? '<div class="wb-note" style="background:#16120A;color:#C9BFA8;margin:14px 0 0"><b style="color:#F6BD3F">Your next step, while it is fresh:</b> take the free 2-minute assessment. Your counsellor sees your answers, and at the end you can book your free 1:1 call.</div><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div>' : "")
         + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="go(\'schol\')">See the 100% scholarship places →</button>'
         + '<button class="lp-pill lp-pill-ghost" style="background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)" onclick="openPortal(\'student-up\')">Open the Masterclass</button></div></div>';
     } else if(s.state !== "after"){
@@ -37824,6 +37826,45 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     return '<div class="wbv-vid"><video controls playsinline preload="none" poster="' + E(cover) + '" src="' + E(v) + '" onplay="this.onplay=null;wbVipVideoPlay()"></video></div>';
   }
   window.wbVipVideoPlay = function(){ ev("webinar_vsl_webinarVip"); };
+  /* Funnel C · myorbuni.com/vip (retargeting): no questions, straight to the VIP offer.
+     Video → free vs VIP → "Get VIP" → name/WhatsApp/email → free seat saved + VIP checkout → VIP seat,
+     then the next step (the 2-minute assessment, which ends with booking a free call).
+     Someone who already has a seat on this device goes to their own upgrade page instead. */
+  window.wbVipDirect = async function(){
+    WB.vipDirect = true;
+    var t = stored(); if(t) return wbVipPage(t);
+    flow('<div class="wb-seat"><p class="wb-when">Opening…</p></div>');
+    var info = await loadInfo(), price = (info && info.vip_price) || 10;
+    ev("webinar_vipdirect_view");
+    try{ if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_vip_direct" }); }catch(e){}
+    flow(vipOfferHtml(info ? info.title : "the free live scholarship webinar", price, info ? whenText(info.starts_at, false) : "", "",
+      '<button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVipDirectGo()">Get VIP for $' + E(price) + ' <span aria-hidden="true">→</span></button>',
+      '<button class="wb-no" onclick="wbVipDirectFree()">Just save me a free seat</button>'));
+    if(info && info.starts_at) countdown("wb-vd-count", info.starts_at);
+  };
+  window.wbVipDirectGo = function(){ ev("webinar_vipdirect_cta"); WB.vipDirect = true; WB.ans = WB.ans || {}; contact(); };
+  window.wbVipDirectFree = function(){ ev("webinar_vipdirect_free"); WB.vipDirect = false; WB.i = 0; WB.ans = {}; question(); };
+  /* the shared VIP sales block: headline, video, free vs VIP, the button */
+  function vipOfferHtml(title, price, when, kicker, cta, below){
+    var li = function(cls, t, sub){ return '<li class="' + (cls === "n" ? "no" : "") + '"><i class="' + cls + '">' + (cls === "y" ? "✓" : cls === "n" ? "✕" : "½") + "</i><span>" + t + (sub ? "<small>" + sub + "</small>" : "") + "</span></li>"; };
+    return '<div class="wbv">'
+      + '<span class="wb-step-n" style="display:block;text-align:center">' + (kicker || "Free live webinar" + (when ? " · " + E(when) : "")) + "</span>"
+      + '<h2 class="wbv-h">Upgrade to <em>VIP</em></h2>'
+      + '<p class="wbv-sub">Watch this first. It shows in 30 seconds what the VIP seat adds to <b>' + E(title) + "</b>.</p>"
+      + (when ? '<div class="wb-count" id="wb-vd-count" style="margin:0 auto 18px;justify-content:center"></div>' : "")
+      + vipVideo()
+      + '<div class="wbv-cmp">'
+      + '<div class="wbv-col free"><h3>Free seat <span>$0</span></h3><ul>'
+      + li("y", "The live webinar and Q&amp;A") + li("h", "The replay for 3 days") + li("n", "The Scholarship Masterclass") + li("n", "The Orbuni Istanbul Meetup")
+      + li("n", "Early access to 100% scholarship places") + li("n", "Your question answered first") + li("n", "The private VIP WhatsApp group") + "</ul></div>"
+      + '<div class="wbv-col vip"><h3>VIP seat <span>$' + E(price) + "</span></h3><ul>"
+      + li("y", "Everything in the free seat")
+      + VIP_STACK.map(function(x){ return li("y", E(x[0]), E(x[1])); }).join("") + "</ul>"
+      + '<div class="wbv-cta">' + cta + "</div></div>"
+      + "</div>" + (below || "")
+      + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added. Your free seat stays either way.</p></div>";
+  }
+
   /* myorbuni.com/v/<seat>: where every "Get VIP" button lands (WhatsApp, emails). Video first, then
      free and VIP side by side, then one button. Already VIP → straight to the seat. */
   async function wbVipPage(tok){
@@ -37835,23 +37876,9 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     WB.seat = s; WB.token = tok; store(tok); ev("webinar_vip_page");
     try{ if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_vip_page" }); }catch(e){}
     var w = s.webinar, price = w.vip_price || 10, first = s.first_name || "";
-    var li = function(cls, t, sub){ return '<li class="' + (cls === "n" ? "no" : "") + '"><i class="' + cls + '">' + (cls === "y" ? "✓" : cls === "n" ? "✕" : "½") + "</i><span>" + t + (sub ? "<small>" + sub + "</small>" : "") + "</span></li>"; };
-    flow('<div class="wbv">'
-      + '<span class="wb-step-n" style="display:block;text-align:center">' + (first ? E(first) + ", your" : "Your") + " free seat is saved</span>"
-      + '<h2 class="wbv-h">Upgrade to <em>VIP</em></h2>'
-      + '<p class="wbv-sub">Watch this first. It shows in 30 seconds what the VIP seat adds to <b>' + E(w.title) + "</b>.</p>"
-      + vipVideo()
-      + '<div class="wbv-cmp">'
-      + '<div class="wbv-col free"><h3>Free seat <span>$0</span></h3><ul>'
-      + li("y", "The live webinar and Q&amp;A") + li("h", "The replay for 3 days") + li("n", "The Scholarship Masterclass") + li("n", "The Orbuni Istanbul Meetup")
-      + li("n", "Early access to 100% scholarship places") + li("n", "Your question answered first") + li("n", "The private VIP WhatsApp group") + "</ul></div>"
-      + '<div class="wbv-col vip"><h3>VIP seat <span>$' + E(price) + "</span></h3><ul>"
-      + li("y", "Everything in the free seat")
-      + VIP_STACK.map(function(x){ return li("y", E(x[0]), E(x[1])); }).join("") + "</ul>"
-      + '<div class="wbv-cta"><button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVip()">Make me VIP for $' + E(price) + ' <span aria-hidden="true">→</span></button></div></div>'
-      + "</div>"
-      + '<button class="wb-no" onclick="wbOpenMySeat()">No thanks, open my free seat</button>'
-      + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added. Your free seat stays either way.</p></div>");
+    flow(vipOfferHtml(w.title, price, "", (first ? E(first) + ", your" : "Your") + " free seat is saved",
+      '<button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVip()">Make me VIP for $' + E(price) + ' <span aria-hidden="true">→</span></button>',
+      '<button class="wb-no" onclick="wbOpenMySeat()">No thanks, open my free seat</button>'));
   }
 
   function ics(iso){ return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
@@ -37890,6 +37917,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       return offer === "vip" ? wbVipPage(t) : wbSeat(t, {});
     }
     var f = $("wb-flow"); if(f && !f.hidden) return;
+    if(q && q.get("offer") === "vipdirect"){ try{ history.replaceState(null, "", location.pathname + "#webinar"); }catch(e){} return wbVipDirect(); }
     try{ if(!sessionStorage.getItem("orb-wb-viewed")){ sessionStorage.setItem("orb-wb-viewed", "1"); if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_landing" }); } }catch(e){}
     paintLanding();
   }
