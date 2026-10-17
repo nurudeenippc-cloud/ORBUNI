@@ -27812,6 +27812,15 @@ var ORB_TERMS = {
       { h: "Fair use", b: "<p>The lessons are for you. Please do not copy or resell them.</p>" }
     ]
   },
+  strategy_call: {
+    version: "2026-10-17",
+    title: "Strategy call terms",
+    sections: [
+      { h: "What you get", b: "<p>One private 30-minute call with an Orbuni counsellor: your profile reviewed, a shortlist of universities and scholarship bands, and a plan for documents, deadlines and visa. We message you on WhatsApp within 24 hours to fix a time that suits you.</p>" },
+      { h: "Refunds", b: "<p>Write to hello@myorbuni.com within 7 days of paying and we refund the $39 in full if the call has not taken place.</p>" },
+      { h: "What it is not", b: "<p>The call is advice. It does not guarantee admission, a scholarship or a visa, and nothing is ever promised on the call.</p>" }
+    ]
+  },
   partner_program: {
     version: "2026-09-24",
     title: "Partner Growth Program terms",
@@ -27850,7 +27859,7 @@ function orbDocHtml(doc){
 var ORB_WHOP = {
   account: "biz_340OHdZOPCa81N",
   dashboard: "https://whop.com/dashboard/biz_340OHdZOPCa81N/",
-  checkout: { standard:"", plus:"", premier:"", premier_2pay:"", masterclass:"", partner_program:"" },
+  checkout: { standard:"", plus:"", premier:"", premier_2pay:"", masterclass:"", partner_program:"", strategy_call:"" },
   products: {},
   maxOne: 2500,
   agreementVersion: "2026-09-24",
@@ -27879,6 +27888,8 @@ async function whopLoadConfig(){
       else if(x.key === "webinar_vip_vsl") ORB_FUNNEL.webinarVip = v;
       else if(x.key === "webinar_seat_vsl") ORB_FUNNEL.webinarSeat = v;
       else if(x.key === "webinar_vipseat_vsl") ORB_FUNNEL.webinarVipSeat = v;
+      else if(x.key === "webinar_upsell_vsl") ORB_FUNNEL.webinarUpsell = v;
+      else if(x.key === "webinar_recover_vsl") ORB_FUNNEL.webinarRecover = v;
       else if(x.key === "webinar_group_free") ORB_FUNNEL.webinarGroupFree = v;
       else if(x.key === "webinar_group_vip") ORB_FUNNEL.webinarGroupVip = v;
       else if(x.key === "webinar_group_bsc") ORB_FUNNEL.webinarGroupBsc = v;
@@ -28921,6 +28932,10 @@ var OC_LOOK = {
     meta:["9 short lessons", "One evening", "7-day refund"],
     perks:[["cap","How Turkish scholarships really work","butter"], ["wallet","What a “100%” place really costs","mint"],
            ["fileText","Documents and visa, step by step","sky"], ["bookOpen","Read it here, for life","lilac"]] },
+  strategy_call: { tag:"VIP offer · one call", t1:"1:1 Scholarship", t2:"Strategy Call", art:"mint",
+    meta:["30 minutes", "A real counsellor", "7-day refund"],
+    perks:[["user","Your profile reviewed first","butter"], ["cap","Universities and bands you can reach","sky"],
+           ["fileText","Documents, deadlines and visa plan","mint"], ["headset","Your own questions answered","lilac"]] },
   partner_program: { tag:"Partners · course + coaching", t1:"Partner Growth", t2:"Program", art:"sky",
     meta:["15 lessons", "3 months coaching", "7-day refund"],
     perks:[["bookOpen","15 lessons, yours for life","sky"], ["headset","Coaching calls for 3 months","mint"],
@@ -30427,7 +30442,9 @@ var GC_WEB_VIDEOS = [
   ["webinar_vsl", "webinar", "Invitation video", "Top of /webinar"],
   ["webinar_vip_vsl", "webinarVip", "Why VIP (60 sec)", "On the VIP choice"],
   ["webinar_seat_vsl", "webinarSeat", "Watch before the webinar", "Free seat page"],
-  ["webinar_vipseat_vsl", "webinarVipSeat", "Welcome, VIP", "VIP seat page"]
+  ["webinar_vipseat_vsl", "webinarVipSeat", "Welcome, VIP", "VIP seat page"],
+  ["webinar_recover_vsl", "webinarRecover", "Started VIP, did not pay (60-90 sec)", "VIP page, for people who opened the checkout"],
+  ["webinar_upsell_vsl", "webinarUpsell", "Last upsell: strategy call (60 sec)", "Right after the VIP payment"]
 ];
 var GC_WEB_GROUPS = [
   ["webinar_group_free", "webinarGroupFree", "Free webinar group", "Shown on every free seat. Announcement-only works best."],
@@ -37879,9 +37896,59 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
       amount:price, name:d.name || "", email:d.email || "",
       onPaid: function(){
         setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){}
-          flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag vip">VIP</span><h2>Payment received. You are VIP.</h2>'
-            + '<p class="wb-when">We are confirming your VIP seat now. Your confirmation and your seat link arrive by email and WhatsApp in a few minutes. Open the link in that email to see your VIP seat.</p>'
-            + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div></div>'); }, 1600);
+          wbUpsell(function(){ dupPaid(); }); }, 1600);
+      } });
+  };
+
+  function dupPaid(){
+    flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag vip">VIP</span><h2>Payment received. You are VIP.</h2>'
+      + '<p class="wb-when">We are confirming your VIP seat now. Your confirmation and your seat link arrive by email and WhatsApp in a few minutes. Open the link in that email to see your VIP seat.</p>'
+      + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div></div>');
+  }
+  /* THE LAST UPSELL: shown the moment the VIP payment goes through (and again on the VIP seat page).
+     A private 30-minute strategy call (Whop plan: whop_config checkout_strategy_call). VIPs only. */
+  var UP_PRICE = 39;
+  function upsellVideo(){
+    var v = fv("webinarUpsell"); if(!/^https:\/\/\S+\.mp4(\?|$)/i.test(v)) return "";
+    var cover = v.replace(/\.mp4(\?.*)?$/i, "-cover.jpg");
+    return '<div class="wbv-vid"><video controls playsinline preload="none" poster="' + E(cover) + '" src="' + E(v) + '" onplay="this.onplay=null;wbUpsellVideoPlay()"></video></div>';
+  }
+  window.wbUpsellVideoPlay = function(){ ev("webinar_vsl_webinarUpsell"); };
+  function wbUpsell(next){
+    WB.upNext = typeof next === "function" ? next : function(){};
+    ev("webinar_upsell_view");
+    try{ if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"strategy_call_upsell" }); }catch(e){}
+    flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag vip">VIP seat confirmed</span>'
+      + '<h2 class="wb-tk-h" style="margin-top:12px">One more thing, only for VIPs</h2>'
+      + '<p class="wb-tk-sub">Your seat is sorted. The next question is the one everyone asks: <b>"Can I actually get in, and which scholarship band is realistic for me?"</b> Get a straight answer from a real person in 30 minutes.</p></div>'
+      + '<div class="wb-vipcard">' + upsellVideo() + '<h3>1:1 Scholarship Strategy Call <span style="color:#F6BD3F">$' + UP_PRICE + '</span></h3>'
+      + '<p style="margin:0 0 14px;color:#C9BFA8;font-size:15px;line-height:1.6"><b style="color:#fff">Why this call, and why now?</b> The webinar shows how Turkish scholarships work for everyone. It cannot tell you how they work for <i>you</i>. People who sit through a webinar and then guess their own plan lose the intake. A counsellor looking at your real grades and budget fixes that in 30 minutes.</p><ul>'
+      + "<li><span><b>Your profile, reviewed before the call.</b><br>Grades, budget and goals: your counsellor reads them first, so no time is wasted.</span></li>"
+      + "<li><span><b>The universities and scholarship bands you can really reach.</b><br>A short, honest list, not a brochure.</span></li>"
+      + "<li><span><b>Your plan: documents, deadlines and visa.</b><br>What to do this week, this month and before the intake.</span></li>"
+      + "<li><span><b>Your own questions answered.</b><br>30 minutes, one to one, on a time that suits you.</span></li></ul>"
+      + '<div class="wb-acts"><button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbUpsellBuy()">Yes, book my strategy call for $' + UP_PRICE + ' <span aria-hidden="true">→</span></button></div></div>'
+      + '<button class="wb-no" onclick="wbUpsellNo()">No thanks, take me to my VIP seat</button>'
+      + '<p class="wb-fine">One payment of $' + UP_PRICE + ', by card or local methods through Whop. Calls are booked in the order they are paid, and we message you on WhatsApp within 24 hours to fix your time. 7-day refund if the call has not happened.</p>');
+    wireMini();
+  }
+  window.wbUpsell = wbUpsell;
+  window.wbUpsellNo = function(){ ev("webinar_upsell_no"); var f = WB.upNext; WB.upNext = null; if(f) f(); };
+  window.wbUpsellBuy = function(){
+    var who = WB.who || WB.dup || {}, f = WB.upNext;
+    ev("webinar_upsell_click");
+    try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:UP_PRICE, currency:"USD", content_name:"strategy_call" }); }catch(e){}
+    if(typeof orbCheckout !== "function") return;
+    orbCheckout({ kind:"course", product:"strategy_call", title:"1:1 Scholarship Strategy Call", sub:"30 minutes with an Orbuni counsellor",
+      amount:UP_PRICE, name: who.name || "", email: who.email || "",
+      onPaid: function(){
+        ev("webinar_upsell_paid");
+        setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){}
+          flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag vip">Strategy call booked</span><h2>You are all set.</h2>'
+            + '<p class="wb-when">We message you on WhatsApp within 24 hours to fix the time of your call. Keep your phone close, and have your grades and your budget ready.</p>'
+            + '<div class="wb-acts"><button class="lp-pill lp-pill-gold lp-pill-xl" id="wb-up-go">Continue →</button></div></div>');
+          var g = document.getElementById("wb-up-go"); if(g) g.onclick = function(){ WB.upNext = null; if(f) f(); };
+        }, 1600);
       } });
   };
 
@@ -37906,12 +37973,13 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:(WB.info && WB.info.vip_price) || 10, currency:"USD", content_name:"webinar_vip" }); }catch(e){}
     var who = {};
     try{ var r = await sb.rpc("webinar_vip_checkout", { p_token: tok }); if(r.data) who = r.data; }catch(e){}
+    WB.who = who;
     if(typeof orbCheckout !== "function") return;
     orbCheckout({ kind:"course", product:"masterclass", title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
       amount:(WB.info && WB.info.vip_price) || 10, name: who.name || "", email: who.email || "",
       onPaid: async function(receipt){
         try{ await sb.rpc("webinar_vip_mark", { p_token: tok, p_receipt: receipt || null }); }catch(e){}
-        setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){} wbSeat(tok, { vip:true }); }, 1600);
+        setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){} wbUpsell(function(){ wbSeat(tok, { vip:true }); }); }, 1600);
       } });
   };
 
@@ -37964,6 +38032,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
         + "<li><span><b>Your ticket to the Orbuni Istanbul Meetup.</b><br>Meet our team and students from all over the world, with food, drinks and prize games. We send the date and venue to your WhatsApp and email.</span></li>"
         + "<li><span><b>Your question goes first</b> in the live Q&amp;A, and the replay is yours for life.</span></li></ul>"
         + (opts.vip ? '<div class="wb-note" style="background:#16120A;color:#C9BFA8;margin:14px 0 0"><b style="color:#F6BD3F">Your next step, while it is fresh:</b> take the free 2-minute assessment. Your counsellor sees your answers, and at the end you can book your free 1:1 call.</div><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div>' : "")
+        + '<div class="wb-note" style="background:#16120A;color:#C9BFA8;margin:14px 0 0"><b style="color:#F6BD3F">Want a straight answer on your own case?</b> Book a private 30-minute strategy call with a counsellor for $' + UP_PRICE + '.</div><div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbUpsell(function(){ wbOpenMySeat(); })">Book my strategy call →</button></div>'
         + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="go(\'schol\')">See the 100% scholarship places →</button>'
         + '<button class="lp-pill lp-pill-ghost" style="background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)" onclick="openPortal(\'student-up\')">Open the Masterclass</button></div></div>';
     } else if(s.state !== "after"){
@@ -37974,8 +38043,8 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var ms = $("wb-myseat"); if(ms) ms.hidden = true;
   }
   /* the 9:16 "why VIP" video (whop_config webinar_vip_vsl); nothing when it isn't set */
-  function vipVideo(){
-    var v = fv("webinarVip"); if(!/^https:\/\/\S+\.mp4(\?|$)/i.test(v)) return "";
+  function vipVideo(key){
+    var v = ((key || WB.vidKey) && fv(key || WB.vidKey)) || fv("webinarVip"); if(!/^https:\/\/\S+\.mp4(\?|$)/i.test(v)) return "";
     var cover = v.replace(/\.mp4(\?.*)?$/i, "-cover.jpg");
     return '<div class="wbv-vid"><video controls playsinline preload="none" poster="' + E(cover) + '" src="' + E(v) + '" onplay="this.onplay=null;wbVipVideoPlay()"></video></div>';
   }
@@ -38030,7 +38099,9 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     WB.seat = s; WB.token = tok; store(tok); ev("webinar_vip_page");
     try{ if(typeof orbTrack === "function") orbTrack("view_content", { content_name:"webinar_vip_page" }); }catch(e){}
     var w = s.webinar, price = w.vip_price || 10, first = s.first_name || "";
-    flow(vipOfferHtml(w.title, price, "", (first ? E(first) + ", your" : "Your") + " free seat is saved",
+    var started = !!(s.vip_pending || s.vip_checkout_at);
+    WB.vidKey = started ? "webinarRecover" : null;
+    flow(vipOfferHtml(w.title, price, "", started ? (first ? E(first) + ", you started your VIP seat" : "You started your VIP seat") + ". It is not confirmed yet" : (first ? E(first) + ", your" : "Your") + " free seat is saved",
       '<button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVip()">Make me VIP for $' + E(price) + ' <span aria-hidden="true">→</span></button>',
       '<button class="wb-no" onclick="wbOpenMySeat()">No thanks, open my free seat</button>'));
   }

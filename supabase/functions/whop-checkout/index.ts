@@ -5,7 +5,7 @@
 //                     Requires the Student Service Agreement for this order.
 //   { booking_id }    an extra service the student booked (airport pickup, escort…),
 //                     at the price stored on the booking by book_extra().
-//   { product: "masterclass" | "partner_program" }   a course, for the signed-in person
+//   { product: "masterclass" | "partner_program" | "strategy_call" }   a course, for the signed-in person
 //   { partner_tier: "verified" | "growth" | "pro" | "max" }   a Verified Partner monthly plan,
 //                     for the signed-in agency (agency id in the metadata)
 // plus optional { return_url } (must be on myorbuni.com or localhost).
@@ -101,7 +101,7 @@ Deno.serve(async (req: Request) => {
   // ---------- a course ----------
   if (body.product) {
     const key = String(body.product);
-    if (!["masterclass", "partner_program"].includes(key)) return json(400, { error: "Unknown product." });
+    if (!["masterclass", "partner_program", "strategy_call"].includes(key)) return json(400, { error: "Unknown product." });
     const plan = planFromLink(cfg["checkout_" + key]);
     if (!plan) return json(200, { configured: false, error: "This course is not on sale yet." });
     const ret = safeReturn(body.return_url, "https://myorbuni.com/?whop=paid&pkg=" + key);

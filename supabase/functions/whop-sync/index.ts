@@ -39,6 +39,7 @@ function tierOf(title: string): string {
   if (t.includes("plus")) return "plus";
   if (t.includes("standard")) return "standard";
   if (t.includes("masterclass")) return "masterclass";
+  if (t.includes("strategy call")) return "strategy_call";
   // The Verified Partner subscription (Oct 2026) must not be read as the
   // Partner Growth Program course — a trigger turns it into a partner plan.
   if (t.includes("verified partner")) return "partner_verified";
