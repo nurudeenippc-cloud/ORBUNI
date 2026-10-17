@@ -37836,13 +37836,53 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     try{ if(typeof orbTrack === "function") orbTrack("lead", { content_name:"webinar_registered" }); }catch(e){}
     if(r.data.duplicate){
       ev("webinar_duplicate");
-      return flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Already registered</span>'
-        + "<h2>You already have a seat</h2><p class=\"wb-when\">For your privacy we don't show it here. We have just sent your personal seat link to your email again. Check your inbox (and spam), or message us on WhatsApp.</p>"
-        + '<div class="wb-acts"><a class="lp-pill lp-pill-gold" href="https://wa.me/14434481577?text=' + encodeURIComponent("Hi Orbuni, please resend my webinar seat link.") + '" target="_blank" rel="noopener">Ask on WhatsApp</a></div></div>');
+      WB.dup = { name:name, email:email, phone:phone };
+      if(r.data.ticket !== "vip") return dupOffer(name, WB.vipDirect);
+      return dupNote();
     }
     WB.token = r.data.token; store(WB.token); ev("webinar_registered");
     if(WB.vipDirect){ ev("webinar_vipdirect_checkout"); flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Free seat saved</span><h2>One step left</h2><p class="wb-when">Your free seat is saved either way. The secure VIP checkout is opening…</p><div class="wb-acts"><button class="lp-pill lp-pill-gold lp-pill-xl" onclick="wbVip()">Pay $' + E((WB.info && WB.info.vip_price) || 10) + ' and make me VIP →</button></div></div>'); return wbVip(); }
     ticket(name);
+  };
+
+  /* Already registered: never a dead end. Their private seat link is only ever emailed, but the VIP offer is for
+     everyone with a free seat. The upgrade is matched to their seat by the same email they pay with. */
+  function dupNote(){
+    return flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag free">Already registered</span>'
+      + "<h2>You already have a seat</h2><p class=\"wb-when\">For your privacy we don't show it here. We have just sent your personal seat link to your email again. Check your inbox (and spam), or message us on WhatsApp.</p>"
+      + '<div class="wb-acts"><a class="lp-pill lp-pill-gold" href="https://wa.me/14434481577?text=' + encodeURIComponent("Hi Orbuni, please resend my webinar seat link.") + '" target="_blank" rel="noopener">Ask on WhatsApp</a></div></div>');
+  }
+  function dupOffer(name, direct){
+    var price = (WB.info && WB.info.vip_price) || 10, first = String(name || "").split(" ")[0];
+    flow('<span class="wb-step-n" style="display:block;text-align:center">You already have a free seat</span>'
+      + '<h2 class="wb-tk-h">' + (first ? E(first) + ", welcome" : "Welcome") + " back. Want to go VIP?</h2>"
+      + '<p class="wb-tk-sub">We have sent your seat link to your email again. If you want to move faster, the VIP seat gives you the Scholarship Masterclass today, a ticket to our Istanbul meetup, the replay for life and first access to 100% scholarship places.</p>'
+      + '<div class="wb-vipcard">' + vipVideo() + vipStack(price,
+          '<button class="lp-pill lp-pill-gold lp-pill-xl wb-yes" onclick="wbVipDup()">Yes, make me VIP for $' + E(price) + " <span aria-hidden=\"true\">→</span></button>")
+      + "</div>"
+      + '<button class="wb-no" onclick="wbDupNo()">No thanks, I will use my free seat</button>'
+      + '<p class="wb-fine">One payment of $' + E(price) + ", by card or local methods through Whop. Nothing else is ever added.</p>");
+    wireMini();
+  }
+  window.wbDupNo = function(){ ev("webinar_dup_no"); dupNote(); };
+  window.wbVipDup = async function(){
+    var d = WB.dup; if(!d) return;
+    if(typeof sb === "undefined" || !sb) await orbWaitSB(12000);
+    ev("webinar_vip_click");
+    var price = (WB.info && WB.info.vip_price) || 10;
+    try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:price, currency:"USD", content_name:"webinar_vip" }); }catch(e){}
+    var st = null;
+    try{ var r = await sb.rpc("webinar_dup_upgrade", { p_id: WB_ID, p_email: d.email, p_phone: d.phone }); st = r.data; }catch(e){}
+    if(st === "vip") return dupNote();
+    if(typeof orbCheckout !== "function") return;
+    orbCheckout({ kind:"course", product:"masterclass", title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
+      amount:price, name:d.name || "", email:d.email || "",
+      onPaid: function(){
+        setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){}
+          flow('<div class="wb-seat" style="text-align:center"><span class="wb-tag vip">VIP</span><h2>Payment received. You are VIP.</h2>'
+            + '<p class="wb-when">We are confirming your VIP seat now. Your confirmation and your seat link arrive by email and WhatsApp in a few minutes. Open the link in that email to see your VIP seat.</p>'
+            + '<div class="wb-acts"><button class="lp-pill lp-pill-gold" onclick="wbQuiz()">Take the 2-minute assessment →</button></div></div>'); }, 1600);
+      } });
   };
 
   /* the ticket choice, straight after sign-up */
