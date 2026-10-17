@@ -29143,7 +29143,10 @@ async function ocStep2(){
   var ret = location.origin + location.pathname + "?whop=paid&pkg=" + encodeURIComponent(OC.pkgKey || OC.tier || OC.product || OC.kind) + "&back=" + encodeURIComponent(location.hash || "") + (location.hash || "");
   try{ sessionStorage.setItem("orb-pay-back", location.hash || ""); }catch(x){}
   try{
-    if(OC.previewPlan){
+    if(OC.fixedPlan && /^plan_[A-Za-z0-9]+$/.test(OC.fixedPlan)){
+      // Webinar checkouts name their own Whop plan: no student portal, no sign-in, no settings lookup.
+      plan = OC.fixedPlan; fallbackUrl = "https://whop.com/checkout/" + plan + "/";
+    } else if(OC.previewPlan){
       plan = OC.previewPlan;
     } else if(signed){
       var body2 = OC.kind === "partner" ? { partner_tier: OC.tier, return_url: ret }
@@ -29168,6 +29171,12 @@ async function ocStep2(){
   }
   if(OC && OC.step === 2 && !plan && OC.kind === "course") plan = await whopPlanReady(OC.product);
   if(!OC || OC.step !== 2) return;
+  if(!plan && OC.webinar){
+    document.getElementById("wsx-embed").innerHTML = '<div class="wsx-note">We could not open the payment form just now. Please try once more.</div>'
+      + '<button class="wsx-go" onclick="orbCheckoutClose()">Close and try again</button>';
+    ocLog("no_plan_webinar");
+    return;
+  }
   if(!plan){
     document.getElementById("wsx-embed").innerHTML = '<div class="wsx-note">Your payment is being prepared for your exact total. Your counsellor has been told and will message you shortly — or ask them now.'
       + (note ? '<br><small style="opacity:.7">' + esc(note) + "</small>" : "") + "</div>"
@@ -37901,7 +37910,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     try{ var r = await sb.rpc("webinar_dup_upgrade", { p_id: WB_ID, p_email: d.email, p_phone: d.phone }); st = r.data; }catch(e){}
     if(st === "vip") return dupNote();
     if(typeof orbCheckout !== "function") return;
-    orbCheckout({ kind:"course", product:"masterclass", title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
+    orbCheckout({ kind:"course", product:"masterclass", webinar:true, fixedPlan:PLAN_VIP, title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
       amount:price, name:d.name || "", email:d.email || "",
       onPaid: function(){
         setTimeout(function(){ try{ orbCheckoutClose(); }catch(e){}
@@ -37917,6 +37926,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
   /* THE LAST UPSELL: shown the moment the VIP payment goes through (and again on the VIP seat page).
      A private 30-minute strategy call (Whop plan: whop_config checkout_strategy_call). VIPs only. */
   var UP_PRICE = 39;
+  var PLAN_VIP = "plan_8SjQmTVAU99s9", PLAN_CALL = "plan_hkkrbCPUbpJTV";   // the two Whop plans of this funnel (they never depend on portal settings)
   function upsellVideo(){
     var v = fv("webinarUpsell"); if(!/^https:\/\/\S+\.mp4(\?|$)/i.test(v)) return "";
     var cover = v.replace(/\.mp4(\?.*)?$/i, "-cover.jpg");
@@ -37948,7 +37958,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     ev("webinar_upsell_click");
     try{ if(typeof orbTrack === "function") orbTrack("checkout_start", { value:UP_PRICE, currency:"USD", content_name:"strategy_call" }); }catch(e){}
     if(typeof orbCheckout !== "function") return;
-    orbCheckout({ kind:"course", product:"strategy_call", title:"1:1 Scholarship Strategy Call", sub:"30 minutes with an Orbuni counsellor",
+    orbCheckout({ kind:"course", product:"strategy_call", webinar:true, fixedPlan:PLAN_CALL, title:"1:1 Scholarship Strategy Call", sub:"30 minutes with an Orbuni counsellor",
       amount:UP_PRICE, name: who.name || "", email: who.email || "",
       onPaid: function(){
         ev("webinar_upsell_paid");
@@ -37984,7 +37994,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     try{ var r = await sb.rpc("webinar_vip_checkout", { p_token: tok }); if(r.data) who = r.data; }catch(e){}
     WB.who = who;
     if(typeof orbCheckout !== "function") return;
-    orbCheckout({ kind:"course", product:"masterclass", title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
+    orbCheckout({ kind:"course", product:"masterclass", webinar:true, fixedPlan:PLAN_VIP, title:"VIP seat · Scholarship 1.0", sub:"Includes the Scholarship Masterclass · 9 lessons",
       amount:(WB.info && WB.info.vip_price) || 10, name: who.name || "", email: who.email || "",
       onPaid: async function(receipt){
         try{ await sb.rpc("webinar_vip_mark", { p_token: tok, p_receipt: receipt || null }); }catch(e){}
