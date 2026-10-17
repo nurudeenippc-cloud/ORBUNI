@@ -48,23 +48,35 @@ function tierOf(title: string): string {
 }
 
 
+// Whop's API (2026-10-15 version) sends money as objects ({ currency, amount: "1.00", decimals }), the buyer's email as
+// customer_email, and the product and plan as plain ids with the product title inside line_items. Older shapes still work.
+const amt = (x: any): number | null => {
+  if (x == null) return null;
+  const v = typeof x === "object" ? x.amount : x;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
 function mapPayment(p: any) {
+  const li = Array.isArray(p.line_items) && p.line_items.length ? p.line_items[0] : null;
+  const title = li?.product_title ?? p.product?.title ?? null;
+  const total = amt(p.total), usd = amt(p.usd_total), refunded = amt(p.refunded_amount) ?? 0;
   return {
     id: p.id,
     status: p.status ?? null,
     substatus: p.substatus ?? null,
     // Adaptive pricing lets people pay in naira, cedis…; the ledger is in USD.
-    amount: p.usd_total ?? p.total ?? p.subtotal ?? null,
-    refunded_amount: (p.usd_total != null && p.total && p.refunded_amount)
-      ? Math.round(Number(p.refunded_amount) * Number(p.usd_total) / Number(p.total) * 100) / 100
-      : (p.refunded_amount ?? 0),
-    currency: p.usd_total != null ? "usd" : (p.currency ?? "usd"),
-    product_id: p.product?.id ?? null,
-    product_title: p.product?.title ?? null,
-    plan_id: p.plan?.id ?? null,
-    tier: tierOf(p.product?.title ?? ""),
-    user_email: p.user?.email ?? null,
-    user_name: p.user?.name ?? p.user?.username ?? null,
+    amount: usd ?? total ?? amt(p.subtotal),
+    refunded_amount: (usd != null && total && refunded)
+      ? Math.round(refunded * usd / total * 100) / 100
+      : refunded,
+    currency: usd != null ? "usd" : (p.currency ?? "usd"),
+    product_id: p.product_id ?? p.product?.id ?? li?.product_id ?? null,
+    product_title: title,
+    plan_id: p.plan_id ?? p.plan?.id ?? li?.plan_id ?? null,
+    tier: tierOf(title ?? ""),
+    user_email: p.customer_email ?? p.user?.email ?? null,
+    user_name: p.billing_address?.name ?? p.user?.name ?? p.user?.username ?? null,
     paid_at: p.paid_at ?? null,
     created_at: p.created_at ?? null,
     synced_at: new Date().toISOString(),
@@ -116,7 +128,7 @@ Deno.serve(async (req: Request) => {
         if (r.ok) {
           const b = await r.json();
           const mine = ((b.data ?? []) as any[]).filter((p) =>
-            (me!.email && String(p.user?.email || "").toLowerCase() === String(me!.email).toLowerCase()) ||
+            (me!.email && String(p.customer_email || p.user?.email || "").toLowerCase() === String(me!.email).toLowerCase()) ||
             p.metadata?.orbuni_profile_id === me!.id || p.id === receipt);
           if (mine.length) await sb.from("whop_payments").upsert(mine.map(mapPayment), { onConflict: "id" });
         }
