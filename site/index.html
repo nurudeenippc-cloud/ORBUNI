@@ -27871,11 +27871,19 @@ var ORB_FUNNEL = { vsl: "", vsl_low: "", vsl_medium: "", vsl_high: "", whatsappG
 /* the webinar page (its own script) reads the same settings and helpers */
 window.ORB_FUNNEL = ORB_FUNNEL;
 try{ window.lpMountVideo = lpMountVideo; window.orbUTM = orbUTM; }catch(e){}
+/* the plan for a product, loading the settings first if they are not here yet (never leaves a buyer at "being prepared") */
+async function whopPlanReady(k){
+  var p = whopPlanOf(k); if(p) return p;
+  await whopLoadConfig();
+  return whopPlanOf(k);
+}
 function whopPlanOf(k){ return (String(ORB_WHOP.checkout[k] || "").match(/plan_[A-Za-z0-9]+/) || [""])[0]; }
 
 var WHOP_CFG_READY = false;
 async function whopLoadConfig(){
   try{
+    // On a slow phone (Instagram's browser especially) the connection is not ready at 300ms: wait for it, never give up silently.
+    if((typeof sb === "undefined" || !sb) && typeof window.orbWaitSB === "function") await window.orbWaitSB(15000);
     if(typeof sb === "undefined" || !sb) return;
     var r = await sb.from("whop_config").select("key,value");
     (r.data || []).forEach(function(x){
@@ -29151,13 +29159,14 @@ async function ocStep2(){
       if(d.amount) OC.amount = d.amount;
       if(!d.configured && (OC.kind === "service" || OC.kind === "extra") && !OC.plain){ plan = ""; note = d.error || ""; }
     } else {
-      plan = whopPlanOf(OC.product);
+      plan = await whopPlanReady(OC.product);
     }
   }catch(ex){
-    if(OC.kind === "course") plan = whopPlanOf(OC.product);
-    else if(OC.plain) plan = whopPlanOf(OC.parts === 2 ? "premier_2pay" : OC.tier);
+    if(OC.kind === "course") plan = await whopPlanReady(OC.product);
+    else if(OC.plain) plan = await whopPlanReady(OC.parts === 2 ? "premier_2pay" : OC.tier);
     note = String(ex && ex.message || ex || "");
   }
+  if(OC && OC.step === 2 && !plan && OC.kind === "course") plan = await whopPlanReady(OC.product);
   if(!OC || OC.step !== 2) return;
   if(!plan){
     document.getElementById("wsx-embed").innerHTML = '<div class="wsx-note">Your payment is being prepared for your exact total. Your counsellor has been told and will message you shortly — or ask them now.'
