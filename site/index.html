@@ -16,7 +16,13 @@
 .orb-lang-foot svg{width:15px;height:15px;margin-inline-end:4px}
 .orb-lang-foot button{all:unset;cursor:pointer;padding:4px 9px;border-radius:99px}
 .orb-lang-foot button[aria-current="true"]{font-weight:700;text-decoration:underline;text-underline-offset:3px}
-@media(max-width:420px){.lp-top-r .orb-lang-btn span{display:none}.lp-top-r .orb-lang-btn{width:36px;padding:0;justify-content:center}}
+.orb-lang-menu-row{display:none}
+@media(max-width:960px){nav .nr .orb-lang-btn{display:none}
+  .orb-lang-menu-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 2px;padding:14px 4px 4px;border-top:1px solid var(--line,rgba(255,255,255,.1));font-size:15px;color:var(--dim,#9AA4B5)}
+  .orb-lang-menu-row svg{width:18px;height:18px;margin-inline-end:6px}
+  .orb-lang-menu-row button{all:unset;cursor:pointer;padding:9px 14px;border-radius:99px;border:1px solid var(--line,rgba(255,255,255,.14));color:var(--txt,#fff);font-size:15px}
+  .orb-lang-menu-row button[aria-current="true"]{background:rgba(238,155,47,.16);border-color:rgba(238,155,47,.55);font-weight:650}}
+@media(max-width:600px){.lp-top-r .orb-lang-btn{display:none}}
 /* Arabic: right to left on the public site; the portals stay English, left to right */
 html[data-lang="ar"] body>:not(#portal):not(script):not(style){direction:rtl}
 html[data-lang="ar"] #portal{direction:ltr}
@@ -28,6 +34,7 @@ html[data-lang="fr"] body>:not(#portal) :is(h1,h2){hyphens:manual}
 html[data-lang="ar"] .wb-nav .wb-back,html[data-lang="ar"] .lp-pill-ghost[onclick^="wbBack"]{transform:scaleX(-1)}
 html[data-lang="ar"] .wb-prog i{margin-inline-start:0}
 </style>
+
 
 
 
@@ -38686,14 +38693,17 @@ function orbLangUi(){
     b.onclick = function(e){ e.stopPropagation(); orbLangMenu(b); };
     return b;
   }
+  // laptop: a small globe in the headers. Phone: inside the menu and in the footers (CSS hides the header globe).
   var spots = [document.querySelector("nav .nr")].concat([].slice.call(document.querySelectorAll(".lp-top-r")));
   spots.forEach(function(s){ if(s && !s.querySelector(".orb-lang-btn")) s.insertBefore(btn(), s.firstChild); });
-  var f = document.querySelector("body > footer");
-  if(f && !f.querySelector(".orb-lang-foot")){
-    var d = document.createElement("div"); d.className = "orb-lang-foot notranslate";
+  var row = function(cls){
+    var d = document.createElement("div"); d.className = cls + " notranslate";
     d.innerHTML = globe + Object.keys(NAMES).map(function(k){ return '<button type="button" lang="' + k + '"' + (k === LG ? ' aria-current="true"' : "") + ' onclick="orbSetLang(\'' + k + '\')">' + NAMES[k] + "</button>"; }).join("");
-    f.appendChild(d);
-  }
+    return d;
+  };
+  [].slice.call(document.querySelectorAll("body > footer, footer.lp-foot")).forEach(function(f){ if(!f.querySelector(".orb-lang-foot")) f.appendChild(row("orb-lang-foot")); });
+  var nl = document.getElementById("nl"), acct = nl && nl.querySelector(".nl-acct");
+  if(nl && !nl.querySelector(".orb-lang-menu-row")) nl.insertBefore(row("orb-lang-menu-row"), acct || null);
 }
 window.orbLangMenu = function(anchor){
   var old = document.getElementById("orb-lang-menu"); if(old){ old.remove(); return; }
