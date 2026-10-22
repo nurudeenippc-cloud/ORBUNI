@@ -37998,7 +37998,7 @@ b .odo .odo-sep{display:inline-block!important;line-height:1.08em!important;marg
     var u = (typeof orbUTM === "function") ? orbUTM() : {};
     var r = await sb.rpc("webinar_register", { p_id: WB_ID, p_name: name, p_email: email, p_phone: phone, p_country: country,
       p_role: WB.ans.role || null, p_level: WB.ans.level || null, p_start: WB.ans.start || null, p_question: WB.ans.question || null,
-      p_funding: WB.ans.funding || null, p_consent: true, p_utm: { utm_source: u.utm_source || null, utm_medium: u.utm_medium || null, utm_campaign: u.utm_campaign || null } });
+      p_funding: WB.ans.funding || null, p_consent: true, p_utm: { utm_source: u.utm_source || null, utm_medium: u.utm_medium || null, utm_campaign: u.utm_campaign || null, lang: window.ORB_LANG || "en" } });
     if(r.error || !r.data){
       if(btn){ btn.disabled = false; btn.textContent = "Save my free seat →"; }
       return bad((r.error && r.error.message) || "We could not save that just now. Please try again in a moment.");

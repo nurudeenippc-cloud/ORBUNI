@@ -20,7 +20,7 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 type Btn = { title: string; id?: string; url?: string };
 // Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
 const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
-export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
+export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
   { key: "orbuni_quiz_followup", category: "MARKETING",
@@ -100,6 +100,50 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
     body: "*Orbuni · Partner update*\n\nHello {{1}},\n\n*{{2}}*\n{{3}}\n\nOpen the partner portal for the full file.",
     vars: { "1": "Lagos Study Hub", "2": "Aisha Bello · offer received", "3": "Istinye University sent the offer letter. The next step is the deposit." },
     link: { title: "Open the partner portal", url: "https://myorbuni.com/#portal=partner:home" } },
+  // 22 Oct 2026: French and Arabic versions of the webinar messages. webinar-followups uses "<key>_fr" / "<key>_ar"
+  // for people who signed up in that language (or from a French / Arabic speaking country), once Meta approves them.
+  { key: "orbuni_webinar_seat_fr", category: "UTILITY", lang: "fr",
+    body: "Bonjour {{1}}, votre place pour le webinaire gratuit d'Orbuni sur les bourses est réservée. Il commence {{2}}. Votre lien personnel, avec le bouton pour rejoindre et le compte à rebours : {{3}} Nous vous enverrons un rappel avant le début.",
+    vars: { "1": "Aminata", "2": "sam. 6 févr., 16:00 WAT (18:00 Turquie)", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_seat_ar", category: "UTILITY", lang: "ar",
+    body: "مرحباً {{1}}، تم حجز مقعدك في ندوة Orbuni المجانية عن المنح الدراسية. تبدأ الندوة {{2}}. رابط مقعدك الشخصي مع زر الدخول والعدّ التنازلي: {{3}} سنذكّرك قبل البدء.",
+    vars: { "1": "أحمد", "2": "السبت 6 فبراير، 16:00 بتوقيت غرب أفريقيا (18:00 بتوقيت تركيا)", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_reminder_fr", category: "UTILITY", lang: "fr",
+    body: "Bonjour {{1}}, petit rappel : le webinaire d'Orbuni sur les bourses commence {{2}}. Rejoignez-le depuis votre page : {{3}} Préparez vos questions.",
+    vars: { "1": "Aminata", "2": "dans environ une heure", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_reminder_ar", category: "UTILITY", lang: "ar",
+    body: "مرحباً {{1}}، تذكير: ندوة Orbuni عن المنح الدراسية تبدأ {{2}}. ادخل من صفحة مقعدك: {{3}} جهّز أسئلتك.",
+    vars: { "1": "أحمد", "2": "بعد ساعة تقريباً", "3": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_live_fr", category: "UTILITY", lang: "fr",
+    body: "Bonjour {{1}}, le webinaire d'Orbuni sur les bourses est en direct maintenant. Rejoignez-le depuis votre page : {{2}} À tout de suite.",
+    vars: { "1": "Aminata", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_live_ar", category: "UTILITY", lang: "ar",
+    body: "مرحباً {{1}}، ندوة Orbuni عن المنح الدراسية مباشرة الآن. ادخل من صفحة مقعدك: {{2}} نراك هناك.",
+    vars: { "1": "أحمد", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip_fr", category: "UTILITY", lang: "fr",
+    body: "Bonjour {{1}}, votre place VIP pour le webinaire d'Orbuni est confirmée. Créez votre compte gratuit sur myorbuni.com avec l'e-mail utilisé pour payer et la Masterclass Bourses se débloque. Votre place : {{2}} Répondez ici pour toute question.",
+    vars: { "1": "Aminata", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip_ar", category: "UTILITY", lang: "ar",
+    body: "مرحباً {{1}}، تم تأكيد مقعد VIP الخاص بك في ندوة Orbuni. أنشئ حسابك المجاني على myorbuni.com بالبريد الذي دفعت به وسيُفتح لك ماستركلاس المنح. مقعدك: {{2}} راسلنا هنا لأي سؤال.",
+    vars: { "1": "أحمد", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip_unpaid_fr", category: "UTILITY", lang: "fr",
+    body: "Bonjour {{1}}, votre passage en VIP pour le webinaire d'Orbuni n'a pas été finalisé et rien n'a été débité. Votre place gratuite reste réservée. Vous pouvez terminer depuis votre page : {{2}} Répondez ici si le paiement vous a posé problème.",
+    vars: { "1": "Aminata", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_vip_unpaid_ar", category: "UTILITY", lang: "ar",
+    body: "مرحباً {{1}}، لم تكتمل ترقيتك إلى VIP في ندوة Orbuni ولم يُخصم أي مبلغ. مقعدك المجاني ما زال محجوزاً. يمكنك إكمال الترقية من صفحة مقعدك: {{2}} راسلنا هنا إن واجهت مشكلة في الدفع.",
+    vars: { "1": "أحمد", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_replay_fr", category: "MARKETING", lang: "fr",
+    body: "Bonjour {{1}}, vous n'avez pas pu assister au webinaire d'Orbuni sur les bourses. La rediffusion est sur votre page : {{2}} Les places gratuites la gardent 3 jours. Répondez STOP pour ne plus recevoir de messages.",
+    vars: { "1": "Aminata", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_replay_ar", category: "MARKETING", lang: "ar",
+    body: "مرحباً {{1}}، فاتتك ندوة Orbuni عن المنح الدراسية. التسجيل متاح في صفحة مقعدك: {{2}} يبقى متاحاً للمقاعد المجانية 3 أيام. أرسل STOP لإيقاف الرسائل.",
+    vars: { "1": "أحمد", "2": "https://myorbuni.com/s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" } },
+  { key: "orbuni_webinar_next_fr", category: "MARKETING", lang: "fr",
+    body: "Bonjour {{1}}, merci d'avoir participé au webinaire d'Orbuni sur les bourses. Prochaine étape : l'évaluation gratuite de 2 minutes, sans la vidéo : {{2}} Répondez ici pour toute question. Répondez STOP pour ne plus recevoir de messages.",
+    vars: { "1": "Aminata", "2": "https://myorbuni.com/quiz" } },
+  { key: "orbuni_webinar_next_ar", category: "MARKETING", lang: "ar",
+    body: "مرحباً {{1}}، شكراً لحضورك ندوة Orbuni عن المنح الدراسية. خطوتك التالية هي التقييم المجاني في دقيقتين، دون الفيديو: {{2}} راسلنا هنا لأي سؤال. أرسل STOP لإيقاف الرسائل.",
+    vars: { "1": "أحمد", "2": "https://myorbuni.com/quiz" } },
   // 15 Oct 2026: video versions (a short video on top, one button). Senders prefer "<key>_vid" once Meta approves it.
   { key: "orbuni_quiz_followup_vid", category: "MARKETING", media: VID + "webinar_invite.mp4", footer: "Reply STOP to opt out",
     body: "Hi {{1}}, thanks for taking the Orbuni study assessment. This short video explains our free live scholarship webinar: how international students win 25% to 100% scholarships at universities in Türkiye.",
@@ -140,7 +184,7 @@ Deno.serve(async (req) => {
     if (!row?.content_sid) {
       const c = await tw("https://content.twilio.com/v1/Content", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendly_name: t.key, language: "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
+        body: JSON.stringify({ friendly_name: t.key, language: t.lang || "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
       });
       if (!c.ok) { report.push({ key: t.key, step: "create", error: c.j.message || c.status }); continue; }
       row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body };
