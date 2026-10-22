@@ -12154,15 +12154,55 @@ function idleShowWarn(){
         p.then(function(res){
           if(res && res.status === 401 && idlePortalOpen() && !busyCheck){
             busyCheck = true;
-            sb.auth.getSession().then(function(s){
+            sb.auth.getSession().then(async function(s){
+              var ses = s && s.data && s.data.session;
+              // A session that is still stored but could not be renewed sends requests as a visitor.
+              // Try one renewal; if that fails too, sign out cleanly instead of showing red errors.
+              if(ses && !s.error){
+                var rr = await sb.auth.refreshSession().catch(function(){ return null; });
+                ses = rr && rr.data && rr.data.session && !rr.error ? rr.data.session : null;
+              }
               busyCheck = false;
-              if(!(s && s.data && s.data.session)) idleSignOut("Your sign-in ended. Please sign in again to continue.");
+              if(!ses) idleSignOut("Your sign-in ended. Please sign in again to continue.");
             }).catch(function(){ busyCheck = false; });
           }
         }).catch(function(){});
       }
     }catch(e){}
     return p;
+  };
+})();
+
+/* A computer clock that is wrong by an hour made every fresh sign-in look
+   already expired, so the browser renewed it several times a second until
+   Supabase refused, and the portal fell back to visitor access. The server's
+   own issue time (inside the new key) tells us how far off this clock is;
+   the expiry is shifted by that amount so renewals happen on schedule. */
+(function clockSkewGuard(){
+  var nf = window.fetch; if(typeof nf !== "function") return;
+  var warned = false;
+  window.fetch = function(input, init){
+    var p = nf.apply(this, arguments);
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    if(typeof SB_URL !== "string" || url.indexOf(SB_URL + "/auth/v1/token") !== 0) return p;
+    return p.then(async function(res){
+      try{
+        if(!res || !res.ok) return res;
+        var body = await res.clone().json();
+        if(!body || !body.access_token || !body.expires_at) return res;
+        var claims = JSON.parse(atob(body.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        var skew = Math.round(Date.now() / 1000) - Number(claims.iat || 0);
+        window.__orbClockSkew = skew;
+        if(!claims.iat || Math.abs(skew) < 120) return res;
+        body.expires_at = Number(body.expires_at) + skew;
+        if(!warned && Math.abs(skew) > 300){
+          warned = true;
+          var mins = Math.round(Math.abs(skew) / 60);
+          setTimeout(function(){ try{ toast("This computer's clock is about " + mins + " minutes " + (skew > 0 ? "ahead" : "behind") + ". Orbuni keeps working, but please turn on “Set time automatically” in your date and time settings.", true); }catch(e){} }, 1500);
+        }
+        return new Response(JSON.stringify(body), { status: res.status, statusText: res.statusText, headers: res.headers });
+      }catch(e){ return res; }
+    });
   };
 })();
 
@@ -13330,7 +13370,8 @@ async function sFeed(){
 async function inspireFor(profileRow, limit){
   var q = sb.from("programme_search").select("*").limit(limit || 6);
   var lvl = profileRow && profileRow.level_of_study;
-  if(lvl) q = q.eq("level", lvl);
+  // students save "Bachelor"/"Master"; programmes say "Bachelor degree", "Master With Thesis"…
+  if(lvl) q = q.ilike("degree_level", String(lvl).split(/[\s']/)[0] + "%");
   var r = await q;
   var rows = r.data || [];
   if(!rows.length){
@@ -32421,7 +32462,7 @@ function f7CanPost(){
 }
 function f7Src(src){
   src = String(src || "");
-  if(/^(https?:|data:|blob:|photos\/|\/)/.test(src)) return src;
+  if(/^(https?:|data:|blob:|photos\/|video\/|\/)/.test(src)) return /^(photos|video)\//.test(src) ? "/" + src : src;
   try{ return sb.storage.from("article-images").getPublicUrl(src).data.publicUrl; }catch(e){ return src; }
 }
 function f7Ago(t){
