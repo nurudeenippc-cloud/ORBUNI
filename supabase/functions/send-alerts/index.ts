@@ -2,8 +2,9 @@
 // Called every two minutes by pg_cron. Safe to call by hand.
 // Team members get push + email, and WhatsApp for the urgent kinds (sent from the
 // Orbuni Twilio number with a Meta-approved template). Students and partners get the
-// phone/browser push only — their emails come from send-student-emails, in their own
-// friendlier templates.
+// phone/browser push, plus one WhatsApp when their application status changes
+// (orbuni_application_update / orbuni_partner_update, once Meta approves them). Their emails
+// come from send-student-emails, in their own friendlier templates.
 //
 // WhatsApp layout (16 Oct 2026): orbuni_team_alert_v2 once Meta approves it —
 //   *Orbuni · Team alert* / *headline* / detail / Who / Next step + "Open the team portal" button.
@@ -197,6 +198,21 @@ async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: s
   return { ok:true };
 }
 
+// The student / partner update: three plain variables (name, headline, detail).
+async function sendUpdate(contentSid: string, to: string, name: string, headline: string, detail: string){
+  const d = String(to).replace(/[^0-9]/g, "");
+  if(d.length < 8) return { ok:false, why:"no usable number" };
+  const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
+    ContentVariables: JSON.stringify({ "1": name || "there", "2": headline || "Update", "3": detail || "-" }) });
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+    method: "POST",
+    headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
+    body: form
+  });
+  if(!r.ok) return { ok:false, why: `twilio ${r.status}: ${(await r.text()).slice(0,200)}` };
+  return { ok:true };
+}
+
 // deno-lint-ignore no-explicit-any
 async function sendPush(sb: any, profileId: string, title: string, body: string | null, kind: string, staff: boolean){
   if(!PUSH_READY) return { ok:false, why:"no VAPID keys" };
@@ -251,11 +267,14 @@ Deno.serve(async (req: Request) => {
 
   // The staff WhatsApp template: the new layout once Meta has approved it, else the older one.
   const { data: tpls } = await sb.from("wa_templates").select("key, content_sid, approval")
-    .in("key", ["orbuni_team_alert_v2", "orbuni_staff_alert"]);
+    .in("key", ["orbuni_team_alert_v2", "orbuni_staff_alert", "orbuni_application_update", "orbuni_partner_update"]);
   const ok = (k: string) => (tpls ?? []).find(t => t.key === k && t.approval === "approved" && t.content_sid);
   const pick = ok("orbuni_team_alert_v2") || ok("orbuni_staff_alert");
   const WA_SID = TW_SID && TW_TOKEN && pick ? String(pick.content_sid) : "";
   const WA_V2 = pick?.key === "orbuni_team_alert_v2";
+  // students and partners: one WhatsApp per application status change
+  const STU_SID = TW_SID && TW_TOKEN ? String(ok("orbuni_application_update")?.content_sid || "") : "";
+  const PAR_SID = TW_SID && TW_TOKEN ? String(ok("orbuni_partner_update")?.content_sid || "") : "";
 
   const { data: queue, error } = await sb
     .from("notification_recipients")
@@ -293,7 +312,16 @@ Deno.serve(async (req: Request) => {
         else if(r.why) problems.push(r.why);
       }
     }
-    if(!row.whatsapp_sent_at){
+    if(!row.whatsapp_sent_at && !staff){
+      const sid = n.kind === "status_change" ? (p?.role === "partner" ? PAR_SID : p?.role === "student" ? STU_SID : "") : "";
+      if(!sid || !(p?.whatsapp || p?.phone)){ patch.whatsapp_sent_at = now(); }
+      else {
+        const r = await sendUpdate(sid, p.whatsapp || p.phone, flat(p.first_name || "there", 60), flat(noEmoji(n.title), 120), flat(n.body || "Open your portal to see what changed.", 400));
+        patch.whatsapp_sent_at = now();
+        if(r.ok) whatsapped++; else problems.push(r.why || "whatsapp failed");
+      }
+    }
+    if(!row.whatsapp_sent_at && !patch.whatsapp_sent_at){
       if(!staff || !WA_SID || !WA_KINDS.has(n.kind) || !(p?.whatsapp || p?.phone)){ patch.whatsapp_sent_at = now(); }
       else {
         const r = await sendWhatsApp(WA_SID, WA_V2, p.whatsapp || p.phone, n.kind, n.title, n.body);

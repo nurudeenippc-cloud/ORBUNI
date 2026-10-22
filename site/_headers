@@ -23,3 +23,7 @@
 
 /vendor/*
   Cache-Control: public, max-age=86400
+
+/orbuni.vcf
+  Content-Type: text/vcard; charset=utf-8
+  Content-Disposition: attachment; filename="Orbuni.vcf"
