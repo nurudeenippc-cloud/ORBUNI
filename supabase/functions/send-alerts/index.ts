@@ -104,7 +104,7 @@ function emailText(title: string, body: string | null, kind: string){
 
 async function sendEmail(to: string, title: string, body: string | null, kind: string){
   if(!RESEND_KEY) return { ok:false, why:"no RESEND_API_KEY" };
-  const r = await fetch("https://api.resend.com/emails", {
+  const r = await fetch("https://api.resend.com/emails", { signal: AbortSignal.timeout(20000),
     method: "POST",
     headers: { "Authorization": `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -189,7 +189,7 @@ async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: s
   if(d.length < 8) return { ok:false, why:"no usable number" };
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
     ContentVariables: JSON.stringify(waVars(v2, kind, title, body)) });
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST",
     headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
     body: form
@@ -204,7 +204,7 @@ async function sendUpdate(contentSid: string, to: string, name: string, headline
   if(d.length < 8) return { ok:false, why:"no usable number" };
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
     ContentVariables: JSON.stringify({ "1": name || "there", "2": headline || "Update", "3": detail || "-" }) });
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST",
     headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
     body: form

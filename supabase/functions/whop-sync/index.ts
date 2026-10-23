@@ -115,7 +115,7 @@ Deno.serve(async (req: Request) => {
     try {
       if (receipt && !receipt.startsWith("paystack_")) {
         const r = await fetch("https://api.whop.com/api/v1/payments/" + encodeURIComponent(receipt),
-          { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+          { signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
         if (r.ok) { const p = await r.json(); if (p?.id) await sb.from("whop_payments").upsert([mapPayment(p)], { onConflict: "id" }); }
       }
       if (me) {
@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
         u.searchParams.set("first", "25");
         u.searchParams.set("order", "created_at");
         u.searchParams.set("direction", "desc");
-        const r = await fetch(u, { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+        const r = await fetch(u, { signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
         if (r.ok) {
           const b = await r.json();
           const mine = ((b.data ?? []) as any[]).filter((p) =>
@@ -189,7 +189,7 @@ Deno.serve(async (req: Request) => {
       u.searchParams.set("order", "created_at");
       u.searchParams.set("direction", "desc");
       if (after) u.searchParams.set("after", after);
-      const r = await fetch(u, { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+      const r = await fetch(u, { signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
       if (!r.ok) { problems.push(`${r.status}: ${scrub(await r.text()).slice(0, 300)}`); break; }
       const body = await r.json();
       const rows = (body.data ?? []) as any[];
@@ -216,7 +216,7 @@ Deno.serve(async (req: Request) => {
     u.searchParams.set("account_id", WHOP_ACCOUNT);
     u.searchParams.set("first", "100");
     u.searchParams.set("created_after", new Date(Date.now() - 7 * 864e5).toISOString());
-    const r = await fetch(u, { headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
+    const r = await fetch(u, { signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${WHOP_KEY}`, Accept: "application/json" } });
     if (!r.ok) problems.push(`leads ${r.status}: ${scrub(await r.text()).slice(0, 200)}`);
     else {
       const body = await r.json();

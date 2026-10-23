@@ -17836,9 +17836,13 @@ window.finSave = async function(ev){
   var kind = $("fn-kind").value;
   var amount = parseFloat($("fn-amount").value);
   if(!(amount > 0)){ toast("Enter an amount above zero.", true); return; }
+  // one id per save attempt (kept on the button until it succeeds): a double tap or a retry
+  // after a dropped connection sends the same id, and finance-write records the entry once
+  var rid = (btn && btn.dataset.rid) || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+  if(btn) btn.dataset.rid = rid;
   busy(btn, true, "Saving…");
   var r = await sb.functions.invoke("finance-write", { body: {
-    action: "record", kind: kind, amount: amount,
+    action: "record", request_id: rid, kind: kind, amount: amount,
     direction: kind === "adjustment" ? ($("fn-direction") && $("fn-direction").value) : undefined,
     partner_id: ($("fn-partner") && $("fn-partner").value) || null,
     beneficiary_id: ($("fn-benef") && $("fn-benef").value) || null,
@@ -17849,6 +17853,7 @@ window.finSave = async function(ev){
   busy(btn, false);
   var err = await edgeErr(r);
   if(err){ toast(err, true); return; }
+  if(btn) delete btn.dataset.rid;
   var warn = r.data && r.data.warning;
   toast(warn || "Recorded.", !!warn);
   aGo("finance");
@@ -18059,7 +18064,9 @@ window.askApprove = async function(draftId){
   }
 
   var r = await sb.functions.invoke("finance-write", { body: {
-    action: "record", kind: p.kind, amount: p.amount, currency: p.currency,
+    // approving the same AI draft twice records it once
+    action: "record", request_id: "ai-draft:" + (d.ai_action_id || draftId),
+    kind: p.kind, amount: p.amount, currency: p.currency,
     direction: p.direction || undefined,
     partner_id: p.partner_id, beneficiary_id: p.beneficiary_id,
     occurred_on: p.occurred_on, description: p.description,

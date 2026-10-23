@@ -42,14 +42,14 @@ const LEVEL: Record<string, [string, string]> = { bachelors: ["bachelor's degree
 
 async function twilio(to: string, contentSid: string, vars: Record<string, string>) {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + to, StatusCallback: WEBHOOK, ContentSid: contentSid, ContentVariables: JSON.stringify(vars) });
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST", headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j = await r.json().catch(() => ({}));
   return r.ok ? { ok: true, sid: j.sid as string, status: j.status as string } : { ok: false, error: `${j.code || r.status}: ${j.message || "refused"}` };
 }
 async function twilioText(to: string, body: string) {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + to, StatusCallback: WEBHOOK, Body: body.slice(0, 1500) });
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST", headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j = await r.json().catch(() => ({}));
   return r.ok ? { ok: true, sid: j.sid as string, status: j.status as string } : { ok: false, error: `${j.code || r.status}: ${j.message || "refused"}` };

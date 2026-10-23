@@ -100,6 +100,14 @@ iframe{width:100%;height:720px;border:0;background:#fff;display:block}</style>
 
   let sent = 0; const problems: string[] = [];
   for(const row of (queue ?? [])){
+    // claim the row first (10-minute lease): if an overlapping run already took it, skip it,
+    // so one email can never be sent twice by two runs
+    const { data: claimed } = await sb.from("email_outbox")
+      .update({ next_try_at: new Date(Date.now() + 10 * 60000).toISOString() })
+      .eq("id", row.id).is("sent_at", null).lte("next_try_at", new Date().toISOString())
+      .select("id");
+    if(!claimed?.length) continue;
+
     const built = render(row.template, (row.vars ?? {}) as Record<string, unknown>);
     if(!built){
       await sb.from("email_outbox").update({ attempts: 99, last_error: "unknown template" }).eq("id", row.id);
@@ -115,11 +123,14 @@ iframe{width:100%;height:720px;border:0;background:#fff;display:block}</style>
       body.headers = { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
     }
 
+    // Idempotency-Key: Resend drops a repeat of the same row's email, even across retries
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+      headers: { "Authorization": `Bearer ${RESEND_KEY}`, "Content-Type": "application/json",
+                 "Idempotency-Key": `orb-outbox-${row.id}` },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000)
+    }).catch((e: Error) => new Response(e.name === "TimeoutError" ? "timed out after 15 s" : e.message, { status: 599 }));
 
     if(r.ok){
       await sb.from("email_outbox").update({ sent_at: new Date().toISOString() }).eq("id", row.id);

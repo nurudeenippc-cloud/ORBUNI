@@ -25,7 +25,7 @@ const json = (s: number, b: unknown) => new Response(JSON.stringify(b), { status
 const WH = () => ({ Authorization: `Bearer ${WHOP_KEY}`, "Content-Type": "application/json", Accept: "application/json" });
 
 async function whop(path: string, body: unknown) {
-  const r = await fetch("https://api.whop.com/api/v1" + path, { method: "POST", headers: WH(), body: JSON.stringify(body) });
+  const r = await fetch("https://api.whop.com/api/v1" + path, { signal: AbortSignal.timeout(20000), method: "POST", headers: WH(), body: JSON.stringify(body) });
   const t = await r.text(); let j: any = null; try { j = JSON.parse(t); } catch { /* not json */ }
   return { ok: r.ok, status: r.status, j, t: scrub(t).slice(0, 300) };
 }

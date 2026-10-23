@@ -67,8 +67,27 @@ Deno.serve(async (req: Request) => {
       source: "manual",
       created_by: uid,
     };
+    // Idempotency: the portal sends one request_id per save. A repeat (double tap, retried
+    // request) returns the entry already recorded instead of adding a second one.
+    const requestId = typeof body.request_id === "string" && body.request_id.trim()
+      ? body.request_id.trim().slice(0, 120) : null;
+    const already = async () => {
+      if(!requestId) return null;
+      const { data } = await sb.from("finance_transactions").select().eq("client_request_id", requestId).maybeSingle();
+      return data;
+    };
+    const earlier = await already();
+    if(earlier) return json(200, { ok: true, transaction: earlier, duplicate: true });
+    if(requestId) row.client_request_id = requestId;
+
     const { data: inserted, error: insErr } = await sb.from("finance_transactions").insert(row).select().single();
-    if(insErr) return json(400, { error: insErr.message });
+    if(insErr){
+      if(insErr.code === "23505"){  // the same request won a race a moment earlier
+        const first = await already();
+        if(first) return json(200, { ok: true, transaction: first, duplicate: true });
+      }
+      return json(400, { error: insErr.message });
+    }
 
     let warning: string | null = null;
     let payout: unknown = null;

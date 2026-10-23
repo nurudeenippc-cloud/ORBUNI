@@ -56,7 +56,7 @@ function safeReturn(u: unknown, fallback: string): string {
 async function makeCheckout(body: Record<string, unknown>) {
   const withPm: Record<string, unknown> = { payment_method_configuration: PMC, ...body };
   if (withPm.plan && typeof withPm.plan === "object") withPm.plan = { payment_method_configuration: PMC, ...(withPm.plan as Record<string, unknown>) };
-  const r = await fetch(API + "/checkout_configurations", { method: "POST", headers: H(), body: JSON.stringify(withPm) });
+  const r = await fetch(API + "/checkout_configurations", { signal: AbortSignal.timeout(20000), method: "POST", headers: H(), body: JSON.stringify(withPm) });
   if (!r.ok) throw new Error("checkout " + r.status + ": " + scrub(await r.text()).slice(0, 300));
   const cc = await r.json();
   return { session: cc.id || "", plan_id: cc.plan?.id || (body.plan_id as string) || "", url: cc.purchase_url || "" };
@@ -174,7 +174,7 @@ Deno.serve(async (req: Request) => {
   try {
     let c;
     if (split) {
-      const pr = await fetch(API + "/plans", { method: "POST", headers: H(), body: JSON.stringify({
+      const pr = await fetch(API + "/plans", { signal: AbortSignal.timeout(20000), method: "POST", headers: H(), body: JSON.stringify({
         account_id: ACC, product_id: productId, currency: "usd", plan_type: "renewal",
         billing_period: 30, initial_price: 0, renewal_price: half, split_pay_required_payments: 2,
         visibility: "hidden", title: "Orbuni service fee — 2 parts", metadata: meta, payment_method_configuration: PMC }) });

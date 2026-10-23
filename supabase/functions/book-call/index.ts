@@ -57,7 +57,7 @@ async function freshToken(connectionId: string) {
   if (!prov?.client_id || !secret) return null;
   const form = new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token,
     client_id: String(prov.client_id).replace(/\s+/g, ""), client_secret: String(secret).replace(/\s+/g, "") });
-  const r = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
+  const r = await fetch("https://oauth2.googleapis.com/token", { signal: AbortSignal.timeout(20000), method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.access_token) return null;
   await admin.from("user_connection_tokens").update({
@@ -100,7 +100,7 @@ async function busyFor(h: Host, from: Date, to: Date): Promise<[number, number][
   const busy: [number, number][] = [];
   if (h.token) {
     try {
-      const r = await fetch("https://www.googleapis.com/calendar/v3/freeBusy", { method: "POST",
+      const r = await fetch("https://www.googleapis.com/calendar/v3/freeBusy", { signal: AbortSignal.timeout(20000), method: "POST",
         headers: { Authorization: "Bearer " + h.token, "Content-Type": "application/json" },
         body: JSON.stringify({ timeMin: from.toISOString(), timeMax: to.toISOString(), items: [{ id: "primary" }] }) });
       if (r.ok) {
@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
       conferenceData: { createRequest: { requestId: crypto.randomUUID(), conferenceSolutionKey: { type: "hangoutsMeet" } } },
     };
     const r = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all",
-      { method: "POST", headers: { Authorization: "Bearer " + host.token, "Content-Type": "application/json" }, body: JSON.stringify(ev) });
+      { signal: AbortSignal.timeout(20000), method: "POST", headers: { Authorization: "Bearer " + host.token, "Content-Type": "application/json" }, body: JSON.stringify(ev) });
     const j = await r.json().catch(() => ({}));
     if (r.ok) {
       joinUrl = j.hangoutLink ?? j.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === "video")?.uri ?? null;

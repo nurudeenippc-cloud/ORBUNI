@@ -87,7 +87,7 @@ async function sendEmail(r: any): Promise<string | null> {
     from: RESEND_FROM, to: [r.email], subject: `Receipt ${r.receipt_no} — payment received, thank you`, html: receiptHtml(r),
   };
   if (REPLY_TO) body.reply_to = REPLY_TO;
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://api.resend.com/emails", { signal: AbortSignal.timeout(20000),
     method: "POST", headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
   return res.ok ? null : `${res.status}: ${(await res.text()).slice(0, 200)}`;
@@ -95,7 +95,7 @@ async function sendEmail(r: any): Promise<string | null> {
 
 // ---------------------------------------------------------------- WhatsApp
 async function tw(url: string, init: RequestInit = {}) {
-  const r = await fetch(url, { ...init, headers: { Authorization: TW_AUTH, ...(init.headers || {}) } });
+  const r = await fetch(url, { signal: AbortSignal.timeout(20000), ...init, headers: { Authorization: TW_AUTH, ...(init.headers || {}) } });
   const j: any = await r.json().catch(() => ({}));
   return { ok: r.ok, status: r.status, j };
 }
@@ -133,7 +133,7 @@ async function waSend(toE164: string, o: { body?: string; contentSid?: string; v
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + toE164, StatusCallback: WEBHOOK });
   if (o.contentSid) { form.set("ContentSid", o.contentSid); if (o.vars) form.set("ContentVariables", JSON.stringify(o.vars)); }
   else form.set("Body", String(o.body || "").slice(0, 1600));
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST", headers: { Authorization: TW_AUTH, "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j: any = await r.json().catch(() => ({}));
   return r.ok ? { ok: true, sid: j.sid as string, status: j.status as string } : { ok: false, error: `${j.code || r.status}: ${j.message || "refused"}` };

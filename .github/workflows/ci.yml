@@ -1,0 +1,35 @@
+# Checks every push and pull request: the site's inline scripts parse and hold no secrets,
+# every edge function type-checks, and the unit tests pass. Lint is reported but not yet
+# blocking (106 older style warnings; see docs/development.md).
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Site — scripts parse, no secrets
+        run: node tools/check_site.mjs
+
+      - name: Edge functions — type check
+        working-directory: supabase/functions
+        run: deno check --no-lock */index.ts
+
+      - name: Edge functions — unit tests
+        working-directory: supabase/functions
+        run: deno test --allow-env --no-lock
+
+      - name: Edge functions — lint (report only)
+        working-directory: supabase/functions
+        continue-on-error: true
+        run: deno lint
