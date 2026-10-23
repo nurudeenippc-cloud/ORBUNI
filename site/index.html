@@ -26072,7 +26072,11 @@ window.pushState = function(){
   return Notification.permission;             // "granted" | "denied" | "default"
 };
 
-window.enablePush = async function(){
+window.enablePush = async function(quiet){
+  if(quiet){ try{ return await enablePushInner(true); }catch(e){ console.warn("push refresh", e); return false; } }
+  return enablePushInner(false);
+};
+async function enablePushInner(quiet){
   if(!pushSupported()){ toast("This browser cannot do notifications.", true); return false; }
   if(iosNeedsInstall()){
     toast("On iPhone, tap Share then “Add to Home Screen” first, then open Orbuni from there.", true);
@@ -26096,17 +26100,21 @@ window.enablePush = async function(){
     });
   }
   var j = sub.toJSON();
-  var r = await sb.from("push_subscriptions").upsert({
-    profile_id: ME.id,
-    endpoint:   j.endpoint,
-    p256dh:     j.keys.p256dh,
-    auth:       j.keys.auth,
-    user_agent: navigator.userAgent.slice(0, 300)
-  }, { onConflict: "endpoint" });
-  if(r.error){ toast(friendly(r.error), true); return false; }
-  toast("Notifications on. You will hear about this even with the site closed.");
+  // The device may have been registered under another account before (shared phone,
+  // staff testing a login); the server function moves it to whoever is signed in now.
+  var r = await sb.rpc("claim_push_device", {
+    p_endpoint: j.endpoint,
+    p_p256dh:   j.keys.p256dh,
+    p_auth:     j.keys.auth,
+    p_ua:       navigator.userAgent.slice(0, 300)
+  });
+  if(r.error){
+    if(quiet){ console.warn("push refresh", r.error); return false; }
+    toast("Could not turn on notifications on this device. Please try again.", true); return false;
+  }
+  if(!quiet) toast("Notifications on. You will hear about this even with the site closed.");
   return true;
-};
+}
 
 window.disablePush = async function(){
   var reg = await registerWorker();
@@ -26123,7 +26131,7 @@ window.disablePush = async function(){
 async function offerPush(){
   if(!ME) return;
   var st = pushState();
-  if(st === "granted"){ enablePush(); return; }     // keep the subscription fresh
+  if(st === "granted"){ enablePush(true); return; }     // keep the subscription fresh, silently
   if(st === "denied" || st === "unsupported") return;
   var asked;
   try{ asked = localStorage.getItem("orb-push-asked"); }catch(e){ asked = "1"; }
