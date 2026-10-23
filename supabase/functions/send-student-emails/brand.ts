@@ -1,4 +1,7 @@
-// The Orbuni email frame, shared by mail.ts and extra.ts (23 Oct 2026 redesign).
+// The Orbuni email frame (23 Oct 2026 redesign). One design for every email we send:
+// students (mail.ts, extra.ts), partners and the team (send-alerts), receipts
+// (payment-receipts) and the staff composer (send-manual-email).
+// This file is the original; the other functions carry an identical copy, kept in step by brand_copies_test.ts.
 //
 // Still light (Gmail on Android and Outlook wreck dark emails), but branded: a navy
 // header with the gold mark, a full-width poster for the key emails, a pill label,
@@ -10,7 +13,7 @@ const GOLD = "#B8791A", GOLDBG = "#FFF3DC", NAVY = "#0E1626", BRIGHT = "#F2B544"
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 const WA = "https://wa.me/14434481577";
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/email/";
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/email/";
 
 // which poster goes on top of which email; the rest go without one
 const HERO: Record<string, [string, string]> = {
@@ -25,6 +28,9 @@ const HERO: Record<string, [string, string]> = {
   webinar_replay:      ["webinar_replay", "The webinar replay is ready"],
   webinar_next:        ["webinar_next", "Your next step after the webinar"],
   webinar_vip_welcome: ["webinar_vip", "Welcome to VIP"],
+  status_change:       ["offer_ready", "There is news on your application"],
+  partner_update:      ["partner_update", "There is news on a student you sent us"],
+  team_alert:          ["team_alert", "Something needs the team's attention"],
 };
 
 export const hero = (template: string) => {
@@ -34,9 +40,10 @@ export const hero = (template: string) => {
 };
 
 // A gold pill instead of loose small caps: reads as a label at a glance.
-export const kick = (t: string) => `<tr><td class="pad" style="padding:28px 32px 0">
+// fg/bg let the team alerts colour the label by kind (green payment, red urgent).
+export const kick = (t: string, fg = GOLD, bg = GOLDBG) => `<tr><td class="pad" style="padding:28px 32px 0">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td bgcolor="${GOLDBG}" style="background:${GOLDBG};border-radius:20px;padding:7px 13px;font:700 11px/1 ${SANS};letter-spacing:.12em;text-transform:uppercase;color:${GOLD}">${t}</td>
+<td bgcolor="${bg}" style="background:${bg};border-radius:20px;padding:7px 13px;font:700 11px/1 ${SANS};letter-spacing:.12em;text-transform:uppercase;color:${fg}">${t}</td>
 </tr></table></td></tr>`;
 export const h1 = (t: string) => `<tr><td class="pad" style="padding:14px 32px 0"><h1 style="margin:0;font:800 28px/1.22 ${SANS};color:${INK};letter-spacing:-.025em">${t}</h1></td></tr>`;
 // Gold on navy text: the one bright thing in the email, so the eye lands on it.
@@ -46,9 +53,25 @@ export const button = (label: string, href: string) => `<tr><td class="pad" styl
 <a href="${href}" style="display:block;padding:16px 34px;font:800 16px/1 ${SANS};color:${NAVY};text-decoration:none;border-radius:12px">${label} &rarr;</a>
 </td></tr></table></td></tr>`;
 
+// A grey panel for plain text that came from the database (already escaped by the caller).
+export const panel = (html: string) => `<tr><td class="pad" style="padding:18px 32px 0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5F7FA" style="background:#F5F7FA;border-radius:12px">
+<tr><td style="padding:16px 18px;font:400 15px/1.65 ${SANS};color:#3B475A">${html}</td></tr></table></td></tr>`;
+
+export type Audience = "student" | "partner" | "team";
+const FOOT: Record<Audience, { title: string; text: string; links: [string, string][] }> = {
+  student: { title: "Questions? A real counsellor answers.", text: "Reply to this email, or message us on WhatsApp. We usually answer the same day.",
+             links: [["WhatsApp us", WA], ["My portal", SITE + "/#portal=student"], ["Programmes", SITE]] },
+  partner: { title: "Questions about a student? We are one message away.", text: "Reply to this email, or message the Orbuni team on WhatsApp.",
+             links: [["WhatsApp us", WA], ["Partner portal", SITE + "/#portal=partner:home"], ["myorbuni.com", SITE]] },
+  team:    { title: "You are on the Orbuni team.", text: "Change what you get told about under Team &amp; alerts in the portal.",
+             links: [["Team portal", SITE + "/#portal=admin"], ["WhatsApp inbox", SITE + "/#chat"]] },
+};
+
 const footLink = (label: string, href: string) => `<a href="${href}" style="color:${BRIGHT};text-decoration:none;font-weight:700">${label}</a>`;
 
-export function shell(preheader: string, blocks: string){
+export function shell(preheader: string, blocks: string, audience: Audience = "student"){
+  const f = FOOT[audience];
   return `<!doctype html>
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -85,7 +108,7 @@ export function shell(preheader: string, blocks: string){
     <td width="34" style="padding-right:10px"><img src="${IMG}logo.png" width="32" height="32" alt="" style="display:block;width:32px;height:32px;border:0"></td>
     <td style="font:800 19px/1 ${SANS};color:#FFFFFF;letter-spacing:-.01em">Orbuni</td>
   </tr></table></a></td>
-  <td align="right" style="font:600 12px/1 ${SANS};color:#9FB0C8">Study abroad, done right</td>
+  <td align="right" style="font:600 12px/1 ${SANS};color:#9FB0C8">${audience === "team" ? "Team" : audience === "partner" ? "Partners" : "Study abroad, done right"}</td>
   </tr></table>
 </td></tr>
 
@@ -98,10 +121,10 @@ export function shell(preheader: string, blocks: string){
 </td></tr>
 
 <tr><td bgcolor="${NAVY}" class="pad" style="background:${NAVY};border-radius:0 0 16px 16px;padding:24px 32px">
-  <p style="margin:0 0 6px;font:800 15px/1.4 ${SANS};color:#FFFFFF">Questions? A real counsellor answers.</p>
-  <p style="margin:0 0 16px;font:400 13px/1.6 ${SANS};color:#9FB0C8">Reply to this email, or message us on WhatsApp. We usually answer the same day.</p>
-  <p style="margin:0 0 18px;font:400 13px/1 ${SANS};color:#5D6E86">
-    ${footLink("WhatsApp us", WA)}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${footLink("My portal", SITE + "/#portal=student")}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${footLink("Programmes", SITE)}
+  <p style="margin:0 0 6px;font:800 15px/1.4 ${SANS};color:#FFFFFF">${f.title}</p>
+  <p style="margin:0 0 16px;font:400 13px/1.6 ${SANS};color:#9FB0C8">${f.text}</p>
+  <p style="margin:0 0 18px;font:400 13px/1.8 ${SANS};color:#5D6E86">
+    ${f.links.map(([l, h]) => footLink(l, h)).join("&nbsp;&nbsp;&middot;&nbsp;&nbsp;")}
   </p>
   <div style="height:1px;background:#22304A;line-height:1px;font-size:0">&nbsp;</div>
   <p style="margin:14px 0 0;font:400 11.5px/1.6 ${SANS};color:#7183A0">

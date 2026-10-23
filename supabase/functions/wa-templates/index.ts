@@ -21,7 +21,7 @@ type Btn = { title: string; id?: string; url?: string };
 // Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
 const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
 // Posters for the "_card" templates (1080×1080), same hosting, pinned to the commit that added them.
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/wa/";
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/wa/";
 export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
@@ -158,7 +158,7 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
     vars: { "1": "Aisha", "2": "3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" },
     link: { title: "See the VIP seat", url: "https://myorbuni.com/s/{{2}}" } },
   // 23 Oct 2026: poster versions of the key messages (a branded poster on top, a structured message,
-  // one button, "Reply STOP" footer). Senders prefer "<key>_card" once Meta approves it.
+  // one button, "Reply STOP" footer; the team alert says "Orbuni team alerts" instead). Senders prefer "<key>_card" once Meta approves it.
   // Same variables as the plain template, except that a link variable carries only the part after the
   // button's fixed address (e.g. "s/<token>" for https://myorbuni.com/s/<token>) — see cardVars() in the senders.
   ...([
@@ -195,8 +195,21 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
     ["orbuni_payment_received_card", "UTILITY", "payment_received",
       "✅ *Payment received. Thank you, {{1}}!*\n\n💳 {{2}}\n🎓 {{3}}\n\n✅ Your receipt is in your email\n✅ Your Orbuni portal is already updated\n✅ Your counsellor has been told\n\nQuestions about this payment? Reply here.",
       { "1": "Aisha", "2": "$10.00", "3": "The Scholarship Masterclass" }, { title: "Open my portal", url: "https://myorbuni.com/" }],
+    // the team and partners: same variables as orbuni_team_alert_v2 / orbuni_application_update / orbuni_partner_update
+    ["orbuni_team_alert_card", "UTILITY", "team_alert",
+      "🔔 *Orbuni team alert*\n\n*{{1}}*\n{{2}}\n\n👤 *Who:* {{3}}\n➡️ *Next step:* {{4}}\n\nSent automatically by the Orbuni system.",
+      { "1": "A WhatsApp chat needs a reply", "2": "Reason: payment problem. Last message: \"My card was declined\"", "3": "Aisha Bello, +234 801 234 5678", "4": "Reply in the WhatsApp inbox, then press Done" },
+      { title: "Open the team portal", url: "https://myorbuni.com/#portal=admin" }],
+    ["orbuni_application_update_card", "UTILITY", "offer_ready",
+      "📬 *Application update for you, {{1}}*\n\n*{{2}}*\n{{3}}\n\n✅ Your counsellor is following your file\n✅ The details are in your portal\n\nQuestions? Just reply here.",
+      { "1": "Aisha", "2": "Istinye University: offer received", "3": "Your offer letter is in your portal under My offers." },
+      { title: "Open my portal", url: "https://myorbuni.com/#portal=student:track" }],
+    ["orbuni_partner_update_card", "UTILITY", "partner_update",
+      "🤝 *Partner update for {{1}}*\n\n*{{2}}*\n{{3}}\n\n✅ The full file is in your partner portal\n✅ Your Orbuni contact is on it\n\nQuestions about this student? Reply here.",
+      { "1": "Lagos Study Hub", "2": "Aisha Bello · offer received", "3": "Istinye University sent the offer letter. The next step is the deposit." },
+      { title: "Open the partner portal", url: "https://myorbuni.com/#portal=partner:home" }],
   ] as [string, "UTILITY" | "MARKETING", string, string, Record<string, string>, Btn][]).map(([key, category, img, body, vars, link]) =>
-    ({ key, category, body, vars, link, media: IMG + img + ".jpg", footer: "Reply STOP to unsubscribe" })),
+    ({ key, category, body, vars, link, media: IMG + img + ".jpg", footer: key === "orbuni_team_alert_card" ? "Orbuni team alerts" : "Reply STOP to unsubscribe" })),
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
   if (t.media) return { "twilio/card": { title: t.body, ...(t.footer ? { subtitle: t.footer } : {}), media: [t.media],

@@ -11,6 +11,7 @@
 // This function creates that template once and keeps its approval up to date.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { shell, kick, h1, button, withHero } from "./brand.ts";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
 const CRON = env("ORB_CRON_SECRET");
@@ -43,7 +44,8 @@ function safeEqual(a: string, b: string) {
 
 // ---------------------------------------------------------------- email
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
-function receiptHtml(r: any) {
+// 23 Oct 2026: the shared Orbuni frame (brand.ts) with the "payment received" poster on top.
+export function receiptHtml(r: any) {
   const row = (k: string, v: string, i: number) =>
     `<tr><td class="stack" style="${i ? "border-top:1px solid #E4E8EF;" : ""}padding:13px 0;font:400 14px/1.45 ${SANS};color:#7A8798;width:40%;vertical-align:top">${k}</td>` +
     `<td class="stack rt" style="${i ? "border-top:1px solid #E4E8EF;" : ""}padding:13px 0;font:600 15px/1.45 ${SANS};color:#111826;text-align:right;vertical-align:top">${v}</td></tr>`;
@@ -53,32 +55,17 @@ function receiptHtml(r: any) {
     ["Amount", esc(usd(r.amount_usd)) + (r.amount_local ? " (" + esc(r.amount_local) + ")" : "")],
     ["Paid with", esc(r.method)], ["Status", `<span style="color:#127A52">PAID</span>`],
   ];
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>Orbuni receipt</title>
-<style>a{color:#B8791A}@media only screen and (max-width:600px){.wrap{width:100%!important}.pad{padding-left:20px!important;padding-right:20px!important}
-.stack{display:block!important;width:100%!important;text-align:left!important;padding-bottom:0!important}.stack.rt{padding-top:2px!important;padding-bottom:13px!important}h1{font-size:22px!important}}</style></head>
-<body style="margin:0;padding:0;background:#F5F7FA">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0">Payment received: ${esc(usd(r.amount_usd))} for ${esc(r.item)}.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5F7FA"><tr><td align="center" style="padding:26px 12px 34px">
-<table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px">
-<tr><td bgcolor="#0E1626" style="background:#0E1626;border-radius:14px 14px 0 0;padding:20px 32px;font:800 18px/1 ${SANS};color:#FFFFFF">Orbuni</td></tr>
-<tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border-left:1px solid #E4E8EF;border-right:1px solid #E4E8EF">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td class="pad" style="padding:26px 32px 0"><div style="font:700 11px/1 ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#B8791A">Payment received</div></td></tr>
-<tr><td class="pad" style="padding:6px 32px 0"><h1 style="margin:0;font:700 25px/1.28 ${SANS};color:#111826;letter-spacing:-.02em">Thank you, ${esc(first(r.name))}. You're paid.</h1></td></tr>
-<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:#48566B">This email is your invoice and your receipt. Keep it for your records.</p></td></tr>
-<tr><td class="pad" style="padding:24px 32px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5F7FA" style="background:#F5F7FA;border-radius:12px"><tr><td style="padding:6px 18px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${pairs.map(([k, v], i) => row(k, v, i)).join("")}</table></td></tr></table></td></tr>
-<tr><td class="pad" style="padding:24px 32px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EAF7F1" style="background:#EAF7F1;border-radius:12px"><tr><td style="padding:16px 18px;border-left:4px solid #127A52;border-radius:12px">
+  const blocks = kick("Payment received", "#127A52", "#EAF7F1")
+    + h1(`Thank you, ${esc(first(r.name))}. You're paid.`)
+    + `<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:#48566B">This email is your invoice and your receipt. Keep it for your records.</p></td></tr>`
+    + `<tr><td class="pad" style="padding:24px 32px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5F7FA" style="background:#F5F7FA;border-radius:12px"><tr><td style="padding:6px 18px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${pairs.map(([k, v], i) => row(k, v, i)).join("")}</table></td></tr></table></td></tr>`
+    + `<tr><td class="pad" style="padding:24px 32px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EAF7F1" style="background:#EAF7F1;border-radius:12px"><tr><td style="padding:16px 18px;border-left:4px solid #127A52;border-radius:12px">
 <div style="font:700 13.5px/1.4 ${SANS};color:#127A52;margin-bottom:5px">What happens next</div>
-<div style="font:400 14px/1.6 ${SANS};color:#48566B">Your counsellor has been told and your portal is already updated. Open it any time to see where things stand.</div></td></tr></table></td></tr>
-<tr><td class="pad" style="padding:26px 32px 0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="#0E1626" style="border-radius:10px">
-<a href="${SITE}/#login" style="display:block;padding:15px 30px;font:700 16px/1 ${SANS};color:#FFFFFF;text-decoration:none;border-radius:10px">Open my portal</a></td></tr></table></td></tr>
-<tr><td class="pad" style="padding:16px 32px 0"><p style="margin:0;font:400 13px/1.6 ${SANS};color:#7A8798">Orbuni Education · Istanbul, Türkiye. Tuition is always paid directly to the university, never to Orbuni or a person. Questions about this payment? Reply to this email.</p></td></tr>
-<tr><td style="height:34px;line-height:34px;font-size:0">&nbsp;</td></tr></table></td></tr>
-<tr><td bgcolor="#F5F7FA" class="pad" style="background:#F5F7FA;border:1px solid #E4E8EF;border-top:0;border-radius:0 0 14px 14px;padding:22px 32px">
-<p style="margin:0;font:400 12.5px/1.65 ${SANS};color:#7A8798"><a href="${SITE}" style="color:#B8791A;text-decoration:none;font-weight:600">myorbuni.com</a> · Istanbul, Türkiye</p></td></tr>
-</table></td></tr></table></body></html>`;
+<div style="font:400 14px/1.6 ${SANS};color:#48566B">Your counsellor has been told and your portal is already updated. Open it any time to see where things stand.</div></td></tr></table></td></tr>`
+    + button("Open my portal", `${SITE}/#login`)
+    + `<tr><td class="pad" style="padding:16px 32px 0"><p style="margin:0;font:400 13px/1.6 ${SANS};color:#7A8798">Tuition is always paid directly to the university, never to Orbuni or a person. Questions about this payment? Reply to this email.</p></td></tr>`;
+  return withHero("payment_receipt", shell(`Payment received: ${esc(usd(r.amount_usd))} for ${esc(r.item)}.`, blocks));
 }
 
 async function sendEmail(r: any): Promise<string | null> {
@@ -141,7 +128,7 @@ async function waSend(toE164: string, o: { body?: string; contentSid?: string; v
 
 // The "payment received" poster: sent with the message inside the 24-hour window, and the poster
 // template (orbuni_payment_received_card, made by wa-templates) outside it once Meta approves it.
-const POSTER = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/wa/payment_received.jpg";
+const POSTER = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/wa/payment_received.jpg";
 
 async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; approved: boolean } | null, card: string | null): Promise<string> {
   if (!TW_SID || !TW_TOKEN) return "not_configured";

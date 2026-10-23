@@ -3,7 +3,8 @@
 // Team members get push + email, and WhatsApp for the urgent kinds (sent from the
 // Orbuni Twilio number with a Meta-approved template). Students and partners get the
 // phone/browser push, plus one WhatsApp when their application status changes
-// (orbuni_application_update / orbuni_partner_update, once Meta approves them). Their emails
+// (orbuni_application_update / orbuni_partner_update, the poster "_card" versions once Meta
+// approves them). Partners also get an email for those status changes; students' emails
 // come from send-student-emails, in their own friendlier templates.
 //
 // WhatsApp layout (16 Oct 2026): orbuni_team_alert_v2 once Meta approves it —
@@ -12,6 +13,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import { shell, kick, h1, button, panel, withHero } from "./brand.ts";
 
 const env = (k: string) => Deno.env.get(k) ?? "";
 
@@ -47,82 +49,49 @@ function portalUrl(kind: string){
   return PORTAL;
 }
 
-// 23 Oct 2026 redesign: same frame as the student emails (navy header, gold mark),
-// plus a coloured label so the team can tell a payment from a handoff at a glance.
-const LOGO = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/email/logo.png";
+// 23 Oct 2026: the same frame as every other Orbuni email (brand.ts), with a coloured
+// label so the team can tell a payment from a handoff at a glance, and the team poster
+// on the urgent kinds. Partners get their own version for status changes.
 const KIND_LABEL: Record<string, [string, string, string]> = {   // label, text colour, background
   whatsapp_handoff:      ["WhatsApp: needs a person", "#B42318", "#FDECEA"],
   team_alert:            ["Urgent", "#B42318", "#FDECEA"],
+  lead_overdue:          ["Lead waiting", "#B42318", "#FDECEA"],
   payment_received:      ["Payment received", "#127A52", "#EAF7F1"],
   lead_assigned:         ["New lead for you", "#1D4ED8", "#EAF0FE"],
   message_received:      ["New message", "#1D4ED8", "#EAF0FE"],
+  message_mention:       ["You were mentioned", "#1D4ED8", "#EAF0FE"],
+  enquiry_received:      ["New enquiry", "#1D4ED8", "#EAF0FE"],
+  student_signup:        ["New student", "#127A52", "#EAF7F1"],
+  partner_application:   ["Partner application", "#B8791A", "#FFF3DC"],
   application_submitted: ["New application", "#B8791A", "#FFF3DC"],
+  document_uploaded:     ["Document uploaded", "#48566B", "#EEF1F6"],
+  documents_missing:     ["Documents missing", "#B8791A", "#FFF3DC"],
+  status_change:         ["Status changed", "#B8791A", "#FFF3DC"],
 };
-function emailHtml(title: string, body: string | null, kind: string){
-  const href = portalUrl(kind);
+const URGENT = new Set(["whatsapp_handoff", "team_alert", "payment_received", "lead_assigned"]);
+// the body is plain text from the database: escape it, then keep its line breaks
+const text = (s: string | null) => esc(s || "").replace(/\n/g, "<br>");
+
+export function emailHtml(title: string, body: string | null, kind: string){
   const [label, fg, bg] = KIND_LABEL[kind] ?? ["Team alert", "#B8791A", "#FFF3DC"];
-  // the body is plain text from the database: escape it, then keep its line breaks
-  const detail = body ? `<tr><td style="padding:14px 32px 0">
-  <div style="background:#F5F7FA;border-radius:12px;padding:16px 18px;font:400 15px/1.65 ${SANS};color:#3B475A">${esc(body).replace(/\n/g, "<br>")}</div>
-</td></tr>` : "";
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="color-scheme" content="light">
-<meta name="supported-color-schemes" content="light">
-<title>Orbuni</title>
-</head>
-<body style="margin:0;padding:0;background:#EEF1F6">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EEF1F6" style="background:#EEF1F6">
-<tr><td align="center" style="padding:24px 10px">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px">
-<tr><td bgcolor="#0E1626" style="background:#0E1626;border-radius:16px 16px 0 0;padding:16px 28px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-  <td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td width="32" style="padding-right:10px"><img src="${LOGO}" width="28" height="28" alt="" style="display:block;width:28px;height:28px;border:0"></td>
-    <td style="font:800 17px/1 ${SANS};color:#FFFFFF">Orbuni <span style="font-weight:500;color:#9FB0C8">&middot; Team</span></td>
-  </tr></table></td>
-  </tr></table>
-</td></tr>
-<tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border:1px solid #E4E8EF;border-top:0;border-radius:0 0 16px 16px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="padding:26px 32px 0">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-  <td bgcolor="${bg}" style="background:${bg};border-radius:20px;padding:7px 13px;font:700 11px/1 ${SANS};letter-spacing:.1em;text-transform:uppercase;color:${fg}">${label}</td>
-  </tr></table>
-</td></tr>
-<tr><td style="padding:14px 32px 0">
-  <h1 style="margin:0;font:800 23px/1.3 ${SANS};color:#111826;letter-spacing:-.02em">${esc(title)}</h1>
-</td></tr>
-${detail}
-<tr><td style="padding:24px 32px 30px">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td bgcolor="#F2B544" style="background:#F2B544;border-radius:12px">
-      <a href="${href}" style="display:inline-block;padding:14px 26px;font:800 15px/1 ${SANS};color:#0E1626;text-decoration:none">Open in Orbuni &rarr;</a>
-    </td>
-  </tr></table>
-</td></tr>
-</table>
-</td></tr>
-<tr><td style="padding:18px 8px 0">
-  <p style="margin:0;font:400 12px/1.6 ${SANS};color:#6B7280">You are on the Orbuni team. Change what you get told about under Team &amp; alerts in the portal.</p>
-  <p style="margin:8px 0 0;font:400 12px/1.6 ${SANS};color:#6B7280"><a href="${PORTAL}" style="color:#B8791A;text-decoration:none">myorbuni.com</a></p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
+  const html = shell(esc(title), kick(label, fg, bg) + h1(esc(title)) + (body ? panel(text(body)) : "")
+    + button("Open in Orbuni", portalUrl(kind)), "team");
+  return withHero(URGENT.has(kind) ? "team_alert" : "", html);
+}
+
+export function partnerHtml(name: string, title: string, body: string | null){
+  const html = shell(esc(title), kick("Partner update") + h1(esc(title))
+    + `<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:#48566B">Hello ${esc(name)}, there is a new status on an application you sent us.</p></td></tr>`
+    + (body ? panel(text(body)) : "")
+    + button("Open the partner portal", PORTAL + "/#portal=partner:home"), "partner");
+  return withHero("partner_update", html);
 }
 
 function emailText(title: string, body: string | null, kind: string){
   return [title, body || "", "", "Open in Orbuni: " + portalUrl(kind), "", "myorbuni.com"].filter(Boolean).join("\n");
 }
 
-async function sendEmail(to: string, title: string, body: string | null, kind: string){
+async function sendEmail(to: string, title: string, body: string | null, kind: string, html = emailHtml(title, body, kind)){
   if(!RESEND_KEY) return { ok:false, why:"no RESEND_API_KEY" };
   const r = await fetch("https://api.resend.com/emails", { signal: AbortSignal.timeout(20000),
     method: "POST",
@@ -131,7 +100,7 @@ async function sendEmail(to: string, title: string, body: string | null, kind: s
       from: RESEND_FROM,
       to: [to],
       subject: title,
-      html: emailHtml(title, body, kind),
+      html,
       text: emailText(title, body, kind)
     })
   });
@@ -285,16 +254,18 @@ Deno.serve(async (req: Request) => {
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-  // The staff WhatsApp template: the new layout once Meta has approved it, else the older one.
+  // The staff WhatsApp template: the poster version, then the new layout, once Meta has approved
+  // them, else the older one. The poster versions take the same variables as the ones before them.
   const { data: tpls } = await sb.from("wa_templates").select("key, content_sid, approval")
-    .in("key", ["orbuni_team_alert_v2", "orbuni_staff_alert", "orbuni_application_update", "orbuni_partner_update"]);
+    .in("key", ["orbuni_team_alert_card", "orbuni_team_alert_v2", "orbuni_staff_alert",
+                "orbuni_application_update_card", "orbuni_application_update", "orbuni_partner_update_card", "orbuni_partner_update"]);
   const ok = (k: string) => (tpls ?? []).find(t => t.key === k && t.approval === "approved" && t.content_sid);
-  const pick = ok("orbuni_team_alert_v2") || ok("orbuni_staff_alert");
+  const pick = ok("orbuni_team_alert_card") || ok("orbuni_team_alert_v2") || ok("orbuni_staff_alert");
   const WA_SID = TW_SID && TW_TOKEN && pick ? String(pick.content_sid) : "";
-  const WA_V2 = pick?.key === "orbuni_team_alert_v2";
+  const WA_V2 = pick?.key !== "orbuni_staff_alert";
   // students and partners: one WhatsApp per application status change
-  const STU_SID = TW_SID && TW_TOKEN ? String(ok("orbuni_application_update")?.content_sid || "") : "";
-  const PAR_SID = TW_SID && TW_TOKEN ? String(ok("orbuni_partner_update")?.content_sid || "") : "";
+  const STU_SID = TW_SID && TW_TOKEN ? String((ok("orbuni_application_update_card") || ok("orbuni_application_update"))?.content_sid || "") : "";
+  const PAR_SID = TW_SID && TW_TOKEN ? String((ok("orbuni_partner_update_card") || ok("orbuni_partner_update"))?.content_sid || "") : "";
 
   const { data: queue, error } = await sb
     .from("notification_recipients")
@@ -324,9 +295,12 @@ Deno.serve(async (req: Request) => {
       else if(r.why) problems.push(r.why);
     }
     if(!row.email_sent_at){
-      if(!staff || !p?.email){ patch.email_sent_at = now(); }            // nothing to send: never re-queue
+      // the team gets every kind; partners get their status changes (students get theirs from send-student-emails)
+      const partnerMail = p?.role === "partner" && n.kind === "status_change";
+      if(!(staff || partnerMail) || !p?.email){ patch.email_sent_at = now(); }   // nothing to send: never re-queue
       else {
-        const r = await sendEmail(p.email, n.title, n.body, n.kind);
+        const r = await sendEmail(p.email, n.title, n.body, n.kind,
+          partnerMail ? partnerHtml(p.first_name || "there", n.title, n.body) : undefined);
         if(r.ok){ patch.email_sent_at = now(); emailed++; }
         else if(r.why === "no RESEND_API_KEY"){ patch.email_sent_at = now(); }
         else if(r.why) problems.push(r.why);
