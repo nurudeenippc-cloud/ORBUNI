@@ -34,14 +34,24 @@ export function e164(raw: string): string {
 }
 
 // ---------------------------------------------------------------- Twilio
+// Twilio's X-Twilio-Signature: base64(HMAC-SHA1(token, url + each param name+value, names sorted)).
+export async function twilioSignature(token: string, url: string, params: Record<string, string>): Promise<string> {
+  const data = url + Object.keys(params).sort().map((k) => k + params[k]).join("");
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(token), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data)));
+  return btoa(String.fromCharCode(...mac));
+}
+// Same-length strings compared without an early exit, so timing says nothing about the signature.
+export function sameText(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 export async function twilioValid(req: Request, params: Record<string, string>): Promise<boolean> {
   const sig = req.headers.get("x-twilio-signature") || "";
   if (!sig || !TW_TOKEN) return false;
-  const data = WEBHOOK_URL + Object.keys(params).sort().map((k) => k + params[k]).join("");
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(TW_TOKEN), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
-  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data)));
-  const b64 = btoa(String.fromCharCode(...mac));
-  return b64 === sig;
+  return sameText(await twilioSignature(TW_TOKEN, WEBHOOK_URL, params), sig);
 }
 
 type SendOpts = { body?: string; contentSid?: string; vars?: Record<string, string>; mediaUrls?: string[] };

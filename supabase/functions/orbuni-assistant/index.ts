@@ -579,7 +579,7 @@ async function resolveProposal(c: Ctx, name: string, input: any): Promise<{ prop
   }
   if(name === "propose_application"){
     const st = await oneStudent(c, input.student_id, input.student_name); if(st.error) return { error: st.error };
-    const ids = [...new Set((Array.isArray(input.programme_ids) ? input.programme_ids : [input.programme_ids]).map((x: any) => Math.round(Number(x))).filter((x: number) => x > 0))].slice(0, 3);
+    const ids: number[] = [...new Set<number>((Array.isArray(input.programme_ids) ? input.programme_ids : [input.programme_ids]).map((x: any) => Math.round(Number(x))).filter((x: number) => x > 0))].slice(0, 3);
     if(!ids.length) return { error: "Give programme_id values from search_programmes." };
     const [{ data: progs }, { data: have }] = await Promise.all([
       c.sb.from("programmes").select("id,course,degree_level,language,net_fee,active,universities(name,city)").in("id", ids),

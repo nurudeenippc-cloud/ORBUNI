@@ -87,7 +87,11 @@ iframe{width:100%;height:720px;border:0;background:#fff;display:block}</style>
     .lte("next_try_at", new Date().toISOString())
     .order("created_at", { ascending: true }).limit(40);
 
-  if(error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" }});
+  if(error){
+    // logged so a failed queue read shows up in the function logs, not only as a bare 500
+    console.error("send-student-emails: queue read failed: " + error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" }});
+  }
 
   if(!RESEND_KEY){
     return new Response(JSON.stringify({ due: (queue ?? []).length, sent: 0, configured: false }),
