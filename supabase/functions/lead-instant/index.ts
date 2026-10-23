@@ -40,6 +40,15 @@ function intl(raw: string | null | undefined, country?: string | null): string {
 const first = (n: string | null | undefined) => (String(n || "").trim().split(/\s+/)[0] || "there").slice(0, 40);
 const LEVEL: Record<string, [string, string]> = { bachelors: ["bachelor's degree", "Bachelors"], masters: ["master's degree", "Masters"], phd: ["PhD", "Phd"] };
 
+// Poster templates ("_card") take the poster's file name as their last variable: one of three
+// designs, picked per person and day (same rule as variant() in send-student-emails/brand.ts).
+function posterVars(key: string, vars: Record<string, string>, seed: string): Record<string, string> {
+  if (!key.endsWith("_card")) return vars;
+  const img = key.replace(/^orbuni_|_card$/g, "").replace("application_update", "offer_ready");
+  let h = 0; for (const c of img + "|" + seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
+  return { ...vars, [n]: `${img}_${1 + ((h + Math.floor(Date.now() / 864e5)) % 3)}.jpg` };
+}
 async function twilio(to: string, contentSid: string, vars: Record<string, string>) {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + to, StatusCallback: WEBHOOK, ContentSid: contentSid, ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
@@ -105,7 +114,7 @@ Deno.serve(async (req) => {
         const lv = LEVEL[lvl][0];
         const v3 = docsKey.endsWith("_card") ? pdf.slice(SITE.length + 1) : pdf;
         out.whatsapp_docs = await waOnce(phone, name, `docs_pdf:${l.id}`, "documents", { lead_id: l.id, profile_id: l.student_id },
-          () => twilio(phone, T[docsKey].content_sid, { "1": name, "2": lv, "3": v3 }),
+          () => twilio(phone, T[docsKey].content_sid, posterVars(docsKey, { "1": name, "2": lv, "3": v3 }, phone)),
           String(T[docsKey].body).split("{{1}}").join(name).split("{{2}}").join(lv).split("{{3}}").join(pdf), docsKey);
       }
     }
@@ -161,7 +170,7 @@ Deno.serve(async (req) => {
     if (T[callKey] && b.join_url) {
       const v3 = callKey.endsWith("_card") ? link.slice(MEET.length) : link;
       out.whatsapp = await waOnce(phone, name, `call:${b.id}`, "call", { lead_id: b.lead_id, profile_id: b.profile_id },
-        () => twilio(phone, T[callKey].content_sid, { "1": name, "2": when, "3": v3 }), text, callKey);
+        () => twilio(phone, T[callKey].content_sid, posterVars(callKey, { "1": name, "2": when, "3": v3 }, phone)), text, callKey);
     } else {
       // without the approved template, free text only reaches people who wrote to us in the last 24 h
       const { data: c } = await db.from("wa_contacts").select("last_inbound_at").eq("phone", phone).maybeSingle();

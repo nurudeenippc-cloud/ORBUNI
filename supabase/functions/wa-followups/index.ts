@@ -11,6 +11,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { sb, json, sendAndLog, alertStaff } from "./wa.ts";
 
+// Poster templates ("_card") take the poster's file name as their last variable: one of three
+// designs, picked per person and day (same rule as variant() in send-student-emails/brand.ts).
+function posterVars(key: string, vars: Record<string, string>, seed: string): Record<string, string> {
+  if (!key.endsWith("_card")) return vars;
+  const img = key.replace(/^orbuni_|_card$/g, "").replace("application_update", "offer_ready");
+  let h = 0; for (const c of img + "|" + seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
+  return { ...vars, [n]: `${img}_${1 + ((h + Math.floor(Date.now() / 864e5)) % 3)}.jpg` };
+}
+
 const CRON = (Deno.env.get("ORB_CRON_SECRET") ?? "").trim();
 const SID = (Deno.env.get("TWILIO_ACCOUNT_SID") ?? "").trim();
 const TOKEN = (Deno.env.get("TWILIO_AUTH_TOKEN") ?? "").trim();
@@ -115,7 +125,7 @@ Deno.serve(async (req) => {
     // the video version once Meta approves it, then the one with tap buttons, then the plain one
     // 23 Oct 2026: the poster version comes first when there is one (documents, offer)
     const tk = T[j.tpl + "_card"] ? j.tpl + "_card" : T[j.tpl + "_vid"] ? j.tpl + "_vid" : T[j.tpl + "_btn"] ? j.tpl + "_btn" : j.tpl, t = T[tk];
-    const res = await sendAndLog(db, c, { author: "template", contentSid: t.content_sid, vars: { "1": j.name }, templateKey: tk, preview: String(t.body).split("{{1}}").join(j.name) });
+    const res = await sendAndLog(db, c, { author: "template", contentSid: t.content_sid, vars: posterVars(tk, { "1": j.name }, j.phone), templateKey: tk, preview: String(t.body).split("{{1}}").join(j.name) });
     await db.from("wa_followups").update({ status: res.ok ? "sent" : "failed: " + (res.error || "").slice(0, 200) }).eq("dedupe_key", j.key);
     if (res.ok) sent.push(j.key); else skip("Twilio refused");
   }

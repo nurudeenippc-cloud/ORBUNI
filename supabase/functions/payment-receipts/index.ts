@@ -11,7 +11,7 @@
 // This function creates that template once and keeps its approval up to date.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { shell, kick, h1, button, withHero } from "./brand.ts";
+import { shell, kick, h1, button, withHero, variant } from "./brand.ts";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
 const CRON = env("ORB_CRON_SECRET");
@@ -128,7 +128,8 @@ async function waSend(toE164: string, o: { body?: string; contentSid?: string; v
 
 // The "payment received" poster: sent with the message inside the 24-hour window, and the poster
 // template (orbuni_payment_received_card, made by wa-templates) outside it once Meta approves it.
-const POSTER = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/wa/payment_received.jpg";
+const WA_IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/wa/";
+const poster = (seed: string) => `${WA_IMG}payment_received_${variant("payment_received", seed)}.jpg`;   // one of three designs
 
 async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; approved: boolean } | null, card: string | null): Promise<string> {
   if (!TW_SID || !TW_TOKEN) return "not_configured";
@@ -153,8 +154,8 @@ async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; a
   const text = `Hi ${first(r.name)}, we received your payment of ${amount} for ${r.item}. Thank you! 🎉\n\nYour receipt (${r.receipt_no}) is in your email, and your Orbuni portal is already updated: ${SITE}/`;
   let res: any;
   const vars = { "1": first(r.name), "2": amount, "3": String(r.item).slice(0, 120) };
-  if (inWindow) res = await waSend(contact.phone, { body: text, media: POSTER });
-  else if (card) res = await waSend(contact.phone, { contentSid: card, vars });
+  if (inWindow) res = await waSend(contact.phone, { body: text, media: poster(contact.phone) });
+  else if (card) res = await waSend(contact.phone, { contentSid: card, vars: { ...vars, "4": `payment_received_${variant("payment_received", contact.phone)}.jpg` } });
   else if (tpl?.approved) res = await waSend(contact.phone, { contentSid: tpl.sid, vars });
   else return "waiting_template";
   if (!res.ok) { console.warn("receipt whatsapp", res.error); return "failed"; }

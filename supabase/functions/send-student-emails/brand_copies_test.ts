@@ -28,7 +28,8 @@ Deno.test("send-manual-email/mail.ts renders every template like send-student-em
 
 Deno.test("key emails carry their poster, the rest do not", () => {
   const welcome = mainRender("welcome", { first_name: "Aisha" })!.html;
-  if (!welcome.includes("/site/img/email/welcome.jpg")) throw new Error("welcome email lost its poster");
+  if (!/\/site\/img\/email\/welcome_[1-3]\.jpg/.test(welcome)) throw new Error("welcome email lost its poster");
+  if (!welcome.includes("Follow Orbuni") || !welcome.includes("soc_instagram.png")) throw new Error("welcome email lost its social links");
   const custom = mainRender("custom_notice", { first_name: "Aisha", subject: "Hi", body: "x" })!.html;
   if (/\/site\/img\/email\/\w+\.jpg/.test(custom)) throw new Error("custom_notice should have no poster");
   if (custom.includes("<!--HERO-->")) throw new Error("the poster placeholder leaked into the email");

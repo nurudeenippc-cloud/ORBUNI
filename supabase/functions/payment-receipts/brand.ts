@@ -13,7 +13,7 @@ const GOLD = "#B8791A", GOLDBG = "#FFF3DC", NAVY = "#0E1626", BRIGHT = "#F2B544"
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 const WA = "https://wa.me/14434481577";
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/email/";
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/email/";
 
 // which poster goes on top of which email; the rest go without one
 const HERO: Record<string, [string, string]> = {
@@ -31,12 +31,28 @@ const HERO: Record<string, [string, string]> = {
   status_change:       ["offer_ready", "There is news on your application"],
   partner_update:      ["partner_update", "There is news on a student you sent us"],
   team_alert:          ["team_alert", "Something needs the team's attention"],
+  // team emails: every alert carries a poster that matches what happened
+  team_payment:        ["payment_received", "A payment came in"],
+  team_lead:           ["welcome", "A new student is interested"],
+  team_docs:           ["documents_needed", "A student file needs documents"],
+  team_application:    ["offer_ready", "An application moved"],
+  team_partner:        ["partner_update", "Partner news"],
+  team_webinar:        ["webinar_seat", "Webinar news"],
 };
 
-export const hero = (template: string) => {
+// Every poster comes in three designs (navy, cream, gold; a different student in each).
+// The design rotates by day and differs between emails, so people do not see the same
+// picture every time. `seed` lets a caller vary it per recipient as well.
+export const POSTER_VARIANTS = 3;
+export function variant(name: string, seed = "", day = Math.floor(Date.now() / 864e5)): number {
+  let h = 0;
+  for (const c of name + "|" + seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return 1 + ((h + day) % POSTER_VARIANTS);
+}
+export const hero = (template: string, seed = "") => {
   const h = HERO[template];
   if(!h) return "";
-  return `<tr><td style="padding:0;line-height:0;font-size:0"><img src="${IMG}${h[0]}.jpg" width="600" height="300" alt="${h[1]}" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>`;
+  return `<tr><td style="padding:0;line-height:0;font-size:0"><img src="${IMG}${h[0]}_${variant(h[0], seed)}.jpg" width="600" height="300" alt="${h[1]}" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>`;
 };
 
 // A gold pill instead of loose small caps: reads as a label at a glance.
@@ -67,6 +83,18 @@ const FOOT: Record<Audience, { title: string; text: string; links: [string, stri
   team:    { title: "You are on the Orbuni team.", text: "Change what you get told about under Team &amp; alerts in the portal.",
              links: [["Team portal", SITE + "/#portal=admin"], ["WhatsApp inbox", SITE + "/#chat"]] },
 };
+
+// Where people can follow us; shown on every email.
+const SOCIAL: [string, string, string][] = [
+  ["instagram", "Instagram", "https://www.instagram.com/myorbuni"],
+  ["facebook", "Facebook", "https://www.facebook.com/share/1H8YbvUQRX/"],
+  ["whatsapp", "WhatsApp", WA],
+  ["community", "Orbuni community", "https://whop.com/orbuni-community/"],
+];
+const socialRow = () => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px"><tr>
+  <td style="font:700 12px/1 ${SANS};color:#9FB0C8;padding-right:12px;letter-spacing:.06em;text-transform:uppercase">Follow Orbuni</td>
+  ${SOCIAL.map(([k, label, href]) => `<td style="padding-right:10px"><a href="${href}" title="${label}" style="text-decoration:none"><img src="${IMG}soc_${k}.png" width="30" height="30" alt="${label}" style="display:block;width:30px;height:30px;border:0"></a></td>`).join("")}
+</tr></table>`;
 
 const footLink = (label: string, href: string) => `<a href="${href}" style="color:${BRIGHT};text-decoration:none;font-weight:700">${label}</a>`;
 
@@ -126,6 +154,7 @@ export function shell(preheader: string, blocks: string, audience: Audience = "s
   <p style="margin:0 0 18px;font:400 13px/1.8 ${SANS};color:#5D6E86">
     ${f.links.map(([l, h]) => footLink(l, h)).join("&nbsp;&nbsp;&middot;&nbsp;&nbsp;")}
   </p>
+  ${socialRow()}
   <div style="height:1px;background:#22304A;line-height:1px;font-size:0">&nbsp;</div>
   <p style="margin:14px 0 0;font:400 11.5px/1.6 ${SANS};color:#7183A0">
     Orbuni Education &middot; Istanbul, T&uuml;rkiye. Universities in T&uuml;rkiye, N.&nbsp;Cyprus, the UAE, Germany, Egypt and Russia. Published fees, a named counsellor, no invented numbers. Tuition is always paid to the university, never to a person.
@@ -136,4 +165,4 @@ export function shell(preheader: string, blocks: string, audience: Audience = "s
 }
 
 // render() knows the template name, the bodies do not: it drops the poster in here.
-export const withHero = (template: string, html: string) => html.replace("<!--HERO-->", hero(template));
+export const withHero = (template: string, html: string, seed = "") => html.replace("<!--HERO-->", hero(template, seed));

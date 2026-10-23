@@ -13,7 +13,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
-import { shell, kick, h1, button, panel, withHero } from "./brand.ts";
+import { shell, kick, h1, button, panel, withHero, variant } from "./brand.ts";
 
 const env = (k: string) => Deno.env.get(k) ?? "";
 
@@ -51,7 +51,7 @@ function portalUrl(kind: string){
 
 // 23 Oct 2026: the same frame as every other Orbuni email (brand.ts), with a coloured
 // label so the team can tell a payment from a handoff at a glance, and the team poster
-// on the urgent kinds. Partners get their own version for status changes.
+// on every kind (23 Oct night: one per kind, three designs each). Partners get their own version for status changes.
 const KIND_LABEL: Record<string, [string, string, string]> = {   // label, text colour, background
   whatsapp_handoff:      ["WhatsApp: needs a person", "#B42318", "#FDECEA"],
   team_alert:            ["Urgent", "#B42318", "#FDECEA"],
@@ -68,7 +68,12 @@ const KIND_LABEL: Record<string, [string, string, string]> = {   // label, text 
   documents_missing:     ["Documents missing", "#B8791A", "#FFF3DC"],
   status_change:         ["Status changed", "#B8791A", "#FFF3DC"],
 };
-const URGENT = new Set(["whatsapp_handoff", "team_alert", "payment_received", "lead_assigned"]);
+// every team email carries a poster: the one that matches the kind, else the team alert poster
+const POSTER: Record<string, string> = {
+  payment_received: "team_payment", lead_assigned: "team_lead", enquiry_received: "team_lead", student_signup: "team_lead",
+  lead_overdue: "team_lead", documents_missing: "team_docs", document_uploaded: "team_docs",
+  application_submitted: "team_application", status_change: "team_application", partner_application: "team_partner",
+};
 // the body is plain text from the database: escape it, then keep its line breaks
 const text = (s: string | null) => esc(s || "").replace(/\n/g, "<br>");
 
@@ -76,7 +81,7 @@ export function emailHtml(title: string, body: string | null, kind: string){
   const [label, fg, bg] = KIND_LABEL[kind] ?? ["Team alert", "#B8791A", "#FFF3DC"];
   const html = shell(esc(title), kick(label, fg, bg) + h1(esc(title)) + (body ? panel(text(body)) : "")
     + button("Open in Orbuni", portalUrl(kind)), "team");
-  return withHero(URGENT.has(kind) ? "team_alert" : "", html);
+  return withHero(POSTER[kind] || "team_alert", html, title);
 }
 
 export function partnerHtml(name: string, title: string, body: string | null){
@@ -84,7 +89,7 @@ export function partnerHtml(name: string, title: string, body: string | null){
     + `<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:#48566B">Hello ${esc(name)}, there is a new status on an application you sent us.</p></td></tr>`
     + (body ? panel(text(body)) : "")
     + button("Open the partner portal", PORTAL + "/#portal=partner:home"), "partner");
-  return withHero("partner_update", html);
+  return withHero("partner_update", html, name + title);
 }
 
 function emailText(title: string, body: string | null, kind: string){
@@ -173,11 +178,20 @@ function waVars(v2: boolean, kind: string, title: string, body: string | null){
   return { "1": flat(p.headline, 180), "2": flat(line, 600) };
 }
 
-async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: string, title: string, body: string | null){
+// The poster templates ("_card") take the poster's file name as their last variable: the team
+// alert gets the picture for what happened (payment, lead, documents...), one of three designs.
+const WA_POSTER: Record<string, string> = { payment_received: "payment_received", lead_assigned: "welcome", enquiry_received: "welcome",
+  student_signup: "welcome", lead_overdue: "welcome", documents_missing: "documents_needed", document_uploaded: "documents_needed",
+  application_submitted: "offer_ready", status_change: "offer_ready", partner_application: "partner_update" };
+const waPoster = (img: string, seed: string) => `${img}_${variant(img, seed)}.jpg`;
+
+async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: string, title: string, body: string | null, card = false){
   const d = String(to).replace(/[^0-9]/g, "");
   if(d.length < 8) return { ok:false, why:"no usable number" };
+  const vars = waVars(v2, kind, title, body) as Record<string, string>;
+  if(card) vars["5"] = waPoster(WA_POSTER[kind] || "team_alert", d + title);
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
-    ContentVariables: JSON.stringify(waVars(v2, kind, title, body)) });
+    ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST",
     headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
@@ -188,11 +202,13 @@ async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: s
 }
 
 // The student / partner update: three plain variables (name, headline, detail).
-async function sendUpdate(contentSid: string, to: string, name: string, headline: string, detail: string){
+async function sendUpdate(contentSid: string, to: string, name: string, headline: string, detail: string, poster = ""){
   const d = String(to).replace(/[^0-9]/g, "");
   if(d.length < 8) return { ok:false, why:"no usable number" };
+  const vars: Record<string, string> = { "1": name || "there", "2": headline || "Update", "3": detail || "-" };
+  if(poster) vars["4"] = waPoster(poster, d + headline);
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
-    ContentVariables: JSON.stringify({ "1": name || "there", "2": headline || "Update", "3": detail || "-" }) });
+    ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST",
     headers: { Authorization: "Basic " + btoa(TW_SID + ":" + TW_TOKEN), "Content-Type": "application/x-www-form-urlencoded" },
@@ -264,8 +280,11 @@ Deno.serve(async (req: Request) => {
   const WA_SID = TW_SID && TW_TOKEN && pick ? String(pick.content_sid) : "";
   const WA_V2 = pick?.key !== "orbuni_staff_alert";
   // students and partners: one WhatsApp per application status change
-  const STU_SID = TW_SID && TW_TOKEN ? String((ok("orbuni_application_update_card") || ok("orbuni_application_update"))?.content_sid || "") : "";
-  const PAR_SID = TW_SID && TW_TOKEN ? String((ok("orbuni_partner_update_card") || ok("orbuni_partner_update"))?.content_sid || "") : "";
+  const stu = ok("orbuni_application_update_card") || ok("orbuni_application_update");
+  const par = ok("orbuni_partner_update_card") || ok("orbuni_partner_update");
+  const STU_SID = TW_SID && TW_TOKEN ? String(stu?.content_sid || "") : "";
+  const PAR_SID = TW_SID && TW_TOKEN ? String(par?.content_sid || "") : "";
+  const WA_CARD = pick?.key === "orbuni_team_alert_card";
 
   const { data: queue, error } = await sb
     .from("notification_recipients")
@@ -310,7 +329,9 @@ Deno.serve(async (req: Request) => {
       const sid = n.kind === "status_change" ? (p?.role === "partner" ? PAR_SID : p?.role === "student" ? STU_SID : "") : "";
       if(!sid || !(p?.whatsapp || p?.phone)){ patch.whatsapp_sent_at = now(); }
       else {
-        const r = await sendUpdate(sid, p.whatsapp || p.phone, flat(p.first_name || "there", 60), flat(noEmoji(n.title), 120), flat(n.body || "Open your portal to see what changed.", 400));
+        const card = (p?.role === "partner" ? par : stu)?.key?.endsWith("_card");
+        const r = await sendUpdate(sid, p.whatsapp || p.phone, flat(p.first_name || "there", 60), flat(noEmoji(n.title), 120), flat(n.body || "Open your portal to see what changed.", 400),
+          card ? (p?.role === "partner" ? "partner_update" : "offer_ready") : "");
         patch.whatsapp_sent_at = now();
         if(r.ok) whatsapped++; else problems.push(r.why || "whatsapp failed");
       }
@@ -318,7 +339,7 @@ Deno.serve(async (req: Request) => {
     if(!row.whatsapp_sent_at && !patch.whatsapp_sent_at){
       if(!staff || !WA_SID || !WA_KINDS.has(n.kind) || !(p?.whatsapp || p?.phone)){ patch.whatsapp_sent_at = now(); }
       else {
-        const r = await sendWhatsApp(WA_SID, WA_V2, p.whatsapp || p.phone, n.kind, n.title, n.body);
+        const r = await sendWhatsApp(WA_SID, WA_V2, p.whatsapp || p.phone, n.kind, n.title, n.body, WA_CARD);
         if(r.ok){ patch.whatsapp_sent_at = now(); whatsapped++; }
         else { patch.whatsapp_sent_at = now(); problems.push(r.why || "whatsapp failed"); }   // never retry-loop a WhatsApp
       }

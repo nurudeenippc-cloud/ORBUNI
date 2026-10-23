@@ -21,8 +21,8 @@ type Btn = { title: string; id?: string; url?: string };
 // Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
 const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
 // Posters for the "_card" templates (1080×1080), same hosting, pinned to the commit that added them.
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@e6abf68513c110b079613a06b5a679d575d9c463/site/img/wa/";
-export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/wa/";
+export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
   { key: "orbuni_quiz_followup", category: "MARKETING",
@@ -208,8 +208,14 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
       "🤝 *Partner update for {{1}}*\n\n*{{2}}*\n{{3}}\n\n✅ The full file is in your partner portal\n✅ Your Orbuni contact is on it\n\nQuestions about this student? Reply here.",
       { "1": "Lagos Study Hub", "2": "Aisha Bello · offer received", "3": "Istinye University sent the offer letter. The next step is the deposit." },
       { title: "Open the partner portal", url: "https://myorbuni.com/#portal=partner:home" }],
-  ] as [string, "UTILITY" | "MARKETING", string, string, Record<string, string>, Btn][]).map(([key, category, img, body, vars, link]) =>
-    ({ key, category, body, vars, link, media: IMG + img + ".jpg", footer: key === "orbuni_team_alert_card" ? "Orbuni team alerts" : "Reply STOP to unsubscribe" })),
+  ] as [string, "UTILITY" | "MARKETING", string, string, Record<string, string>, Btn][]).map(([key, category, img, body, vars, link]) => {
+    // 24 Oct 2026 (posters v3): the poster is a variable at the end of the image address, the next number
+    // after the message's own variables, so senders can rotate the three designs ("<img>_1.jpg" .. "_3.jpg").
+    // Submitted to Meta as "<key>3": the first poster versions (same keys, fixed older images) are retired.
+    const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
+    return { key, metaName: key + "3", category, body, vars: { ...vars, [n]: img + "_1.jpg" }, link, media: IMG + "{{" + n + "}}",
+      footer: key === "orbuni_team_alert_card" ? "Orbuni team alerts" : "Reply STOP to unsubscribe" };
+  }),
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
   if (t.media) return { "twilio/card": { title: t.body, ...(t.footer ? { subtitle: t.footer } : {}), media: [t.media],
@@ -239,7 +245,7 @@ Deno.serve(async (req) => {
     if (!row?.content_sid) {
       const c = await tw("https://content.twilio.com/v1/Content", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendly_name: t.key, language: t.lang || "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
+        body: JSON.stringify({ friendly_name: t.metaName || t.key, language: t.lang || "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
       });
       if (!c.ok) { report.push({ key: t.key, step: "create", error: c.j.message || c.status }); continue; }
       row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body };
@@ -249,7 +255,7 @@ Deno.serve(async (req) => {
     if (row.approval === "not_submitted") {
       const s = await tw(`https://content.twilio.com/v1/Content/${row.content_sid}/ApprovalRequests/whatsapp`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: t.key, category: t.category }),
+        body: JSON.stringify({ name: t.metaName || t.key, category: t.category }),
       });
       if (!s.ok) { report.push({ key: t.key, step: "submit", error: s.j.message || s.status }); continue; }
       row.approval = "received";

@@ -39,6 +39,15 @@ function intl(raw: string | null | undefined, country?: string | null): string {
   return d.length >= 10 && d.length <= 15 ? "+" + d : "";
 }
 const first = (n: string | null | undefined) => (String(n || "").trim().split(/\s+/)[0] || "there").slice(0, 40);
+// Poster templates ("_card") take the poster's file name as their last variable: one of three
+// designs, picked per person and day (same rule as variant() in send-student-emails/brand.ts).
+function posterVars(key: string, vars: Record<string, string>, seed: string): Record<string, string> {
+  if (!key.endsWith("_card")) return vars;
+  const img = key.replace(/^orbuni_|_card$/g, "").replace("application_update", "offer_ready");
+  let h = 0; for (const c of img + "|" + seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
+  return { ...vars, [n]: `${img}_${1 + ((h + Math.floor(Date.now() / 864e5)) % 3)}.jpg` };
+}
 async function twilio(to: string, contentSid: string, vars: Record<string, string>) {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + to, StatusCallback: WEBHOOK, ContentSid: contentSid, ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
@@ -169,7 +178,7 @@ Deno.serve(async (req) => {
     if (!T[tk]) { skip("template not approved yet"); continue; }
     const t = T[tk];
     const res = await waOnce(phone, first(j.r.name), j.key, "webinar", { lead_id: j.r.lead_id || undefined },
-      () => twilio(phone, t.content_sid, vars), fill(String(t.body), j.vars), tk);
+      () => twilio(phone, t.content_sid, posterVars(tk, vars, phone)), fill(String(t.body), j.vars), tk);
     if (res === "sent") sent.push(j.key); else skip(res.startsWith("failed") ? "Twilio refused" : res);
   }
   return json(200, { candidates: jobs.length, sent: sent.length, skipped });
