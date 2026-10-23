@@ -129,17 +129,21 @@ async function template(sb: ReturnType<typeof db>): Promise<{ sid: string; appro
   return { sid: cur.content_sid, approved: cur.approval === "approved" };
 }
 
-async function waSend(toE164: string, o: { body?: string; contentSid?: string; vars?: Record<string, string> }) {
+async function waSend(toE164: string, o: { body?: string; contentSid?: string; vars?: Record<string, string>; media?: string }) {
   const form = new URLSearchParams({ From: WA_FROM, To: "whatsapp:" + toE164, StatusCallback: WEBHOOK });
   if (o.contentSid) { form.set("ContentSid", o.contentSid); if (o.vars) form.set("ContentVariables", JSON.stringify(o.vars)); }
-  else form.set("Body", String(o.body || "").slice(0, 1600));
+  else { form.set("Body", String(o.body || "").slice(0, 1600)); if (o.media) form.set("MediaUrl", o.media); }
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
     method: "POST", headers: { Authorization: TW_AUTH, "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const j: any = await r.json().catch(() => ({}));
   return r.ok ? { ok: true, sid: j.sid as string, status: j.status as string } : { ok: false, error: `${j.code || r.status}: ${j.message || "refused"}` };
 }
 
-async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; approved: boolean } | null): Promise<string> {
+// The "payment received" poster: sent with the message inside the 24-hour window, and the poster
+// template (orbuni_payment_received_card, made by wa-templates) outside it once Meta approves it.
+const POSTER = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/wa/payment_received.jpg";
+
+async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; approved: boolean } | null, card: string | null): Promise<string> {
   if (!TW_SID || !TW_TOKEN) return "not_configured";
   // the chat: by account first, then by the phone on the account
   let contact: any = null;
@@ -161,13 +165,15 @@ async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; a
   const inWindow = contact.last_inbound_at && Date.now() - Date.parse(contact.last_inbound_at) < 23.5 * 3600 * 1000;
   const text = `Hi ${first(r.name)}, we received your payment of ${amount} for ${r.item}. Thank you! 🎉\n\nYour receipt (${r.receipt_no}) is in your email, and your Orbuni portal is already updated: ${SITE}/`;
   let res: any;
-  if (inWindow) res = await waSend(contact.phone, { body: text });
-  else if (tpl?.approved) res = await waSend(contact.phone, { contentSid: tpl.sid, vars: { "1": first(r.name), "2": amount, "3": String(r.item).slice(0, 120) } });
+  const vars = { "1": first(r.name), "2": amount, "3": String(r.item).slice(0, 120) };
+  if (inWindow) res = await waSend(contact.phone, { body: text, media: POSTER });
+  else if (card) res = await waSend(contact.phone, { contentSid: card, vars });
+  else if (tpl?.approved) res = await waSend(contact.phone, { contentSid: tpl.sid, vars });
   else return "waiting_template";
   if (!res.ok) { console.warn("receipt whatsapp", res.error); return "failed"; }
   if (contact.id) {
     await sb.from("wa_messages").insert({ contact_id: contact.id, direction: "out", author: inWindow ? "system" : "template",
-      body: text, template_key: inWindow ? null : TPL_KEY, twilio_sid: res.sid || null, status: res.status || "queued" });
+      body: text, template_key: inWindow ? null : card ? "orbuni_payment_received_card" : TPL_KEY, twilio_sid: res.sid || null, status: res.status || "queued" });
     await sb.from("wa_contacts").update({ last_message_at: new Date().toISOString(), last_preview: text.slice(0, 120) }).eq("id", contact.id);
   }
   return "sent";
@@ -177,6 +183,8 @@ Deno.serve(async (req) => {
   if (!CRON || !safeEqual(req.headers.get("x-orb-secret") || "", CRON)) return json(403, { error: "forbidden" });
   const sb = db();
   const tpl = await template(sb).catch((e) => { console.warn("template", String(e).slice(0, 160)); return null; });
+  const { data: cardRow } = await sb.from("wa_templates").select("content_sid,approval").eq("key", "orbuni_payment_received_card").maybeSingle();
+  const card = cardRow?.approval === "approved" && cardRow.content_sid ? String(cardRow.content_sid) : null;
   const since = new Date(Date.now() - 3 * 864e5).toISOString();
   const { data: rows, error } = await sb.from("payment_receipts").select("*")
     .or("email_sent_at.is.null,wa_status.is.null,wa_status.eq.waiting_template")
@@ -194,7 +202,7 @@ Deno.serve(async (req) => {
       }
     }
     if (!r.wa_status || r.wa_status === "waiting_template") {
-      const st = isTest(String(r.email || "")) ? "skipped_test" : await whatsapp(sb, r, tpl).catch((e) => { console.warn("wa", String(e).slice(0, 160)); return "failed"; });
+      const st = isTest(String(r.email || "")) ? "skipped_test" : await whatsapp(sb, r, tpl, card).catch((e) => { console.warn("wa", String(e).slice(0, 160)); return "failed"; });
       if (st !== "waiting_template" || r.wa_status !== "waiting_template") patch.wa_status = st;
       if (st === "sent") { patch.wa_sent_at = new Date().toISOString(); was++; }
       // "waiting_template" is retried on later runs until Meta decides (rows older than 3 days stop)

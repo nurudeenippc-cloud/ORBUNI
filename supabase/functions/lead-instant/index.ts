@@ -99,11 +99,14 @@ Deno.serve(async (req) => {
       const tk = T.orbuni_quiz_followup_btn ? "orbuni_quiz_followup_btn" : T.orbuni_quiz_followup ? "orbuni_quiz_followup" : "";
       if (tk) out.whatsapp = await waOnce(phone, name, `quiz:${l.id}`, "quiz", { lead_id: l.id, profile_id: l.student_id },
         () => twilio(phone, T[tk].content_sid, { "1": name }), String(T[tk].body).split("{{1}}").join(name), tk);
-      if (T.orbuni_required_docs && path !== "lower") {
+      // the poster version once Meta approves it (its button holds https://myorbuni.com/, so {{3}} is the rest)
+      const docsKey = T.orbuni_required_docs_card ? "orbuni_required_docs_card" : T.orbuni_required_docs ? "orbuni_required_docs" : "";
+      if (docsKey && path !== "lower") {
         const lv = LEVEL[lvl][0];
+        const v3 = docsKey.endsWith("_card") ? pdf.slice(SITE.length + 1) : pdf;
         out.whatsapp_docs = await waOnce(phone, name, `docs_pdf:${l.id}`, "documents", { lead_id: l.id, profile_id: l.student_id },
-          () => twilio(phone, T.orbuni_required_docs.content_sid, { "1": name, "2": lv, "3": pdf }),
-          String(T.orbuni_required_docs.body).split("{{1}}").join(name).split("{{2}}").join(lv).split("{{3}}").join(pdf), "orbuni_required_docs");
+          () => twilio(phone, T[docsKey].content_sid, { "1": name, "2": lv, "3": v3 }),
+          String(T[docsKey].body).split("{{1}}").join(name).split("{{2}}").join(lv).split("{{3}}").join(pdf), docsKey);
       }
     }
 
@@ -152,9 +155,13 @@ Deno.serve(async (req) => {
     const when = new Date(b.starts_at).toLocaleString("en-GB", { timeZone: "Europe/Istanbul", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const link = b.join_url || `${SITE}`;
     const text = `Hi ${name}, your free call with Orbuni is booked for ${when} (Türkiye time).` + (b.join_url ? ` Join with this Google Meet link: ${b.join_url}` : " We'll send you the video link shortly.") + " Reply here if you need to change the time.";
-    if (T.orbuni_call_booked && b.join_url) {
+    // the poster version needs a Google Meet link (its button is https://meet.google.com/{{3}})
+    const MEET = "https://meet.google.com/";
+    const callKey = T.orbuni_call_booked_card && String(b.join_url || "").startsWith(MEET) ? "orbuni_call_booked_card" : "orbuni_call_booked";
+    if (T[callKey] && b.join_url) {
+      const v3 = callKey.endsWith("_card") ? link.slice(MEET.length) : link;
       out.whatsapp = await waOnce(phone, name, `call:${b.id}`, "call", { lead_id: b.lead_id, profile_id: b.profile_id },
-        () => twilio(phone, T.orbuni_call_booked.content_sid, { "1": name, "2": when, "3": link }), text, "orbuni_call_booked");
+        () => twilio(phone, T[callKey].content_sid, { "1": name, "2": when, "3": v3 }), text, callKey);
     } else {
       // without the approved template, free text only reaches people who wrote to us in the last 24 h
       const { data: c } = await db.from("wa_contacts").select("last_inbound_at").eq("phone", phone).maybeSingle();

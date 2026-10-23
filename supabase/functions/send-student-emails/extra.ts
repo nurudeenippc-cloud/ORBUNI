@@ -2,9 +2,10 @@
 // Same light shell and tone as mail.ts; kept in their own file so mail.ts
 // stays as it was.
 import { esc } from "./mail.ts";
+import { shell, kick, h1, button } from "./brand.ts";
 
 const INK = "#111826", BODY = "#48566B", MUTE = "#7A8798", LINE = "#E4E8EF", WASH = "#F5F7FA";
-const GOLD = "#B8791A", GOLDBG = "#FFF6E6", GREEN = "#127A52", GREENBG = "#EAF7F1", DARK = "#0E1626";
+const GOLD = "#B8791A", GOLDBG = "#FFF6E6", GREEN = "#127A52", GREENBG = "#EAF7F1";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 type V = Record<string, unknown>;
@@ -15,15 +16,8 @@ const gcalLink = (u: unknown) => { const x = String(u ?? ""); return /^https:\/\
 // the signed "stop these emails" link made by public.optout_link(); nothing else is accepted
 const unsubLink = (u: unknown) => { const x = String(u ?? ""); return /^https:\/\/ytsebzdykfeiiuxbdtvr\.supabase\.co\/functions\/v1\/email-optout\?e=[^"<>\s]+&t=[0-9a-f]{32}$/.test(x) ? x : ""; };
 
-const kick = (t: string) => `<tr><td class="pad" style="padding:26px 32px 0"><div style="font:700 11px/1 ${SANS};letter-spacing:.14em;text-transform:uppercase;color:${GOLD}">${t}</div></td></tr>`;
-const h1 = (t: string) => `<tr><td class="pad" style="padding:6px 32px 0"><h1 style="margin:0;font:700 25px/1.28 ${SANS};color:${INK};letter-spacing:-.02em">${t}</h1></td></tr>`;
 const para = (t: string) => `<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:${BODY}">${t}</p></td></tr>`;
 const small = (t: string) => `<tr><td class="pad" style="padding:16px 32px 0"><p style="margin:0;font:400 13px/1.6 ${SANS};color:${MUTE}">${t}</p></td></tr>`;
-const button = (label: string, href: string) => `<tr><td class="pad" style="padding:26px 32px 0">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td align="center" bgcolor="${DARK}" style="border-radius:10px">
-<a href="${href}" style="display:block;padding:15px 30px;font:700 16px/1 ${SANS};color:#FFFFFF;text-decoration:none;border-radius:10px">${label}</a>
-</td></tr></table></td></tr>`;
 const note = (title: string, text: string, tone: "gold" | "green" = "gold") => {
   const bg = tone === "green" ? GREENBG : GOLDBG, bd = tone === "green" ? GREEN : GOLD;
   return `<tr><td class="pad" style="padding:24px 32px 0">
@@ -47,24 +41,6 @@ const rows = (pairs: [string, string][]) => `<tr><td class="pad" style="padding:
            `<td class="stack rt" style="${top}padding:13px 0;font:600 15px/1.45 ${SANS};color:${INK};text-align:right;vertical-align:top">${v}</td></tr>`;
   }).join("") + `</table></td></tr></table></td></tr>`;
 
-function shell(preheader: string, blocks: string){
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>Orbuni</title>
-<style>body,table,td,a{-webkit-text-size-adjust:100%}a{color:${GOLD}}
-@media only screen and (max-width:600px){.wrap{width:100%!important}.pad{padding-left:20px!important;padding-right:20px!important}
-.stack{display:block!important;width:100%!important;text-align:left!important;padding-bottom:0!important}
-.stack.rt{padding-top:2px!important;padding-bottom:13px!important}h1{font-size:22px!important}}</style></head>
-<body style="margin:0;padding:0;background:${WASH}">
-<div style="display:none;font-size:1px;color:${WASH};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">${preheader}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${WASH}"><tr><td align="center" style="padding:26px 12px 34px">
-<table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px">
-<tr><td bgcolor="${DARK}" style="background:${DARK};border-radius:14px 14px 0 0;padding:20px 32px;font:800 18px/1 ${SANS};color:#FFFFFF">Orbuni</td></tr>
-<tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border-left:1px solid ${LINE};border-right:1px solid ${LINE}">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${blocks}<tr><td style="height:34px;line-height:34px;font-size:0">&nbsp;</td></tr></table></td></tr>
-<tr><td bgcolor="${WASH}" class="pad" style="background:${WASH};border:1px solid ${LINE};border-top:0;border-radius:0 0 14px 14px;padding:22px 32px">
-<p style="margin:0;font:400 12.5px/1.65 ${SANS};color:${MUTE}"><a href="${SITE}" style="color:${GOLD};text-decoration:none;font-weight:600">myorbuni.com</a> · Istanbul, Türkiye</p>
-</td></tr></table></td></tr></table></body></html>`;
-}
 
 export const EXTRA_SUBJECTS: Record<string, (v: V) => string> = {
   checkout_reminder: v => Number(v.step) === 3 ? `Last note about your Orbuni checkout` : Number(v.step) === 2 ? `Still thinking it over, ${String(v.first_name ?? "there")}?` : `You were one step away, ${String(v.first_name ?? "there")}`,

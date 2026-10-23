@@ -4,13 +4,14 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { render as renderBase, BODIES as BASE_BODIES } from "./mail.ts";
 import { EXTRA_SUBJECTS, EXTRA_BODIES } from "./extra.ts";
+import { withHero } from "./brand.ts";
 
 // mail.ts has the application emails; extra.ts has checkout follow-ups and
 // extra-service bookings. One render() for both.
 const BODIES: Record<string, unknown> = { ...BASE_BODIES, ...EXTRA_BODIES };
 function render(template: string, vars: Record<string, unknown>){
   const x = EXTRA_BODIES[template];
-  if(x) return { subject: (EXTRA_SUBJECTS[template] ?? (() => "Orbuni"))(vars), html: x(vars) };
+  if(x) return { subject: (EXTRA_SUBJECTS[template] ?? (() => "Orbuni"))(vars), html: withHero(template, x(vars)) };
   return renderBase(template, vars);
 }
 

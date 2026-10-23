@@ -6,27 +6,19 @@
 // everywhere. 100% width tables with a max-width, so a phone gets the full message and
 // not a squeezed column.
 const INK = "#111826", BODY = "#48566B", MUTE = "#7A8798";
-const LINE = "#E4E8EF", WASH = "#F5F7FA", CARD = "#FFFFFF";
+const LINE = "#E4E8EF", WASH = "#F5F7FA";
 const GOLD = "#B8791A", GOLDBG = "#FFF6E6", GREEN = "#127A52", GREENBG = "#EAF7F1";
-const DARK = "#0E1626";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
+import { shell, kick, h1, button, withHero } from "./brand.ts";
 
 export const esc = (s: unknown) => String(s ?? "")
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const h1 = (t: string) => `<tr><td class="pad" style="padding:6px 32px 0"><h1 style="margin:0;font:700 25px/1.28 ${SANS};color:${INK};letter-spacing:-.02em">${t}</h1></td></tr>`;
-const kick = (t: string) => `<tr><td class="pad" style="padding:26px 32px 0"><div style="font:700 11px/1 ${SANS};letter-spacing:.14em;text-transform:uppercase;color:${GOLD}">${t}</div></td></tr>`;
 const para = (t: string) => `<tr><td class="pad" style="padding:14px 32px 0"><p style="margin:0;font:400 16px/1.65 ${SANS};color:${BODY}">${t}</p></td></tr>`;
 const small = (t: string) => `<tr><td class="pad" style="padding:16px 32px 0"><p style="margin:0;font:400 13px/1.6 ${SANS};color:${MUTE}">${t}</p></td></tr>`;
 const rule = () => `<tr><td class="pad" style="padding:26px 32px 0"><div style="height:1px;background:${LINE};line-height:1px;font-size:0">&nbsp;</div></td></tr>`;
 
-const button = (label: string, href: string) => `<tr><td class="pad" style="padding:26px 32px 0">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td align="center" bgcolor="${DARK}" style="border-radius:10px">
-<a href="${href}" style="display:block;padding:15px 30px;font:700 16px/1 ${SANS};color:#FFFFFF;text-decoration:none;border-radius:10px">${label}</a>
-</td></tr></table></td></tr></table></td></tr>`;
 
 const note = (title: string, text: string, tone: "gold" | "green" = "gold") => {
   const bg = tone === "green" ? GREENBG : GOLDBG;
@@ -62,64 +54,6 @@ const steps = (items: [string, string][]) => `<tr><td class="pad" style="padding
   <span style="font:600 12px/1 ${SANS};color:${who === "you" ? GOLD : MUTE}">&nbsp;&nbsp;${who === "you" ? "YOU" : who === "us" ? "ORBUNI" : "TOGETHER"}</span>
 </td></tr>`).join("") + `</table></td></tr>`;
 
-function shell(preheader: string, blocks: string){
-  return `<!doctype html>
-<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="color-scheme" content="light">
-<meta name="supported-color-schemes" content="light">
-<title>Orbuni</title>
-<!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
-<style>
-  body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
-  img{border:0;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}
-  a{color:${GOLD}}
-  @media only screen and (max-width:600px){
-    .wrap{width:100%!important}
-    .pad{padding-left:20px!important;padding-right:20px!important}
-    .stack{display:block!important;width:100%!important;text-align:left!important;padding-bottom:0!important}
-    .stack.rt{padding-top:2px!important;padding-bottom:13px!important;text-align:left!important}
-    h1{font-size:22px!important;line-height:1.25!important}
-  }
-</style>
-</head>
-<body style="margin:0;padding:0;background:${WASH};">
-<div style="display:none;font-size:1px;color:${WASH};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">${preheader}&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${WASH}" style="background:${WASH}">
-<tr><td align="center" style="padding:26px 12px 34px">
-<table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px">
-
-<tr><td bgcolor="${DARK}" style="background:${DARK};border-radius:14px 14px 0 0;padding:20px 32px">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-  <td width="30" style="padding-right:11px">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td width="28" height="28" align="center" style="border:2px solid #F2B544;border-radius:14px;font:800 13px/24px ${SANS};color:#F2B544">O</td>
-    </tr></table></td>
-  <td style="font:800 18px/1 ${SANS};color:#FFFFFF;letter-spacing:-.01em">Orbuni</td>
-  </tr></table>
-</td></tr>
-
-<tr><td bgcolor="${CARD}" style="background:${CARD};border-left:1px solid ${LINE};border-right:1px solid ${LINE}">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-  ${blocks}
-  <tr><td style="height:34px;line-height:34px;font-size:0">&nbsp;</td></tr>
-  </table>
-</td></tr>
-
-<tr><td bgcolor="${WASH}" class="pad" style="background:${WASH};border:1px solid ${LINE};border-top:0;border-radius:0 0 14px 14px;padding:22px 32px">
-  <p style="margin:0 0 10px;font:400 12.5px/1.65 ${SANS};color:${MUTE}">
-    Orbuni places international students into universities in T&uuml;rkiye, N.&nbsp;Cyprus, the UAE, Germany, Egypt and Russia. Published fees, a named counsellor, no invented numbers.
-  </p>
-  <p style="margin:0;font:400 12.5px/1.65 ${SANS};color:${MUTE}">
-    <a href="${SITE}" style="color:${GOLD};text-decoration:none;font-weight:600">myorbuni.com</a>
-  </p>
-</td></tr>
-
-</table></td></tr></table></body></html>`;
-}
 
 type V = Record<string, unknown>;
 const g = (v: V, k: string, d = "") => esc(v[k] ?? d);
@@ -243,5 +177,5 @@ export const BODIES: Record<string, (v: V) => string> = {
 export function render(template: string, vars: V){
   const body = BODIES[template];
   if(!body) return null;
-  return { subject: (SUBJECTS[template] ?? (() => "Orbuni"))(vars), html: body(vars) };
+  return { subject: (SUBJECTS[template] ?? (() => "Orbuni"))(vars), html: withHero(template, body(vars)) };
 }

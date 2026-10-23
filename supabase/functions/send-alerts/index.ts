@@ -47,10 +47,23 @@ function portalUrl(kind: string){
   return PORTAL;
 }
 
+// 23 Oct 2026 redesign: same frame as the student emails (navy header, gold mark),
+// plus a coloured label so the team can tell a payment from a handoff at a glance.
+const LOGO = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/email/logo.png";
+const KIND_LABEL: Record<string, [string, string, string]> = {   // label, text colour, background
+  whatsapp_handoff:      ["WhatsApp: needs a person", "#B42318", "#FDECEA"],
+  team_alert:            ["Urgent", "#B42318", "#FDECEA"],
+  payment_received:      ["Payment received", "#127A52", "#EAF7F1"],
+  lead_assigned:         ["New lead for you", "#1D4ED8", "#EAF0FE"],
+  message_received:      ["New message", "#1D4ED8", "#EAF0FE"],
+  application_submitted: ["New application", "#B8791A", "#FFF3DC"],
+};
 function emailHtml(title: string, body: string | null, kind: string){
   const href = portalUrl(kind);
-  const detail = body ? `<tr><td style="padding:0 32px 20px">
-  <p style="margin:0;font:400 16px/1.6 ${SANS};color:#4B5568">${esc(body)}</p>
+  const [label, fg, bg] = KIND_LABEL[kind] ?? ["Team alert", "#B8791A", "#FFF3DC"];
+  // the body is plain text from the database: escape it, then keep its line breaks
+  const detail = body ? `<tr><td style="padding:14px 32px 0">
+  <div style="background:#F5F7FA;border-radius:12px;padding:16px 18px;font:400 15px/1.65 ${SANS};color:#3B475A">${esc(body).replace(/\n/g, "<br>")}</div>
 </td></tr>` : "";
   return `<!doctype html>
 <html lang="en">
@@ -62,26 +75,33 @@ function emailHtml(title: string, body: string | null, kind: string){
 <meta name="supported-color-schemes" content="light">
 <title>Orbuni</title>
 </head>
-<body style="margin:0;padding:0;background:#F4F5F7">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F4F5F7" style="background:#F4F5F7">
-<tr><td align="center" style="padding:28px 12px">
+<body style="margin:0;padding:0;background:#EEF1F6">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EEF1F6" style="background:#EEF1F6">
+<tr><td align="center" style="padding:24px 10px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px">
-<tr><td style="padding:0 8px 18px">
-  <p style="margin:0;font:800 18px/1 ${SANS};color:#111827;letter-spacing:-0.02em">Orbuni</p>
+<tr><td bgcolor="#0E1626" style="background:#0E1626;border-radius:16px 16px 0 0;padding:16px 28px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+  <td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td width="32" style="padding-right:10px"><img src="${LOGO}" width="28" height="28" alt="" style="display:block;width:28px;height:28px;border:0"></td>
+    <td style="font:800 17px/1 ${SANS};color:#FFFFFF">Orbuni <span style="font-weight:500;color:#9FB0C8">&middot; Team</span></td>
+  </tr></table></td>
+  </tr></table>
 </td></tr>
-<tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px">
+<tr><td bgcolor="#FFFFFF" style="background:#FFFFFF;border:1px solid #E4E8EF;border-top:0;border-radius:0 0 16px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="padding:28px 32px 8px">
-  <p style="margin:0;font:700 11px/1 ${SANS};letter-spacing:0.12em;text-transform:uppercase;color:#B8791A">Team alert</p>
+<tr><td style="padding:26px 32px 0">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+  <td bgcolor="${bg}" style="background:${bg};border-radius:20px;padding:7px 13px;font:700 11px/1 ${SANS};letter-spacing:.1em;text-transform:uppercase;color:${fg}">${label}</td>
+  </tr></table>
 </td></tr>
-<tr><td style="padding:8px 32px 12px">
-  <h1 style="margin:0;font:700 22px/1.35 ${SANS};color:#111827">${esc(title)}</h1>
+<tr><td style="padding:14px 32px 0">
+  <h1 style="margin:0;font:800 23px/1.3 ${SANS};color:#111826;letter-spacing:-.02em">${esc(title)}</h1>
 </td></tr>
 ${detail}
-<tr><td style="padding:4px 32px 28px">
+<tr><td style="padding:24px 32px 30px">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td bgcolor="#111827" style="background:#111827;border-radius:6px">
-      <a href="${href}" style="display:inline-block;padding:12px 22px;font:700 14px/1 ${SANS};color:#FFFFFF;text-decoration:none">Open in Orbuni</a>
+    <td bgcolor="#F2B544" style="background:#F2B544;border-radius:12px">
+      <a href="${href}" style="display:inline-block;padding:14px 26px;font:800 15px/1 ${SANS};color:#0E1626;text-decoration:none">Open in Orbuni &rarr;</a>
     </td>
   </tr></table>
 </td></tr>

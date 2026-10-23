@@ -20,6 +20,8 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 type Btn = { title: string; id?: string; url?: string };
 // Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
 const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
+// Posters for the "_card" templates (1080×1080), same hosting, pinned to the commit that added them.
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@095bb043255fb855e4ac1df57b42564c1e3884b6/site/img/wa/";
 export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
@@ -155,6 +157,46 @@ export const TEMPLATES: { key: string; category: "UTILITY" | "MARKETING"; body: 
     body: "Hi {{1}}, your free seat for the Orbuni scholarship webinar is saved. Want a head start? This short video shows what the 10 dollar VIP seat adds. Your free seat stays either way.",
     vars: { "1": "Aisha", "2": "3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" },
     link: { title: "See the VIP seat", url: "https://myorbuni.com/s/{{2}}" } },
+  // 23 Oct 2026: poster versions of the key messages (a branded poster on top, a structured message,
+  // one button, "Reply STOP" footer). Senders prefer "<key>_card" once Meta approves it.
+  // Same variables as the plain template, except that a link variable carries only the part after the
+  // button's fixed address (e.g. "s/<token>" for https://myorbuni.com/s/<token>) — see cardVars() in the senders.
+  ...([
+    ["orbuni_required_docs_card", "UTILITY", "required_docs",
+      "📋 *Your document checklist is ready, {{1}}*\n\nFor a *{{2}}* application in Türkiye, here is what to prepare:\n✅ Passport\n✅ Certificates and transcripts\n✅ Photo and supporting papers\n\nThe full checklist is one tap away. Keep it handy, and reply here with any question.",
+      { "1": "Aisha", "2": "bachelor's degree", "3": "docs/Orbuni-Required-Documents-Bachelors.pdf" }, { title: "Open my checklist", url: "https://myorbuni.com/{{3}}" }],
+    ["orbuni_call_booked_card", "UTILITY", "call_booked",
+      "✅ *Your free call is booked, {{1}}!*\n\n📅 {{2}} (Türkiye time)\n⏱ 30 minutes with the Orbuni team\n💻 Google Meet, on your phone or laptop\n\nBring your questions about universities, fees and scholarships. Need another time? Just reply here.",
+      { "1": "Aisha", "2": "Mon 13 Oct, 14:00", "3": "abc-defg-hij" }, { title: "Join Google Meet", url: "https://meet.google.com/{{3}}" }],
+    ["orbuni_webinar_seat_card", "UTILITY", "webinar_seat",
+      "🎓 *Your seat is saved, {{1}}!*\n\n*Orbuni Scholarship Webinar*\n📅 {{2}}\n📍 Online, from your personal seat page\n\n*In this free live session:*\n✅ How international students win 25% to 100% scholarships in Türkiye\n✅ Real fees and real examples\n✅ Your questions, answered live\n\nWe will remind you before we start. Tap below to see your seat and the countdown.",
+      { "1": "Aisha", "2": "Sat 6 Feb, 16:00 WAT (18:00 Türkiye)", "3": "s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" }, { title: "Open my seat", url: "https://myorbuni.com/{{3}}" }],
+    ["orbuni_webinar_reminder_card", "UTILITY", "webinar_reminder",
+      "⏰ *Reminder, {{1}}: the webinar starts {{2}}*\n\n*Orbuni Scholarship Webinar*\n📍 Online, from your seat page\n\nCome ready with your questions on:\n✅ Scholarships of 25% to 100%\n✅ Fees and living costs\n✅ How to apply\n\nTap below to open your seat.",
+      { "1": "Aisha", "2": "in about one hour", "3": "s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" }, { title: "Open my seat", url: "https://myorbuni.com/{{3}}" }],
+    ["orbuni_webinar_live_card", "UTILITY", "webinar_live",
+      "🔴 *We are LIVE now, {{1}}!*\n\nThe Orbuni Scholarship Webinar has started.\n\n✅ Scholarships explained\n✅ Real fees, real examples\n✅ Live questions\n\nTap below to take your seat. See you inside!",
+      { "1": "Aisha", "2": "s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" }, { title: "Join now", url: "https://myorbuni.com/{{2}}" }],
+    ["orbuni_webinar_replay_card", "MARKETING", "webinar_replay",
+      "🎬 *Missed it, {{1}}? The replay is ready.*\n\nThe full Orbuni Scholarship Webinar is waiting on your seat page.\n\n✅ Watch at your own pace\n✅ Pause and take notes\n⚠️ Free seats keep the replay for 3 days\n\nTap below to watch now.",
+      { "1": "Aisha", "2": "s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" }, { title: "Watch the replay", url: "https://myorbuni.com/{{2}}" }],
+    ["orbuni_webinar_next_card", "MARKETING", "webinar_next",
+      "🙌 *Thank you for joining, {{1}}!*\n\nYour next step takes 2 minutes: the free Orbuni assessment.\n\n✅ See the universities that fit you\n✅ See the scholarships you can aim for\n✅ Get a clear next step\n\nTap below to start.",
+      { "1": "Aisha", "2": "quiz" }, { title: "Start the assessment", url: "https://myorbuni.com/{{2}}" }],
+    ["orbuni_webinar_vip_card", "UTILITY", "webinar_vip",
+      "🌟 *You are in, {{1}}! Your VIP seat is confirmed.*\n\n*What you get:*\n✅ Your VIP seat at the webinar\n✅ The Scholarship Masterclass\n\n*One step to unlock it:* create your free account at myorbuni.com with the email you paid with.\n\nTap below to open your seat.",
+      { "1": "Aisha", "2": "s/3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" }, { title: "Open my seat", url: "https://myorbuni.com/{{2}}" }],
+    ["orbuni_offer_ready_card", "UTILITY", "offer_ready",
+      "🎉 *Good news, {{1}}!*\n\nThere is an update on your university application.\n\n✅ Open your portal to see it\n✅ Read your next steps\n✅ Reply here with any question\n\nYour counsellor is following your file.",
+      { "1": "Aisha" }, { title: "See the update", url: "https://myorbuni.com/#portal=student:track" }],
+    ["orbuni_documents_needed_card", "UTILITY", "documents_needed",
+      "📎 *One step left, {{1}}*\n\nYour Orbuni application is waiting for one or more documents.\n\n1️⃣ Open your portal\n2️⃣ Go to *Documents*\n3️⃣ Upload, and we send your file to the university\n\nNeed help? Just reply here.",
+      { "1": "Aisha" }, { title: "Upload documents", url: "https://myorbuni.com/#portal=student:docs" }],
+    ["orbuni_payment_received_card", "UTILITY", "payment_received",
+      "✅ *Payment received. Thank you, {{1}}!*\n\n💳 {{2}}\n🎓 {{3}}\n\n✅ Your receipt is in your email\n✅ Your Orbuni portal is already updated\n✅ Your counsellor has been told\n\nQuestions about this payment? Reply here.",
+      { "1": "Aisha", "2": "$10.00", "3": "The Scholarship Masterclass" }, { title: "Open my portal", url: "https://myorbuni.com/" }],
+  ] as [string, "UTILITY" | "MARKETING", string, string, Record<string, string>, Btn][]).map(([key, category, img, body, vars, link]) =>
+    ({ key, category, body, vars, link, media: IMG + img + ".jpg", footer: "Reply STOP to unsubscribe" })),
 ];
 function typesFor(t: typeof TEMPLATES[number]) {
   if (t.media) return { "twilio/card": { title: t.body, ...(t.footer ? { subtitle: t.footer } : {}), media: [t.media],

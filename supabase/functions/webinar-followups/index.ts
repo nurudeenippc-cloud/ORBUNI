@@ -158,11 +158,18 @@ Deno.serve(async (req) => {
       }
     }
     // their language when that version is approved, English otherwise
-    const tk = lg(j.r, j.tpl) !== "en" ? j.tpl + "_" + langOf(j.r) : j.tpl;
+    let tk = lg(j.r, j.tpl) !== "en" ? j.tpl + "_" + langOf(j.r) : j.tpl;
+    // English: the poster version once Meta approves it. Its button holds the fixed https://myorbuni.com/,
+    // so link variables carry only the rest of the address ("s/<token>", "quiz").
+    let vars = j.vars;
+    if (tk === j.tpl && T[j.tpl + "_card"]) {
+      tk = j.tpl + "_card";
+      vars = Object.fromEntries(Object.entries(j.vars).map(([k, v]) => [k, String(v).startsWith(SITE + "/") ? String(v).slice(SITE.length + 1) : v]));
+    }
     if (!T[tk]) { skip("template not approved yet"); continue; }
     const t = T[tk];
     const res = await waOnce(phone, first(j.r.name), j.key, "webinar", { lead_id: j.r.lead_id || undefined },
-      () => twilio(phone, t.content_sid, j.vars), fill(String(t.body), j.vars), tk);
+      () => twilio(phone, t.content_sid, vars), fill(String(t.body), j.vars), tk);
     if (res === "sent") sent.push(j.key); else skip(res.startsWith("failed") ? "Twilio refused" : res);
   }
   return json(200, { candidates: jobs.length, sent: sent.length, skipped });
