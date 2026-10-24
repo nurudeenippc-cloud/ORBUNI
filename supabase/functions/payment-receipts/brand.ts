@@ -38,6 +38,15 @@ const HERO: Record<string, [string, string]> = {
   team_application:    ["offer_ready", "An application moved"],
   team_partner:        ["partner_update", "Partner news"],
   team_webinar:        ["webinar_seat", "Webinar news"],
+  // 24 Oct 2026: marketing and care emails
+  newsletter:          ["offer_ready", "News from Orbuni"],
+  scholarship_tips:    ["webinar_next", "How scholarships really work"],
+  next_intake:         ["offer_ready", "Ready for the next intake"],
+  visa_tips:           ["required_docs", "Your student visa file"],
+  arrival_guide:       ["welcome", "Getting ready to fly"],
+  reengage:            ["call_booked", "Still planning to study abroad"],
+  referral:            ["partner_update", "Share Orbuni with a friend"],
+  webinar_invite:      ["webinar_seat", "A free seat at our live webinar"],
 };
 
 // Every poster comes in three designs (navy, cream, gold; a different student in each).

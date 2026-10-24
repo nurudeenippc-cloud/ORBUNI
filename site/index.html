@@ -16937,8 +16937,13 @@ async function lbRender(){
     kind === "pdf"   ? '<iframe src="' + esc(it.url) + '"></iframe>' :
     kind === "video" ? '<video src="' + esc(it.url) + '" controls autoplay></video>' :
     kind === "audio" ? '<audio src="' + esc(it.url) + '" controls autoplay style="width:min(420px,80vw)"></audio>' :
-    '<div class="lb-other">This file type can\'t preview here.<br><a class="btn btn-p btn-s" href="'
-      + esc(it.url) + '" download="' + esc(it.name || "") + '">Download ' + esc(it.name || "the file") + "</a></div>";
+    /\.(docx?|xlsx?|pptx?|odt|ods|odp|rtf)$/i.test(it.name || it.path || "")
+      // Word, Excel and PowerPoint open right here in the Office viewer (24 Oct 2026: nobody has to download a file to read it)
+      ? '<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(it.url) + '" style="background:#fff"></iframe>'
+      : /\.(txt|csv|md|json)$/i.test(it.name || it.path || "")
+      ? '<iframe src="' + esc(it.url) + '" style="background:#fff"></iframe>'
+      : '<div class="lb-other">This file type can\'t preview here.<br><a class="btn btn-p btn-s" href="'
+      + esc(it.url) + '" target="_blank" rel="noopener">Open ' + esc(it.name || "the file") + "</a></div>";
 }
 
 window.aOpenDoc = async function(path){
@@ -18112,6 +18117,14 @@ var COMMS_TPL = {
   review_reviewed:        { label:"Submission reviewed",     fields:[["project_name","Project name"]] },
   review_approved:        { label:"Submission approved",     fields:[["project_name","Project name"]] },
   review_rejected:        { label:"Submission rejected",     fields:[["project_name","Project name"],["reason","Reason"]] },
+  newsletter:             { label:"News / newsletter",       fields:[["subject","Headline"],["body","Message"],["cta_label","Button text"],["cta_link","Button link (myorbuni.com)"]] },
+  scholarship_tips:       { label:"How scholarships work",   fields:[] },
+  next_intake:            { label:"Next intake",             fields:[["intake","Intake (e.g. Fall 2027)"]] },
+  visa_tips:              { label:"Visa file tips",          fields:[] },
+  arrival_guide:          { label:"Before you fly",          fields:[] },
+  reengage:               { label:"Still planning? (check-in)", fields:[] },
+  referral:               { label:"Share with a friend",     fields:[] },
+  webinar_invite:         { label:"Free webinar invite",     fields:[] },
 };
 var COMMS = { type:"student", q:"", results:[], recipient:null, template:"custom_notice", vars:{}, preview:null, busy:false };
 
@@ -37460,6 +37473,256 @@ if(typeof window.$ !== "function") window.$ = $;
     window[name].__dnav = 1;
   });
 })();
+/* r24 (24 Oct 2026) · portal round: Claude-style Orbuni, instant changes, Team & alerts as cards, finance without the flash */
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var SPARK = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z"/></svg>';
+  var NEWI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+  function okTick(el, txt){
+    if(!el) return;
+    var t = el.parentNode && el.parentNode.querySelector(".r24-ok");
+    if(!t){ t = document.createElement("span"); t.className = "r24-ok"; el.insertAdjacentElement("afterend", t); }
+    t.textContent = "✓ " + (txt || "Saved"); t.classList.add("on");
+    clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove("on"); }, 2200);
+  }
+  window.r24OkTick = okTick;
+
+  /* ---- finance: no flash of the old page ---- */
+  if(typeof aFinance === "function" && !aFinance.__r24){
+    var _fin = aFinance;
+    aFinance = async function(){
+      document.documentElement.classList.add("fin-wait");
+      var safety = setTimeout(function(){ document.documentElement.classList.remove("fin-wait"); }, 6000);
+      try{ return await _fin.apply(this, arguments); }
+      finally{
+        try{ if(window.r13FinTidy) r13FinTidy(); }catch(e){}
+        clearTimeout(safety);
+        requestAnimationFrame(function(){ document.documentElement.classList.remove("fin-wait"); });
+      }
+    };
+    aFinance.__r24 = true;
+  }
+  /* leaving finance while it loads must not leave the screen hidden */
+  if(typeof aGo === "function" && !aGo.__r24){
+    var _go = aGo;
+    aGo = function(v){ if(v !== "finance") document.documentElement.classList.remove("fin-wait"); return _go.apply(this, arguments); };
+    aGo.__r24 = true;
+  }
+
+  /* ---- Orbuni: the entry in the sidebar, a new-chat button, the first screen ---- */
+  function addAskEntry(){
+    var aside = $("sb-a"); if(!aside || aside.querySelector(".r24-ask")) return;
+    var b = document.createElement("button"); b.type = "button"; b.className = "r24-ask";
+    var mac = /Mac|iP(hone|ad)/.test(navigator.platform || navigator.userAgent);
+    b.innerHTML = SPARK + "<span>Ask Orbuni</span><kbd>" + (mac ? "⌘K" : "Ctrl K") + "</kbd>";
+    b.onclick = function(){ if(typeof askOpen === "function") askOpen("general"); };
+    var top = aside.querySelector(".sb-top"); if(top) top.insertAdjacentElement("afterend", b); else aside.insertBefore(b, aside.firstChild);
+  }
+  function addNewChat(){
+    var head = document.querySelector("#askuni-panel .ask-head"); if(!head || head.querySelector(".r24-new")) return;
+    var b = document.createElement("button"); b.type = "button"; b.className = "r24-new"; b.innerHTML = NEWI + "New chat";
+    b.onclick = function(){
+      try{ if(typeof ASK !== "undefined" && ASK.history){ ASK.history[ASK.section] = []; if(typeof askPersist === "function") askPersist(); } }catch(e){}
+      try{ askRenderThread(); }catch(e){}
+      var i = $("ask-input"); if(i){ i.value = ""; i.focus(); }
+    };
+    head.appendChild(b);
+  }
+  function partOfDayWord(){ var h = new Date().getHours(); return h < 5 ? "Good evening" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; }
+  function helloScreen(){
+    var box = $("ask-thread"); if(!box) return;
+    var thread = (typeof ASK !== "undefined" && ASK.history && ASK.history[ASK.section]) || [];
+    if(thread.length || box.querySelector(".r24-hello")) return;
+    var starters = box.querySelector(".ai-starters");
+    var nm = (typeof PROF !== "undefined" && PROF && PROF.first_name) || "";
+    var hello = document.createElement("div"); hello.className = "r24-hello";
+    hello.innerHTML = "<i></i><h2>" + partOfDayWord() + (nm ? ", " + String(nm).replace(/[<>&"]/g, "") : "") + "</h2><p>How can I help today?</p>";
+    box.innerHTML = ""; box.appendChild(hello); if(starters) box.appendChild(starters);
+  }
+  if(typeof askRenderThread === "function" && !askRenderThread.__r24){
+    var _rt = askRenderThread;
+    askRenderThread = function(){ var r = _rt.apply(this, arguments); try{ helloScreen(); }catch(e){} return r; };
+    askRenderThread.__r24 = true;
+  }
+  if(typeof window.askOpen === "function" && !window.askOpen.__r24){
+    var _ao = window.askOpen;
+    window.askOpen = function(){
+      var r = _ao.apply(this, arguments);
+      try{ var p = $("askuni-panel"); if(p){ p.classList.remove("float"); p.style.left = p.style.top = p.style.width = p.style.height = ""; } addNewChat(); helloScreen(); }catch(e){}
+      setTimeout(function(){ var i = $("ask-input"); if(i && matchMedia("(min-width:901px)").matches) try{ i.focus(); }catch(e){} }, 120);
+      return r;
+    };
+    window.askOpen.__r24 = true;
+  }
+  /* the composer grows with what you type, like Claude's */
+  document.addEventListener("input", function(e){
+    if(e.target && e.target.id === "ask-input"){ var t = e.target; t.style.height = "auto"; t.style.height = Math.min(220, t.scrollHeight) + "px"; }
+  });
+  setInterval(addAskEntry, 1500); addAskEntry();
+
+  /* ---- leads: owner changes show at once, no page reload ---- */
+  window.leadSetOwner = async function(id, field, val){
+    var sel = document.querySelector('select[onchange*="leadSetOwner(\'' + id + "','" + field + '\'"]');
+    if(sel) sel.disabled = true;
+    var patch = {}; patch[field] = val || null;
+    var r = await sb.from("leads").update(patch).eq("id", id);
+    if(sel) sel.disabled = false;
+    if(r.error){ toast(friendly(r.error), true); try{ leadOpen(id); }catch(e){} return; }
+    var who = sel && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "";
+    okTick(sel, val ? "Now with " + who.split(" ")[0] : "Unassigned");
+  };
+  window.leadStage = async function(id, stage){
+    if(stage === "lost"){ leadLose(id); return; }
+    if(stage === "student"){ leadConvert(id); return; }
+    var sel = document.querySelector('select[onchange*="leadStage(\'' + id + '\'"]');
+    var r = await sb.from("leads").update({ stage: stage }).eq("id", id);
+    if(r.error){ toast(friendly(r.error), true); try{ leadOpen(id); }catch(e){} return; }
+    okTick(sel, "Moved to " + ((typeof LEAD_STAGE_LABEL !== "undefined" && LEAD_STAGE_LABEL[stage]) || stage));
+    var chip = document.querySelector("#a-live .panel .ph > .chip, #a-live .panel .ph > span:last-child");
+    if(chip && typeof stageChip === "function"){ var tmp = document.createElement("div"); tmp.innerHTML = stageChip(stage); if(tmp.firstChild) chip.replaceWith(tmp.firstChild); }
+  };
+
+  /* ---- section access: ticking someone applies in place ---- */
+  window.secSet = async function(person, sec, open, manage, el){
+    if(el) el.classList.add("busy");
+    var r;
+    if(!open && !manage) r = await sb.rpc("revoke_section", { p_person: person, p_section: sec });
+    else r = await sb.rpc("grant_section", { p_person: person, p_section: sec, p_manage: !!manage });
+    if(el) el.classList.remove("busy");
+    if(r.error){ if(el) el.checked = !el.checked; toast(friendly(r.error), true); return; }
+    var row = el && el.closest("tr"), boxes = row ? row.querySelectorAll("input[type=checkbox]") : [];
+    if(boxes.length > 1){
+      if(manage && boxes[0]) boxes[0].checked = true;          // in charge means they can open it too
+      if(!open && boxes[1]) boxes[1].checked = false;          // no access, not in charge either
+    }
+    okTick(el, open || manage ? "Added" : "Removed");
+    try{ loadSections(); }catch(e){}
+  };
+  if(typeof window.secOpen === "function" && !window.secOpen.__r24){
+    var _so = window.secOpen;
+    window.secOpen = async function(){
+      var r = await _so.apply(this, arguments);
+      document.querySelectorAll('#a-live input[type=checkbox][onchange*="secSet"]').forEach(function(i){ i.classList.add("r24-sw"); });
+      return r;
+    };
+    window.secOpen.__r24 = true;
+  }
+
+  /* ---- Team & alerts, as cards with switches ---- */
+  var EV_ICON = { student_signup:"🎓", application_submitted:"📨", document_uploaded:"📎", documents_missing:"🧾", status_change:"🔁", student_assigned:"🤝",
+    partner_application:"🏢", enquiry_received:"💬", job_application:"💼", payment_received:"💳", lead_assigned:"🎯", lead_overdue:"⏰", message_received:"✉️",
+    message_mention:"@", whatsapp_handoff:"🟢", team_alert:"🔔", career_application:"💼", file_incomplete:"🧾" };
+  function face(t, cls){
+    return '<span class="av ' + (cls || "") + '" data-face="' + esc(t.photo_path || "") + '" data-f="' + esc(t.first_name || "") + '" data-l="' + esc(t.last_name || "") + '">' + esc(initials(t.first_name, t.last_name)) + "</span>";
+  }
+  function nameOf(t){ return ((t.first_name || "") + " " + (t.last_name || "")).trim() || t.email || "—"; }
+  if(typeof aTeam === "function" && !aTeam.__r24){
+    aTeam = async function(){
+      var box = $("a-live"); if(!box) return;
+      box.innerHTML = '<div class="r24-card"><span class="spin"></span></div>';
+      var r = await sb.from("profiles").select("*").in("role", ["staff","admin"]).order("created_at");
+      var team = r.data || [];
+      var pr = await sb.from("alert_prefs").select("*");
+      var prefs = {}; (pr.data || []).forEach(function(p){ prefs[p.profile_id + "|" + p.kind] = p; });
+      var gr = await sb.rpc("section_grid");
+      SECGRID = {}; (gr.data || []).forEach(function(g){ (SECGRID[g.section] = SECGRID[g.section] || []).push(g.profile_id); });
+      var others = team.filter(function(t){ return !t.is_owner; });
+      var cols = "34px 1fr " + others.map(function(){ return "74px"; }).join(" ");
+      var html = '<div class="r24-team">'
+        + '<section class="r24-card"><div class="r24-hd"><div><h3>The team</h3><p class="r24-sub">' + team.length + " people</p></div></div>"
+        + '<div class="r24-people">' + team.map(function(t){
+            return '<div class="r24-person">' + face(t) + '<div style="min-width:0"><b>' + esc(nameOf(t))
+              + '<span class="r24-role ' + (t.is_owner ? "" : esc(t.role)) + '">' + (t.is_owner ? "Owner" : esc(t.role)) + "</span></b><small>" + esc(t.job_title || t.email || "") + "</small></div>"
+              + '<label class="r24-take">Gets new students<input type="checkbox" class="r24-sw"' + (t.accepts_students ? " checked" : "")
+              + (PROF.is_owner ? ' onchange="r24Takes(\'' + jsq(t.id) + '\', this)"' : " disabled") + "></label></div>";
+          }).join("") + "</div></section>"
+        + '<section class="r24-card"><div class="r24-hd"><div><h3>Alerts</h3><p class="r24-sub">' + (PROF.is_owner ? "You get every alert. Switch on what your team also gets." : "Your own alerts.") + "</p></div></div>"
+        + (others.length
+            ? '<div class="r24-evh" style="grid-template-columns:' + cols + '"><span></span><span></span>' + others.map(function(t){ return '<span class="r24-cell">' + face(t) + esc(t.first_name || "") + "</span>"; }).join("") + "</div>"
+              + Object.keys(KIND_LABEL).map(function(k){
+                  return '<div class="r24-ev" style="grid-template-columns:' + cols + '"><span class="r24-ic">' + (EV_ICON[k] || "•") + '</span><span class="r24-lb">' + KIND_LABEL[k] + "</span>"
+                    + others.map(function(t){
+                        var on = !!prefs[t.id + "|" + k], mine = t.id === ME.id;
+                        return '<span class="r24-cell"><input type="checkbox" class="r24-sw" aria-label="' + esc(t.first_name || "") + '"' + (on ? " checked" : "")
+                          + ((PROF.is_owner || mine) ? ' onchange="r24Pref(\'' + jsq(t.id) + "','" + jsq(k) + '\', this)"' : " disabled") + "></span>";
+                      }).join("") + "</div>";
+                }).join("")
+            : '<p class="r24-sub">Invite someone to the team and their alerts appear here.</p>')
+        + '<p class="r24-note">A student\'s counsellor always hears about that student.</p></section>'
+        + secCards(team) + "</div>";
+      box.innerHTML = html;
+      try{ paintFaces(box); }catch(e){}
+    };
+    aTeam.__r24 = true;
+  }
+  function secCards(team){
+    if(typeof SECTIONS === "undefined") return "";
+    var manageable = SECTIONS.filter(function(x){ return canManageSec(x.id); }); if(!manageable.length) return "";
+    var by = {}; team.forEach(function(t){ by[t.id] = t; });
+    return '<section class="r24-card"><div class="r24-hd"><div><h3>Who can open what</h3><p class="r24-sub">Sections not open to everyone</p></div></div><div class="r24-secs">'
+      + manageable.map(function(x){
+          var ppl = (SECGRID[x.id] || []).map(function(id){ return by[id]; }).filter(Boolean);
+          return '<div class="r24-sec"><b>' + esc(x.l) + '</b><div class="r24-faces">' + ppl.slice(0, 5).map(function(t){ return face(t); }).join("")
+            + "<em>" + (ppl.length ? ppl.map(function(t){ return esc(t.first_name || ""); }).join(", ") + " and you" : "Only you") + "</em></div>"
+            + '<button class="btn btn-o btn-s" onclick="secOpen(\'' + jsq(x.id) + '\')">Add someone</button></div>';
+        }).join("") + "</div></section>";
+  }
+  window.r24Takes = async function(id, el){
+    el.classList.add("busy");
+    var r = await sb.rpc("set_accepts_students", { p_person: id, p_on: el.checked });
+    el.classList.remove("busy");
+    if(r.error){ el.checked = !el.checked; toast(friendly(r.error), true); return; }
+    okTick(el, el.checked ? "On" : "Off");
+  };
+  window.r24Pref = async function(id, kind, el){
+    el.classList.add("busy");
+    var r = el.checked ? await sb.from("alert_prefs").upsert({ profile_id: id, kind: kind })
+                       : await sb.from("alert_prefs").delete().eq("profile_id", id).eq("kind", kind);
+    el.classList.remove("busy");
+    if(r.error){ el.checked = !el.checked; toast(friendly(r.error), true); }
+  };
+
+  /* ---- WhatsApp inbox: poster templates sent by the team carry their picture (one of three designs) ---- */
+  var R24_CARD_IMG = { offer_ready:"offer_ready", documents_needed:"documents_needed", scholarship_tips:"webinar_next", next_intake:"offer_ready",
+    visa_tips:"required_docs", arrival:"welcome", reengage:"call_booked", referral:"partner_update", webinar_invite:"webinar_seat", housing:"welcome" };
+  window.waSendTpl = async function(contactId, phoneInputId, selId){
+    var key = ($(selId) || {}).value; if(!key) return;
+    var body = { action:"template", key:key, vars:{} };
+    var c = contactId && WA.contacts.filter(function(x){ return x.id === contactId; })[0];
+    if(c){ body.contact_id = c.id; body.vars["1"] = (waName(c).split(" ")[0] || "there"); }
+    else{
+      body.phone = (($(phoneInputId) || {}).value || "").trim();
+      body.name = (($("wa2-new-name") || {}).value || "").trim();
+      body.vars["1"] = (body.name.split(" ")[0] || "there");
+    }
+    var img = R24_CARD_IMG[String(key).replace(/^orbuni_|_card$/g, "")];
+    if(/_card$/.test(key) && img) body.vars["2"] = img + "_" + (1 + Math.floor(Math.random() * 3)) + ".jpg";
+    var r = await waCall(body);
+    if(r.error){ toast(r.error, true); return; }
+    toast("Sent.");
+    waModalClose();
+    if(r.data.contact_id) WA.cur = r.data.contact_id;
+    await waLoad(); waPaint(); if(WA.cur) waOpen(WA.cur, true);
+  };
+
+  /* ---- housing: a broken photo shows our own placeholder, never a stock building ---- */
+  window.housePicErr = function(img){
+    if(!img) return;
+    var m = img.closest(".uc-media"); img.remove();
+    if(m) m.classList.add("r24-nopic");
+  };
+
+  /* ---- Whop page: drop the long explanations under each card title ---- */
+  if(typeof aWhop === "function" && !aWhop.__r24){
+    var _aw = aWhop;
+    aWhop = async function(){
+      var r = await _aw.apply(this, arguments);
+      try{ var wh = $("wh"); if(wh) wh.querySelectorAll("h3 + p, h3 + .s, h2 + p").forEach(function(p){ if((p.textContent || "").length > 70) p.classList.add("r24-hide-words"); }); }catch(e){}
+      return r;
+    };
+    aWhop.__r24 = true;
+  }
+})();
 })();
 
 </script>
@@ -38779,5 +39042,181 @@ window.orbSetLang = function(k){
 };
 </script>
 <!--/orb-i18n-->
+<!-- r24 · 24 Oct 2026 portal round: calmer header, Claude-style Orbuni, instant changes, fewer words -->
+<style id="r24-css">
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+/* no "Orbuni Portal · name · title" line above every page title */
+#a-crumb,#s-crumb,#p-crumb{display:none!important}
+#portal header.app h2.h1x{margin-top:0}
+/* finance: hold the screen until the real dashboard is ready (no old page flashing first) */
+html.fin-wait #a-live>*{visibility:hidden!important}
+html.fin-wait #a-live{position:relative;min-height:72vh}
+html.fin-wait #a-live::before{content:"";position:absolute;left:0;right:0;top:0;height:300px;border-radius:24px;visibility:visible;
+  background:linear-gradient(100deg,rgba(255,255,255,.035) 30%,rgba(255,255,255,.085) 50%,rgba(255,255,255,.035) 70%);background-size:220% 100%;animation:r24sh 1.1s linear infinite}
+html.fin-wait #a-live::after{content:"";position:absolute;left:0;right:0;top:324px;height:120px;border-radius:20px;visibility:visible;
+  background:linear-gradient(100deg,rgba(255,255,255,.03) 30%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 70%);background-size:220% 100%;animation:r24sh 1.1s linear infinite}
+@keyframes r24sh{to{background-position:-220% 0}}
+
+/* ---------- Orbuni, the Claude way ---------- */
+/* the AI button leaves the top bar: it lives in the sidebar (laptop) and the round button (phone) */
+#portal .ask-spark{display:none!important}
+@media(min-width:901px){ body:has(#sh-admin.on) #ol-root{display:none!important} }
+.r24-ask{display:flex;align-items:center;gap:10px;margin:12px 12px 4px;padding:10px 12px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(232,176,75,.28);background:linear-gradient(135deg,rgba(232,176,75,.12),rgba(232,176,75,.04));color:var(--txt);font:600 13.5px/1 var(--sans,system-ui);width:calc(100% - 24px);text-align:left}
+.r24-ask:hover{border-color:rgba(232,176,75,.55);background:linear-gradient(135deg,rgba(232,176,75,.18),rgba(232,176,75,.06))}
+.r24-ask svg{width:18px;height:18px;flex:none;color:#E8B04B}
+.r24-ask span{flex:1}
+.r24-ask kbd{font:600 11px/1 var(--sans,system-ui);color:var(--faint);border:1px solid var(--line2,rgba(255,255,255,.14));border-radius:6px;padding:4px 6px;background:rgba(255,255,255,.03)}
+@media(max-width:900px){.r24-ask{display:none}}
+
+#askuni-panel{--cl-bg:#1F1E1C;--cl-surf:#2B2A27;--cl-line:rgba(255,255,255,.09);--cl-txt:#ECEAE4;--cl-dim:#A8A49C;--cl-acc:#E8B04B;
+  --cl-serif:"Source Serif 4","Tiempos Text",ui-serif,Georgia,Cambria,"Times New Roman",serif}
+html[data-theme="light"] #askuni-panel{--cl-bg:#FAF9F5;--cl-surf:#FFFFFF;--cl-line:rgba(31,30,29,.12);--cl-txt:#1F1E1D;--cl-dim:#6B6862;--cl-acc:#B8791A}
+#askuni-panel,#askuni-panel.float{top:0!important;right:0!important;bottom:0!important;left:auto!important;width:min(500px,100vw)!important;height:100dvh!important;max-height:none!important;
+  border-radius:0!important;border:0!important;border-left:1px solid var(--cl-line)!important;background:var(--cl-bg)!important;color:var(--cl-txt)!important;
+  box-shadow:-24px 0 60px rgba(0,0,0,.35)!important;flex-direction:column!important;resize:none!important}
+#askuni-panel.on{display:flex!important}
+#askuni-panel:not(.on){display:none!important}
+#askuni-panel.on{animation:r24slide .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes r24slide{from{transform:translateX(40px);opacity:0}}
+#askuni-panel .ask-head{display:flex!important;align-items:center;gap:10px;padding:14px 16px 12px 20px!important;background:none!important;border-bottom:1px solid var(--cl-line)!important;min-height:0!important}
+#askuni-panel .ask-head .eye,#askuni-panel .ask-head #ask-sub{display:none!important}
+#askuni-panel .ask-head h3{order:1;flex:1;margin:0!important;font:600 15px/1.2 var(--sans,system-ui)!important;color:var(--cl-txt)!important;letter-spacing:0!important;display:flex;align-items:center;gap:9px}
+#askuni-panel .ask-head h3::before{content:"";width:20px;height:20px;flex:none;background:var(--cl-acc);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat}
+#askuni-panel .ask-head #askuni-x{order:3;position:static!important;width:34px;height:34px;border-radius:10px;border:0!important;background:transparent!important;color:var(--cl-dim)!important;font-size:15px}
+#askuni-panel .ask-head #askuni-x:hover,.r24-new:hover{background:rgba(127,127,127,.12)!important;color:var(--cl-txt)!important}
+.r24-new{order:2;height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--cl-line);background:transparent;color:var(--cl-dim);font:600 12.5px/1 var(--sans,system-ui);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.r24-new svg{width:15px;height:15px}
+#askuni-panel #ask-thread{flex:1;overflow-y:auto;padding:22px 22px 12px!important;display:flex;flex-direction:column;gap:18px;background:none!important}
+#askuni-panel .ask-msg.me{align-self:flex-end;max-width:86%;background:var(--cl-surf)!important;color:var(--cl-txt)!important;border:1px solid var(--cl-line)!important;border-radius:18px 18px 6px 18px!important;padding:10px 15px!important;font:400 15px/1.55 var(--sans,system-ui)!important;box-shadow:none!important}
+#askuni-panel .ai-row{display:flex;gap:12px;align-items:flex-start}
+#askuni-panel .ai-row .ai-av{width:22px!important;height:22px!important;flex:none;margin-top:3px;border-radius:0!important;background:var(--cl-acc)!important;box-shadow:none!important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat}
+#askuni-panel .ai-row .ai-av *{display:none}
+#askuni-panel .ask-msg.ai{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;max-width:100%!important;color:var(--cl-txt)!important;font:400 16px/1.7 var(--cl-serif)!important}
+#askuni-panel .ask-msg.ai p{margin:0 0 .75em}
+#askuni-panel .ask-msg.ai p:last-child{margin-bottom:0}
+#askuni-panel .ask-msg.ai strong,#askuni-panel .ask-msg.ai b{font-weight:650}
+#askuni-panel .ask-msg.ai code{font:13px/1.4 ui-monospace,Menlo,monospace;background:var(--cl-surf);border-radius:6px;padding:1px 5px}
+#askuni-panel .ask-msg.ai ul,#askuni-panel .ask-msg.ai ol{margin:.3em 0 .8em;padding-left:1.25em}
+/* thinking: a quiet spinning spark and a shimmering word, nothing else */
+#askuni-panel .live-think{display:flex;align-items:center;gap:12px;padding:2px 0}
+#askuni-panel .live-think .orb3{width:22px!important;height:22px!important;flex:none;background:var(--cl-acc)!important;border:0!important;box-shadow:none!important;border-radius:0!important;animation:r24spin 2.4s cubic-bezier(.6,.1,.4,.9) infinite!important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat}
+#askuni-panel .live-think .orb3 *{display:none!important}
+@keyframes r24spin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(.82)}100%{transform:rotate(360deg) scale(1)}}
+#askuni-panel .live-think .orb-say{font:500 14.5px/1.3 var(--sans,system-ui)!important;background:linear-gradient(90deg,var(--cl-dim) 0%,var(--cl-txt) 45%,var(--cl-dim) 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:r24shim 1.8s linear infinite}
+@keyframes r24shim{from{background-position:120% 0}to{background-position:-80% 0}}
+#askuni-panel .ai-caret{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cl-acc);margin-left:4px;vertical-align:middle;animation:r24dot 1s ease-in-out infinite}
+@keyframes r24dot{50%{opacity:.25;transform:scale(.7)}}
+@media(prefers-reduced-motion:reduce){#askuni-panel .live-think .orb3,#askuni-panel .live-think .orb-say,#askuni-panel .ai-caret{animation:none!important}#askuni-panel .live-think .orb-say{color:var(--cl-dim)!important}}
+/* first screen */
+.r24-hello{margin:auto 0;padding:24px 4px 6px;text-align:left}
+.r24-hello i{display:block;width:34px;height:34px;margin-bottom:18px;background:var(--cl-acc);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5l2 7 7-2-5 5 5 5-7-2-2 7-2-7-7 2 5-5-5-5 7 2z'/%3E%3C/svg%3E") center/contain no-repeat;animation:r24in .6s ease both}
+.r24-hello h2{margin:0 0 6px;font:400 30px/1.15 var(--cl-serif);letter-spacing:-.01em;color:var(--cl-txt)}
+.r24-hello p{margin:0;color:var(--cl-dim);font:400 15px/1.5 var(--sans,system-ui)}
+@keyframes r24in{from{opacity:0;transform:translateY(6px) rotate(-40deg)}}
+#askuni-panel .ai-starters{display:flex!important;flex-direction:column;gap:8px;margin-top:20px}
+#askuni-panel .ai-starters button{text-align:left!important;background:transparent!important;border:1px solid var(--cl-line)!important;border-radius:14px!important;padding:12px 14px!important;color:var(--cl-txt)!important;font:500 14px/1.35 var(--sans,system-ui)!important;box-shadow:none!important}
+#askuni-panel .ai-starters button:hover{background:var(--cl-surf)!important;border-color:color-mix(in srgb,var(--cl-acc) 45%,transparent)!important}
+/* the composer: one rounded box, text on top, tools underneath */
+#askuni-panel #ask-compose{margin:6px 16px calc(16px + env(safe-area-inset-bottom))!important;padding:10px 10px 8px 14px!important;border:1px solid var(--cl-line)!important;border-radius:22px!important;
+  background:var(--cl-surf)!important;display:flex!important;flex-wrap:wrap!important;align-items:center;gap:6px;box-shadow:0 6px 24px rgba(0,0,0,.18)!important;border-top:1px solid var(--cl-line)!important}
+#askuni-panel #ask-compose:focus-within{border-color:color-mix(in srgb,var(--cl-acc) 55%,transparent)!important}
+#askuni-panel #ask-input{flex:1 1 100%!important;order:0;width:100%!important;min-height:46px!important;max-height:220px;background:none!important;border:0!important;outline:0!important;box-shadow:none!important;padding:4px 2px!important;
+  color:var(--cl-txt)!important;font:400 15.5px/1.5 var(--sans,system-ui)!important;resize:none}
+#askuni-panel #ask-input::placeholder{color:var(--cl-dim)}
+#askuni-panel #ask-attach-btn{order:1;margin-right:auto;width:34px!important;height:34px!important;border-radius:10px!important;border:1px solid var(--cl-line);font-size:0!important;color:var(--cl-dim)!important;position:relative}
+#askuni-panel #ask-attach-btn::before{content:"+";font:300 22px/1 var(--sans,system-ui);color:var(--cl-dim)}
+#askuni-panel #ask-voice-btn{order:2;width:34px!important;height:34px!important;border-radius:10px!important;background:transparent!important;color:var(--cl-dim)!important;border:0!important;box-shadow:none!important}
+#askuni-panel #ask-send{order:3;width:34px!important;height:34px!important;border-radius:11px!important;background:var(--cl-acc)!important;color:#1B1A17!important;border:0!important;font-size:0!important;box-shadow:none!important;position:relative}
+#askuni-panel #ask-send::before{content:"";position:absolute;inset:0;margin:auto;width:16px;height:16px;background:#1B1A17;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M5 12l7-7 7 7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M5 12l7-7 7 7'/%3E%3C/svg%3E") center/contain no-repeat}
+#askuni-panel #ask-attach-chip:not(:empty){padding:0 18px}
+#askuni-panel .ask-card{border-radius:16px!important;border:1px solid var(--cl-line)!important;background:var(--cl-surf)!important}
+@media(max-width:900px){
+  #askuni-panel,#askuni-panel.float{width:100vw!important;height:100dvh!important;max-height:none!important;border-left:0!important;top:0!important}
+  .r24-hello h2{font-size:27px}
+}
+#askuni-scrim{background:rgba(0,0,0,.35)!important;backdrop-filter:blur(2px)}
+
+/* ---------- small "saved" tick next to a control that changed ---------- */
+.r24-ok{display:inline-flex;align-items:center;gap:5px;margin-left:8px;font:700 11.5px/1 var(--sans,system-ui);color:#3ED598;opacity:0;transition:opacity .2s}
+.r24-ok.on{opacity:1}
+/* switches instead of tick boxes */
+#portal input.r24-sw,input.r24-sw{appearance:none!important;-webkit-appearance:none!important;width:40px!important;height:23px!important;min-width:40px!important;padding:0!important;margin:0!important;border:0!important;border-radius:99px!important;
+  background:rgba(127,127,127,.32)!important;position:relative!important;cursor:pointer;transition:background .18s;flex:none;vertical-align:middle;box-shadow:none!important;accent-color:auto}
+#portal input.r24-sw::before{display:none!important}
+#portal input.r24-sw::after,input.r24-sw::after{content:""!important;position:absolute!important;top:3px!important;left:3px!important;width:17px!important;height:17px!important;border-radius:50%!important;background:#fff!important;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .18s;display:block!important;border:0!important;transform:none}
+#portal input.r24-sw:checked,input.r24-sw:checked{background:#2FBF7F!important}
+#portal input.r24-sw:checked::after,input.r24-sw:checked::after{transform:translateX(17px)!important}
+#portal input.r24-sw:disabled{opacity:.45;cursor:default}
+#portal input.r24-sw.busy{opacity:.6;pointer-events:none}
+
+/* ---------- Team & alerts, as cards ---------- */
+.r24-team{display:flex;flex-direction:column;gap:16px}
+.r24-card{border:1px solid var(--line);border-radius:20px;background:var(--card,rgba(255,255,255,.02));padding:20px}
+.r24-card h3{margin:0;font:700 17px/1.2 var(--disp,var(--round,inherit));color:var(--txt)}
+.r24-card .r24-sub{margin:4px 0 0;color:var(--faint);font-size:13px}
+.r24-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.r24-people{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.r24-person{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(127,127,127,.04)}
+.r24-person .av{width:44px;height:44px;flex:none}
+.r24-person b{display:block;font-size:14.5px;color:var(--txt)}
+.r24-person small{display:block;color:var(--faint);font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+.r24-person .r24-take{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--dim);font-weight:600}
+.r24-role{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;font:700 10px/1.4 var(--sans,system-ui);letter-spacing:.06em;text-transform:uppercase;background:rgba(232,176,75,.14);color:#E8B04B;vertical-align:1px}
+.r24-role.staff{background:rgba(92,200,245,.12);color:#5CC8F5}
+.r24-ev{display:grid;align-items:center;gap:10px;padding:11px 4px;border-top:1px solid var(--line)}
+.r24-ev:first-of-type{border-top:0}
+.r24-ev .r24-ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:16px;background:rgba(127,127,127,.08)}
+.r24-ev .r24-lb{font-size:14px;color:var(--txt);font-weight:600}
+.r24-ev .r24-cell{display:flex;justify-content:center}
+.r24-evh{display:grid;align-items:end;gap:10px;padding:0 4px 8px}
+.r24-evh .r24-cell{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--faint);font-weight:700;text-align:center}
+.r24-evh .r24-cell .av{width:28px;height:28px;font-size:11px}
+.r24-note{margin:14px 0 0;font-size:12.5px;color:var(--faint)}
+.r24-secs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.r24-sec{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;border:1px solid var(--line);background:rgba(127,127,127,.04)}
+.r24-sec b{font-size:14.5px;color:var(--txt)}
+.r24-sec .r24-faces{display:flex;align-items:center;gap:-6px}
+.r24-sec .r24-faces .av{width:28px;height:28px;font-size:10.5px;margin-right:-6px;border:2px solid var(--bg)}
+.r24-sec .r24-faces em{margin-left:12px;font-style:normal;font-size:12px;color:var(--faint)}
+.r24-sec button{align-self:flex-start}
+
+/* ---------- WhatsApp inbox, less template-looking ---------- */
+#a-live .wa2-grid{border-radius:22px!important;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+#a-live .wa2-msgs{background-color:#0B141A!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' fill='none' stroke='%23ffffff' stroke-opacity='.035' stroke-width='1.4'%3E%3Ccircle cx='20' cy='22' r='7'/%3E%3Cpath d='M70 14l8 8-8 8-8-8z'/%3E%3Cpath d='M98 60c6 0 10 4 10 10s-4 10-10 10'/%3E%3Cpath d='M18 84h18M27 75v18'/%3E%3Crect x='56' y='70' width='18' height='13' rx='3'/%3E%3Cpath d='M40 46l6 3-6 3M100 26l3 6-6 0z'/%3E%3C/svg%3E")!important}
+html[data-theme="light"] #a-live .wa2-msgs{background-color:#EFEAE2!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' fill='none' stroke='%23000000' stroke-opacity='.045' stroke-width='1.4'%3E%3Ccircle cx='20' cy='22' r='7'/%3E%3Cpath d='M70 14l8 8-8 8-8-8z'/%3E%3Cpath d='M98 60c6 0 10 4 10 10s-4 10-10 10'/%3E%3Cpath d='M18 84h18M27 75v18'/%3E%3Crect x='56' y='70' width='18' height='13' rx='3'/%3E%3C/svg%3E")!important}
+#a-live .wa2-b{box-shadow:0 1px .5px rgba(0,0,0,.25)!important;border:0!important}
+#a-live .wa2-b.in{background:#202C33!important;color:#E9EDEF!important}
+#a-live .wa2-b.out{background:#005C4B!important;color:#E9EDEF!important}
+html[data-theme="light"] #a-live .wa2-b.in{background:#fff!important;color:#111B21!important}
+html[data-theme="light"] #a-live .wa2-b.out{background:#D9FDD3!important;color:#111B21!important}
+#a-live .wa2-b .who{display:inline-flex!important;align-items:center;gap:4px;padding:1px 7px;border-radius:99px;background:rgba(37,211,102,.14);font-size:9.5px!important;margin-bottom:4px!important}
+#a-live .wa2-day{background:#182229!important;color:#8696A0!important;border-radius:8px!important;box-shadow:0 1px .5px rgba(0,0,0,.2)}
+#a-live .wa2-row{border-radius:14px!important;margin:2px 8px!important}
+#a-live .wa2-row:hover{background:rgba(127,127,127,.07)!important}
+#a-live .wa2-av{box-shadow:0 0 0 2px rgba(255,255,255,.04)}
+#a-live .wa2-chead{backdrop-filter:blur(8px)}
+#a-live .wa2-comp{gap:6px}
+#a-live .wa2-sendbtn,#a-live .wa2-send{background:#25D366!important;color:#06281A!important;border-radius:50%!important}
+#a-live .wa2-btn{border-radius:12px!important;border:1px solid var(--line)!important;padding:8px 12px!important;background:rgba(127,127,127,.05)!important}
+#a-live .wa2-btn.pri{background:#25D366!important;color:#06281A!important;border-color:#25D366!important}
+#a-live .wa2-empty i{width:76px!important;height:76px!important;border-radius:24px!important;background:linear-gradient(135deg,rgba(37,211,102,.25),rgba(37,211,102,.06))!important}
+#a-live .wa2-hint{display:none!important}
+
+/* ---------- Whop page: fewer words ---------- */
+.r6-whophero p{display:none!important}
+#wh .r24-hide-words{display:none!important}
+
+/* ---------- housing: no other agency's picture when one is missing ---------- */
+.uc-media.r24-nopic{background:radial-gradient(120% 120% at 20% 0%,rgba(232,176,75,.28),transparent 55%),linear-gradient(135deg,#132036,#0B1426)!important;position:relative}
+.uc-media.r24-nopic::after{content:"";position:absolute;inset:0;margin:auto;width:64px;height:64px;opacity:.85;background:#E8B04B;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M15 10h.01M9 13h.01M15 13h.01'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M15 10h.01M9 13h.01M15 13h.01'/%3E%3C/svg%3E") center/contain no-repeat}
+</style>
+
 </body>
 </html>

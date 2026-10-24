@@ -5,3 +5,4 @@ screenshots-*/
 out/
 site/.netlify/
 supabase/functions/deno.lock
+site/_t.html

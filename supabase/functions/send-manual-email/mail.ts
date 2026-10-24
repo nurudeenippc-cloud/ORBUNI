@@ -72,7 +72,16 @@ export const SUBJECTS: Record<string, (v: V) => string> = {
   deadline_soon:        v => `${g(v,"days")} days left on one of your choices`,
   review_reviewed:      v => `We've reviewed your Orbuni submission`,
   review_approved:      v => `Your Orbuni submission is approved — payment next`,
-  review_rejected:      v => `Update on your Orbuni submission`
+  review_rejected:      v => `Update on your Orbuni submission`,
+  // 24 Oct 2026: marketing and care emails the team sends from the composer
+  newsletter:           v => String((v as V).subject ?? "News from Orbuni"),
+  scholarship_tips:     v => `${g(v,"first_name","Hello")}, how scholarships in Türkiye really work`,
+  next_intake:          v => `Ready for the next intake, ${g(v,"first_name","there")}?`,
+  visa_tips:            v => `Your student visa file: what to get right`,
+  arrival_guide:        v => `Getting ready to fly, ${g(v,"first_name","there")}`,
+  reengage:             v => `Still planning to study abroad, ${g(v,"first_name","there")}?`,
+  referral:             v => `Know someone who wants to study in Türkiye?`,
+  webinar_invite:       v => `A free seat at our live scholarship webinar`
 };
 
 export const BODIES: Record<string, (v: V) => string> = {
@@ -171,7 +180,69 @@ export const BODIES: Record<string, (v: V) => string> = {
     + h1("Update on your submission")
     + para(`Hello ${g(v,"first_name","there")}, thank you for sending a submission for ${b(g(v,"project_name","the project"))}. After review, we are not able to accept this submission.`)
     + note("Reason", g(v,"reason","It did not meet the brief."))
-    + para("If the reason above is something you can fix, you may send a new submission. This email is not a payment."))
+    + para("If the reason above is something you can fix, you may send a new submission. This email is not a payment.")),
+
+  // ---------- 24 Oct 2026: marketing and care emails (sent by the team from the composer) ----------
+  // A short news email: a headline, the team's own words, one button. Links only go to myorbuni.com.
+  newsletter: v => {
+    var subject = String((v as V).subject ?? "News from Orbuni");
+    var paragraphs = String((v as V).body ?? "").split(/\n{2,}/).filter(function(p){ return p.trim(); })
+      .map(function(p){ return para(esc(p).replace(/\n/g, "<br>")); }).join("");
+    var link = String((v as V).cta_link ?? ""); if(!/^https:\/\/(www\.)?myorbuni\.com(\/|$)/.test(link)) link = SITE;
+    return shell(esc(subject), kick("Orbuni news") + h1(esc(subject)) + (paragraphs || para("&nbsp;"))
+      + button(g(v,"cta_label","Open Orbuni"), link)
+      + small("You are getting this because you are part of the Orbuni community."));
+  },
+  scholarship_tips: v => shell("Bands of 25% to 100%, and what decides yours.",
+    kick("Scholarships")
+    + h1("How scholarships in Türkiye really work")
+    + para(`${g(v,"first_name","Hello")}, at most private universities in Türkiye a scholarship is a discount on the published fee. Here is what decides how big yours is:`)
+    + steps([["Your results: stronger grades usually mean a higher band","you"],["Applying early, while places are open","you"],["A complete file the first time","both"],["Sending it the right way, through an official partner","us"]])
+    + note("No invented numbers", "We only show a scholarship once the university has confirmed it in writing. What you see is what you pay.", "green")
+    + button("Read the full guide", SITE + "/articles/how-turkish-scholarships-work/")
+    + small("Questions? Reply to this email and your counsellor answers.")),
+  next_intake: v => shell("Two minutes to see where you stand for the next intake.",
+    kick("Next intake")
+    + h1(`Ready for the next intake, ${g(v,"first_name","there")}?`)
+    + para(`Universities fill their best scholarship places first.${v.intake ? " For " + b(g(v,"intake")) + ", the" : " The"} students who start early get the widest choice.`)
+    + rows([["Step 1", "The free 2-minute assessment"],["Step 2", "Your shortlist and scholarship options"],["Step 3", "Documents ready, application sent"]])
+    + button("Take the free assessment", SITE + "/#start")
+    + small("Applying is free. You only pay for extra services you choose, and you see every price before you decide.")),
+  visa_tips: v => shell("What usually makes a visa file strong.",
+    kick("Visa")
+    + h1("Your student visa file: what to get right")
+    + para(`${g(v,"first_name","Hello")}, the consulate decides every visa, and nobody can influence that. What you control is the file. These are the things that matter most:`)
+    + steps([["A valid passport with enough months left","you"],["Your acceptance letter from the university","both"],["Proof of funds that is steady, not sudden","you"],["Names and dates that match on every document","both"],["Health insurance and where you will live","both"]])
+    + note("We check it before you go", "Your counsellor checks every document against every other one. The exact list depends on your consulate, and we confirm it with you.")
+    + button("Read the visa guide", SITE + "/articles/nigerian-student-visa-refusals/")
+    + small("Government visa fees are paid by the student, directly to the consulate.")),
+  arrival_guide: v => shell("A short checklist for the weeks before you fly.",
+    kick("Before you fly")
+    + h1(`Getting ready to fly, ${g(v,"first_name","there")}`)
+    + para("Congratulations on getting this far. A few things make the first week in Türkiye much easier:")
+    + steps([["Book your flight and send us the details","you"],["Pack your original documents in your hand luggage","you"],["Arrange where you will stay for the first nights","both"],["Airport pickup, if you booked it","us"],["Registration at the university","both"]])
+    + button("Open my portal", SITE + "/#portal=student")
+    + note("Something changed?", "Flight delayed or dates moved? Update it in your portal or reply here, and we adjust everything on our side.", "green")),
+  reengage: v => shell("Your plans, your pace. We are still here.",
+    kick("Checking in")
+    + h1(`Still planning to study abroad, ${g(v,"first_name","there")}?`)
+    + para("Plans change, and that is fine. If studying in Türkiye is still on your mind, the next step takes two minutes and costs nothing.")
+    + button("See where I stand", SITE + "/#start")
+    + para("Prefer to talk? Reply to this email with a good time and a counsellor will call you.")
+    + small("You are getting this because you showed interest in Orbuni. Reply STOP and we will not email you about this again.")),
+  referral: v => shell("Share Orbuni with a friend who is thinking about it.",
+    kick("Share Orbuni")
+    + h1("Know someone who wants to study in Türkiye?")
+    + para(`${g(v,"first_name","Hello")}, if a friend, brother, sister or classmate is thinking about studying abroad, send them our free assessment. They get the same honest advice you did.`)
+    + button("Get the link to share", SITE + "/")
+    + small("They apply for free, and their counsellor is a real person they can message any time.")),
+  webinar_invite: v => shell("Free, live, and questions answered on the spot.",
+    kick("Free webinar")
+    + h1("A free seat at our live scholarship webinar")
+    + para(`${g(v,"first_name","Hello")}, we are hosting a free live session on how international students win 25% to 100% scholarships at universities in Türkiye.`)
+    + rows([["What", "Scholarships, real fees, how to apply"],["Where", "Online, from your phone or laptop"],["Cost", "Free"]])
+    + button("Save my free seat", SITE + "/webinar")
+    + small("Can't make it live? Free seats keep the replay for 3 days."))
 };
 
 export function render(template: string, vars: V){
