@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Stop follow-up emails · Orbuni</title>
+<link rel="icon" href="/icon-192.png">
+<style>
+:root{--bg:#F3F5FA;--card:#FFFFFF;--ink:#101828;--body:#475467;--mute:#7A8798;--line:#E4E8EF;--btn:#0E1626;--btnt:#FFFFFF;--ok:#127A52;--bad:#B42318}
+@media (prefers-color-scheme:dark){:root{--bg:#0B0F17;--card:#141C2B;--ink:#EEF3FA;--body:#B7C2D3;--mute:#8B99AD;--line:#23304A;--btn:#F2B544;--btnt:#1A1204;--ok:#3ED598;--bad:#FF8A7A}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--body);font:400 16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:16px}
+main{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:440px;width:100%;padding:30px 26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--ink);margin-bottom:22px}
+.brand i{width:26px;height:26px;border:2px solid #F2B544;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;color:#F2B544}
+h1{font-size:22px;line-height:1.3;color:var(--ink);margin:0 0 10px;text-wrap:balance}
+p{margin:0 0 10px}
+b{color:var(--ink);font-weight:600;overflow-wrap:anywhere}
+button,a.btn{display:inline-block;margin-top:14px;background:var(--btn);color:var(--btnt);border:0;border-radius:11px;padding:14px 22px;font:700 15px/1 inherit;cursor:pointer;text-decoration:none}
+button:focus-visible,a:focus-visible{outline:3px solid #F2B544;outline-offset:2px}
+button[disabled]{opacity:.6;cursor:default}
+small{display:block;margin-top:16px;color:var(--mute);font-size:13px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<main id="m" aria-live="polite">
+  <div class="brand"><i>O</i>Orbuni</div>
+  <h1>Loading…</h1>
+</main>
+<script>
+(function(){
+  var FN = "https://ytsebzdykfeiiuxbdtvr.supabase.co/functions/v1/email-optout";
+  var m = document.getElementById("m");
+  var q = new URLSearchParams(location.search);
+  var e = (q.get("e") || "").trim().toLowerCase(), t = (q.get("t") || "").trim();
+  var head = '<div class="brand"><i>O</i>Orbuni</div>';
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) || !/^[0-9a-f]{32}$/.test(t)){
+    m.innerHTML = head + '<h1>This link isn\'t complete</h1><p>Open the link straight from the email, or simply reply to the email and ask us to stop — a person will do it for you.</p><a class="btn" href="/">Go to myorbuni.com</a>';
+    return;
+  }
+  m.innerHTML = head + '<h1>Stop follow-up emails?</h1><p>We\'ll stop sending reminders and follow-ups to <b>' + esc(e) + '</b>.</p>'
+    + '<button id="go" type="button">Yes, stop them</button><small>Changed your mind? Just close this page. You\'ll still get emails you need about an application or a payment you\'ve made.</small>';
+  document.getElementById("go").onclick = function(){
+    var b = this; b.disabled = true; b.textContent = "Stopping…";
+    fetch(FN + "?e=" + encodeURIComponent(e) + "&t=" + t, { method: "POST" })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok && j.ok, j: j }; }); })
+      .then(function(x){
+        if(x.ok) m.innerHTML = head + '<h1 class="ok">Done — no more reminders</h1><p>We won\'t send follow-up or reminder emails to <b>' + esc(e) + '</b> any more.</p><a class="btn" href="/">Go to myorbuni.com</a>';
+        else { b.disabled = false; b.textContent = "Try again"; m.insertAdjacentHTML("beforeend", '<p class="bad">' + esc((x.j && x.j.error) || "That didn't work.") + ' You can also reply to the email and ask us to stop.</p>'); }
+      })
+      .catch(function(){ b.disabled = false; b.textContent = "Try again"; });
+  };
+})();
+</script>
+</body>
+</html>
