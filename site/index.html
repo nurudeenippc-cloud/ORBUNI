@@ -39218,5 +39218,55 @@ html[data-theme="light"] #a-live .wa2-b.out{background:#D9FDD3!important;color:#
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M15 10h.01M9 13h.01M15 13h.01'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M15 10h.01M9 13h.01M15 13h.01'/%3E%3C/svg%3E") center/contain no-repeat}
 </style>
 
+<style id="r25-css">
+/* r25 (24 Oct 2026) · stable portal on phones. The portal is a fixed layer over the public site; the site kept
+   rendering (and panning) underneath, so on iPhone a sideways swipe moved the whole WhatsApp screen. While the
+   portal is open the site underneath is switched off and nothing can scroll sideways. */
+html.portal-open,html.portal-open body{overflow:hidden!important;overscroll-behavior:none!important;height:100%;max-width:100vw}
+html.portal-open body>nav,html.portal-open body>main.page,html.portal-open body>footer,html.portal-open body>.tick,html.portal-open #nscrim{display:none!important}
+html.portal-open #portal{overflow-x:hidden;overscroll-behavior:none;touch-action:pan-y pinch-zoom}
+#portal .view,#portal .body,#portal .app{max-width:100%;overflow-x:hidden}
+/* WhatsApp inbox: rows never wider than the list; sideways strips stop at their own edge */
+#portal .wa2-rows{overflow-x:hidden!important;overscroll-behavior:contain}
+#portal .wa2-row{max-width:100%;box-sizing:border-box;min-width:0}
+#portal .wa2-chips,#portal .wa2-tabs{overscroll-behavior-x:contain;touch-action:pan-x}
+#portal .wa2-msgs{overflow-x:hidden!important;overscroll-behavior:contain}
+#portal .wa2-msgs img,#portal .wa2-msgs video,#portal .wa2-msgs iframe{max-width:100%;height:auto}
+#portal .wa2-msgs .wa2-b,#portal .wa2-msgs [class*="bub"]{max-width:84%;overflow-wrap:anywhere;word-break:break-word}
+.nl{overflow-x:hidden}
+/* chart tooltips at either end of the chart stay inside it instead of hanging past the screen edge */
+#portal .bar-c:nth-last-child(-n+2) em{left:auto;right:0;transform:none}
+#portal .bar-c:nth-child(-n+2) em{left:0;transform:none}
+/* public site: nothing slides in from the side on a phone (it pushed the page sideways mid-scroll); sections may not scroll sideways */
+@media(max-width:760px){.fgrid.four .fcard.rv:not(.in){transform:translateY(18px)!important}body>main.page,body>footer{overflow-x:clip}}
+@media(max-width:760px){
+  /* composer: the text box gets the room, the three tools shrink */
+  #portal .wa2-comp .row{display:flex;align-items:flex-end;gap:4px!important;min-width:0}
+  #portal .wa2-comp .wa2-ic{width:36px!important;height:40px!important;flex:0 0 36px!important;padding:0!important}
+  #portal .wa2-comp textarea#wa2-text{flex:1 1 auto!important;min-width:0!important;width:auto!important;font-size:16px!important}
+  #portal .wa2-comp .wa2-hint{display:none}
+  /* the round assistant button covered the send button inside an open chat */
+  html.wa-chat-open #ol-root{display:none!important}
+}
+</style>
+<script id="r25-js">
+(function(){
+  var html=document.documentElement;
+  function sync(){
+    var p=document.getElementById('portal');
+    var open=!!(p&&p.classList.contains('on'));
+    if(open!==html.classList.contains('portal-open')){
+      html.classList.toggle('portal-open',open);
+      if(open) window.scrollTo(0,0);
+    }
+    var g=document.getElementById('wa2-grid');
+    html.classList.toggle('wa-chat-open',!!(open&&g&&g.offsetParent&&g.classList.contains('has-cur')));
+  }
+  var queued=false;
+  var mo=new MutationObserver(function(){ if(queued) return; queued=true; requestAnimationFrame(function(){ queued=false; sync(); }); });
+  function start(){ sync(); mo.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class'],childList:true}); }
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded',start);
+})();
+</script>
 </body>
 </html>
