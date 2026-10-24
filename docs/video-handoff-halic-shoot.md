@@ -5,12 +5,14 @@ Written 25 Oct 2026. Anyone (another AI model or an editor) can pick this up wit
 ## Status: NOT started. Why
 - Shoot folder: https://drive.google.com/drive/folders/1pYeJql19qGBOYhEP7WlpfLA-zcpl5Ea5
   First 100 files seen: 26 videos (.MOV, 4.2 GB, one file is 2.0 GB, one is 0.66 GB) and 74 photos (.HEIC); more pages exist.
-- The two Iman reference videos are NOT in that folder (a search for iman / ref / whop found nothing).
+- The two reference videos ARE in that folder (my first search used the wrong words):
+  - "I-just-became-SnapYT.App.mp4" (108 MB) = the "became co-owner of Whop" reference (id 1U8yQb0RXNEUIvMw3fOAcGqrexyaFN7Wl)
+  - "Day-In-The-SnapYT.App.mp4" (97 MB) = the second reference, use its beginning (id 1jdgHROeCgp_xCbWK_DbLFqeLndiQgQYr)
 - The AI workspace cannot reach drive.google.com, and the Drive connector returns files as text through the chat, which
   cannot carry video. So the footage cannot be loaded into the workspace, and a film cannot be cut from it there.
 - Openverse (api.openverse.org) is blocked by the workspace network policy. earshot and real-sfx (GitHub) do download.
 
-Needed to start: the 2 reference videos, and the footage on a machine with disk and normal internet (the editor's computer,
+Needed to start: the footage on a machine with disk and normal internet (the editor's computer,
 or a workspace that can reach Drive).
 
 ## The film (from the owner's brief)
