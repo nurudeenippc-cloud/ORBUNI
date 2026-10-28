@@ -12277,9 +12277,20 @@ function friendly(e){
   if(m.indexOf("already registered") > -1) return "There is already an account with that email. Sign in instead.";
   if(m.indexOf("email not confirmed") > -1)return "Check your inbox and click the link we sent, then sign in.";
   if(m.indexOf("rate limit") > -1 || m.indexOf("too many") > -1) return "Too many tries. Wait a minute and try again.";
-  if(m.indexOf("password") > -1)           return "That password is too weak. Use at least 8 characters.";
-  if(m.indexOf("fetch") > -1 || m.indexOf("network") > -1) return "We could not reach the server. Check your internet and try again.";
+  if(/password should|weak password|at least \d+ characters/.test(m)) return "That password is too weak. Use at least 8 characters.";
+  if(m.indexOf("fetch") > -1 || m.indexOf("network") > -1 || m.indexOf("load failed") > -1) return "We could not reach the server. Check your internet and try again.";
   return (e && e.message) ? e.message : "Something went wrong. Please try again.";
+}
+// Sign-in, sign-up and password screens: people there must never see a raw server message
+// (clock blips such as "JWT issued at future", gateway hiccups, database errors). Known cases get
+// the plain sentence from friendly(); anything else gets a calm retry line, and the raw text goes
+// to the console for us.
+function authFriendly(e){
+  var out = friendly(e), raw = (e && e.message) || "", m = raw.toLowerCase();
+  if(m.indexOf("captcha") > -1) return "The security check did not finish. Refresh the page and try again.";
+  if(m.indexOf("user banned") > -1 || m.indexOf("signups not allowed") > -1) return "This account cannot sign in right now. Message us on WhatsApp and we will sort it out.";
+  if(raw && out === raw){ try{ console.warn("auth error:", e); }catch(_){} return "We could not finish that just now. Please try again in a moment."; }
+  return out;
 }
 
 // 17 Sep 2026: real bug, found twice in one night (once on the AskUni
@@ -12360,7 +12371,7 @@ window.enter = async function(kind, ev){
       await orbGreet(PROF, true);
       toast("Let’s finish your application.");
       openLineup();
-    }catch(e){ authErr(friendly(e)); }
+    }catch(e){ authErr(authFriendly(e)); }
     finally{ busy(btn, false); }
     return;
   }
@@ -12394,7 +12405,7 @@ window.enter = async function(kind, ev){
         return;
       }
       await routeByRole({ greet: true });
-    }catch(e2){ authErr(friendly(e2)); }
+    }catch(e2){ authErr(authFriendly(e2)); }
     finally{ busy(btn, false); }
     return;
   }
@@ -12564,7 +12575,7 @@ window.partnerApplied = async function(ev){
     });
     if(r.error) throw r.error;
     if(typeof setAuth === "function") setAuth("partner-done");
-  }catch(e){ authErr(friendly(e)); }
+  }catch(e){ authErr(authFriendly(e)); }
   finally{ busy(btn, false); }
 };
 
@@ -19367,7 +19378,7 @@ window.orbFirstPassword = async function(ev){
     if(u.error) throw u.error;
     await loadProfile();
     await routeByRole({ greet: true });
-  }catch(e){ authErr(friendly(e)); }
+  }catch(e){ authErr(authFriendly(e)); }
   finally{ busy(btn, false); }
 };
 
@@ -19385,7 +19396,7 @@ window.orbForgot = async function(ev){
     var r = await sb.auth.resetPasswordForEmail(addr, { redirectTo: location.origin + "/?reset=1", captchaToken: await orbCaptcha() });
     if(r.error) throw r.error;
     toast("Check your inbox — we sent a reset link to " + addr + ".");
-  }catch(e){ authErr(friendly(e)); }
+  }catch(e){ authErr(authFriendly(e)); }
 };
 
 /* ---------- a teammate asks for their login link ----------
@@ -19405,7 +19416,7 @@ window.orbTeamLink = async function(ev){
     if(r.error) throw r.error;
     if(out) out.innerHTML = '<div class="ok" style="margin-top:14px;line-height:1.6">If <b>' + esc(addr) + '</b> was added to the team, a link is on its way. '
       + 'Check your inbox and your spam folder, then open the link on this same phone or computer to choose your password.</div>';
-  }catch(e){ authErr(friendly(e)); }
+  }catch(e){ authErr(authFriendly(e)); }
   finally{ busy(btn, false); }
 };
 
@@ -19464,7 +19475,7 @@ window.orbSetPassword = async function(ev){
     history.replaceState(null, "", location.pathname);
     toast("Password changed.");
     await routeByRole({ greet: true });
-  }catch(e){ authErr(friendly(e)); }
+  }catch(e){ authErr(authFriendly(e)); }
   finally{ busy(btn, false); }
 };
 
