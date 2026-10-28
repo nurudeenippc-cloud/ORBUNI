@@ -253,7 +253,7 @@ Key facts:
 - Based in Istanbul, Türkiye. Applications are submitted through official university partner channels.
 - 2,698 programmes, 48 partner universities, 6 countries.
 - Searching, comparing and applying is free, with a dedicated counsellor and a private student portal.
-- Website: https://myorbuni.com · WhatsApp: +1 443 448 1577 · Instagram: https://www.instagram.com/myorbuni
+- Website: https://myorbuni.com · WhatsApp: +1 443 448 1577 · Instagram: https://www.instagram.com/myorbuni · YouTube: https://www.youtube.com/@myorbuni
 
 What every student gets, free:
 {free}

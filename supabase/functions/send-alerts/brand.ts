@@ -13,7 +13,7 @@ const GOLD = "#B8791A", GOLDBG = "#FFF3DC", NAVY = "#0E1626", BRIGHT = "#F2B544"
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 const WA = "https://wa.me/14434481577";
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/email/";
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@f6975b7d64d10aeee45442f8b8386cecfd693359/site/img/email/";
 
 // which poster goes on top of which email; the rest go without one
 const HERO: Record<string, [string, string]> = {
@@ -97,6 +97,7 @@ const FOOT: Record<Audience, { title: string; text: string; links: [string, stri
 const SOCIAL: [string, string, string][] = [
   ["instagram", "Instagram", "https://www.instagram.com/myorbuni"],
   ["facebook", "Facebook", "https://www.facebook.com/share/1H8YbvUQRX/"],
+  ["youtube", "YouTube", "https://www.youtube.com/@myorbuni"],
   ["whatsapp", "WhatsApp", WA],
   ["community", "Orbuni community", "https://whop.com/orbuni-community/"],
 ];
