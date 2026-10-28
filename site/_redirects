@@ -10,6 +10,9 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /tt  /?utm_source=tiktok&utm_medium=bio&utm_campaign=always_on&go=start  302
 /fb  /?utm_source=facebook&utm_medium=page&utm_campaign=always_on&go=start  302
 /yt  /?utm_source=youtube&utm_medium=description&utm_campaign=always_on&go=start  302
+# Straight to the YouTube channel (the channel's own link points at /yt, which goes to the site, so these are different on purpose)
+/youtube  https://www.youtube.com/@myorbuni  302
+/channel  https://www.youtube.com/@myorbuni  302
 /nm  /?utm_source=linkedin&utm_medium=nurudeen&utm_campaign=always_on&go=start  302
 /gw  /?utm_source=linkedin&utm_medium=godfrey&utm_campaign=always_on&go=start  302
 /wa  /?utm_source=whatsapp&utm_medium=community&utm_campaign=always_on&go=start  302
