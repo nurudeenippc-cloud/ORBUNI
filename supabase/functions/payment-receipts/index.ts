@@ -128,7 +128,7 @@ async function waSend(toE164: string, o: { body?: string; contentSid?: string; v
 
 // The "payment received" poster: sent with the message inside the 24-hour window, and the poster
 // template (orbuni_payment_received_card, made by wa-templates) outside it once Meta approves it.
-const WA_IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/wa/";
+const WA_IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@7d1846cd43f9393a2a7919c60fa08dd92b8e9275/site/img/wa/";
 const poster = (seed: string) => `${WA_IMG}payment_received_${variant("payment_received", seed)}.jpg`;   // one of three designs
 
 async function whatsapp(sb: ReturnType<typeof db>, r: any, tpl: { sid: string; approved: boolean } | null, card: string | null): Promise<string> {

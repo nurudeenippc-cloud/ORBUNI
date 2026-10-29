@@ -20,8 +20,9 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 type Btn = { title: string; id?: string; url?: string };
 // Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
 const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
-// Posters for the "_card" templates (1080×1080), same hosting, pinned to the commit that added them.
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@118b1e9be93b8349be9e1fa9151da461b9f2c08d/site/img/wa/";
+// Posters for the "_card" templates, same hosting, pinned to the commit that added them:
+// _1 square (1080×1080), _2 portrait cover (1080×1350), _3 wide card (1200×628).
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@7d1846cd43f9393a2a7919c60fa08dd92b8e9275/site/img/wa/";
 export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
@@ -237,8 +238,9 @@ export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | 
     // 24 Oct 2026 (posters v3): the poster is a variable at the end of the image address, the next number
     // after the message's own variables, so senders can rotate the three designs ("<img>_1.jpg" .. "_3.jpg").
     // Submitted to Meta as "<key>3": the first poster versions (same keys, fixed older images) are retired.
+    // 29 Oct 2026 (posters v4, new shapes): "<key>4", swapped in once Meta approves it (see step 0 below).
     const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
-    return { key, metaName: key + "3", category, body, vars: { ...vars, [n]: img + "_1.jpg" }, link, media: IMG + "{{" + n + "}}",
+    return { key, metaName: key + "4", category, body, vars: { ...vars, [n]: img + "_1.jpg" }, link, media: IMG + "{{" + n + "}}",
       footer: key === "orbuni_team_alert_card" ? "Orbuni team alerts" : "Reply STOP to unsubscribe" };
   }),
 ];
@@ -266,6 +268,39 @@ Deno.serve(async (req) => {
 
   for (const t of TEMPLATES) {
     let row = have[t.key];
+    const want = t.metaName || t.key;
+    // 0. a new version of an approved template: build it in next_sid while senders keep the
+    //    approved content_sid, and swap only once Meta approves the new one (no gap in sending).
+    if (row?.content_sid && row.approval === "approved" && (row.meta_name || want) !== want) {
+      if (!row.next_sid) {
+        const c = await tw("https://content.twilio.com/v1/Content", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ friendly_name: want, language: t.lang || "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
+        });
+        if (!c.ok) { report.push({ key: t.key, step: "create next", error: c.j.message || c.status }); continue; }
+        row.next_sid = c.j.sid; row.next_approval = "not_submitted";
+        await db.from("wa_templates").update({ next_sid: row.next_sid, next_approval: "not_submitted", updated_at: new Date().toISOString() }).eq("key", t.key);
+      }
+      if (row.next_approval === "not_submitted") {
+        const s = await tw(`https://content.twilio.com/v1/Content/${row.next_sid}/ApprovalRequests/whatsapp`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: want, category: t.category }),
+        });
+        if (!s.ok) { report.push({ key: t.key, step: "submit next", error: s.j.message || s.status }); continue; }
+        row.next_approval = "received";
+        await db.from("wa_templates").update({ next_approval: "received", updated_at: new Date().toISOString() }).eq("key", t.key);
+      }
+      const a = await tw(`https://content.twilio.com/v1/Content/${row.next_sid}/ApprovalRequests`);
+      const st = String(a.j?.whatsapp?.status || row.next_approval || "").toLowerCase();
+      const why = a.j?.whatsapp?.rejection_reason || null;
+      if (st === "approved") {
+        await db.from("wa_templates").update({ content_sid: row.next_sid, meta_name: want, body: t.body, next_sid: null, next_approval: null, updated_at: new Date().toISOString() }).eq("key", t.key);
+      } else if (st && st !== row.next_approval) {
+        await db.from("wa_templates").update({ next_approval: st, updated_at: new Date().toISOString() }).eq("key", t.key);
+      }
+      report.push({ key: t.key, approval: "approved", next: want, next_approval: st, ...(why ? { why } : {}) });
+      continue;
+    }
     // 1. create the content in Twilio once
     if (!row?.content_sid) {
       const c = await tw("https://content.twilio.com/v1/Content", {
@@ -273,7 +308,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ friendly_name: t.metaName || t.key, language: t.lang || "en", variables: t.vars || { "1": "Aisha" }, types: typesFor(t) }),
       });
       if (!c.ok) { report.push({ key: t.key, step: "create", error: c.j.message || c.status }); continue; }
-      row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body };
+      row = { key: t.key, content_sid: c.j.sid, approval: "not_submitted", body: t.body, meta_name: want };
       await db.from("wa_templates").upsert({ ...row, updated_at: new Date().toISOString() });
     }
     // 2. submit to Meta once

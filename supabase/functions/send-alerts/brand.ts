@@ -13,7 +13,7 @@ const GOLD = "#B8791A", GOLDBG = "#FFF3DC", NAVY = "#0E1626", BRIGHT = "#F2B544"
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 const WA = "https://wa.me/14434481577";
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@f6975b7d64d10aeee45442f8b8386cecfd693359/site/img/email/";
+const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@7d1846cd43f9393a2a7919c60fa08dd92b8e9275/site/img/email/";
 
 // which poster goes on top of which email; the rest go without one
 const HERO: Record<string, [string, string]> = {
@@ -61,7 +61,9 @@ export function variant(name: string, seed = "", day = Math.floor(Date.now() / 8
 export const hero = (template: string, seed = "") => {
   const h = HERO[template];
   if(!h) return "";
-  return `<tr><td style="padding:0;line-height:0;font-size:0"><img src="${IMG}${h[0]}_${variant(h[0], seed)}.jpg" width="600" height="300" alt="${h[1]}" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>`;
+  // three shapes: 1 banner (1200×600), 2 tall cover (1200×800), 3 slim strip (1200×360)
+  const v = variant(h[0], seed);
+  return `<tr><td style="padding:0;line-height:0;font-size:0"><img src="${IMG}${h[0]}_${v}.jpg" width="600" height="${[300, 400, 180][v - 1]}" alt="${h[1]}" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>`;
 };
 
 // A gold pill instead of loose small caps: reads as a label at a glance.
