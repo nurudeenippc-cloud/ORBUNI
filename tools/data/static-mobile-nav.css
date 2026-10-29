@@ -1,0 +1,8 @@
+/* phones: no sideways sliding. Row 1 = logo + Apply free, row 2 = every link, all visible */
+@media (max-width:700px){
+  .hd .wrap{flex-wrap:wrap;position:relative;row-gap:6px;padding-top:10px;padding-bottom:8px}
+  .hd .nav{order:3;width:100%;overflow:visible;justify-content:space-between;gap:0}
+  .hd .nav a{font-size:13px;padding:6px 4px}
+  .hd .nav a.go{position:absolute;right:18px;top:9px;padding:7px 14px}
+}
+@media (max-width:390px){.hd .nav a{font-size:12px;padding:6px 1px;letter-spacing:-.01em}}
