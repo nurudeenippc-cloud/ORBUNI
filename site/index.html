@@ -15701,8 +15701,8 @@ function waLive(){
 /* Alerts about a WhatsApp chat open that chat; team alerts get their own icons. */
 setTimeout(function(){
   try{
-    Object.assign(NI, { whatsapp_handoff:"💬", team_alert:"🚨" });
-    Object.assign(NI_COLOR, { whatsapp_handoff:"red", team_alert:"red" });
+    Object.assign(NI, { whatsapp_handoff:"💬", team_alert:"🚨", system_alert:"⚙️" });
+    Object.assign(NI_COLOR, { whatsapp_handoff:"red", team_alert:"red", system_alert:"gold" });
   }catch(e){}
   var orig = window.aOpenAlert;
   if(typeof orig === "function" && !orig.__wa){
