@@ -11164,7 +11164,7 @@ const SCREENS={
        <option>Bachelor</option><option>Master</option><option>PhD</option><option>Foundation</option></select></div>
    </div>
    <div class="f2">
-     <div class="fld"><label>Choose a password</label><div class="pw"><input type="password" id="np1" placeholder="At least 8 characters">
+     <div class="fld"><label>Choose a password</label><div class="pw"><input type="password" id="np1" placeholder="At least 10 characters">
        <button type="button" onclick="tog('np1',this)" aria-label="Show or hide the password">👁</button></div></div>
      <div class="fld"><label>Confirm password</label><input type="password" id="np2" placeholder="Type it again"></div>
    </div>
@@ -11244,7 +11244,7 @@ function enter(kind){
     var e1=document.querySelector('#auth input[type=email]');
     if(!e1||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e1.value.trim())){ fieldError(e1,'We need a working email — it is where your offer letter goes.'); return; }
     var n1=document.getElementById('np1'), n2=document.getElementById('np2');
-    if(!n1||n1.value.length<8){ fieldError(n1,'Choose a password of at least 8 characters.'); return; }
+    if(!n1||n1.value.length<10){ fieldError(n1,'Choose a password of at least 10 characters.'); return; }
     if(!n2||n2.value!==n1.value){ fieldError(n2,'The two passwords do not match.'); return; }
   }
   if(AUTH==='student-in'||AUTH==='partner-in'){
@@ -12283,7 +12283,7 @@ function friendly(e){
   if(m.indexOf("already registered") > -1) return "There is already an account with that email. Sign in instead.";
   if(m.indexOf("email not confirmed") > -1)return "Check your inbox and click the link we sent, then sign in.";
   if(m.indexOf("rate limit") > -1 || m.indexOf("too many") > -1) return "Too many tries. Wait a minute and try again.";
-  if(/password should|weak password|at least \d+ characters/.test(m)) return "That password is too weak. Use at least 8 characters.";
+  if(/password should|weak password|at least \d+ characters/.test(m)) return "That password is too weak. Use at least 10 characters, mixing words and numbers.";
   if(m.indexOf("fetch") > -1 || m.indexOf("network") > -1 || m.indexOf("load failed") > -1) return "We could not reach the server. Check your internet and try again.";
   return (e && e.message) ? e.message : "Something went wrong. Please try again.";
 }
@@ -12347,7 +12347,7 @@ window.enter = async function(kind, ev){
     if(!last) { if(typeof fieldError==="function") fieldError(ins[1], "We need your family name as it appears on your passport."); return; }
     if(!em || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.value.trim())){
       if(typeof fieldError==="function") fieldError(em, "We need a working email — it is where your offer letter goes."); return; }
-    if(!p1 || p1.value.length < 8){ if(typeof fieldError==="function") fieldError(p1, "Choose a password of at least 8 characters."); return; }
+    if(!p1 || p1.value.length < 10){ if(typeof fieldError==="function") fieldError(p1, "Choose a password of at least 10 characters."); return; }
     if(!p2 || p2.value !== p1.value){ if(typeof fieldError==="function") fieldError(p2, "The two passwords do not match."); return; }
 
     busy(btn, true, "Creating your account…");
@@ -12390,11 +12390,14 @@ window.enter = async function(kind, ev){
       if(typeof fieldError==="function") fieldError(em, "That does not look like a complete email address."); return; }
     if(!pw){ authErr("Something went wrong reading the form. Tap “Choose a different account type”, come back, and try again."); return; }
     if(!pw.value){ fieldError(pw, "Enter your password."); return; }
+    var wait = signinWait();
+    if(wait){ authErr("Too many wrong passwords. Wait " + wait + " and try again, or use “Forgot password”."); return; }
 
     busy(btn, true, "Signing you in…");
     try{
       var r2 = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value, options: { captchaToken: await orbCaptcha() } });
-      if(r2.error) throw r2.error;
+      if(r2.error){ if(/invalid login/i.test(r2.error.message || "")) signinFailed(); throw r2.error; }
+      signinFailed(true);
       ME = r2.data.user; await loadProfile();
       // The account type chosen on the previous screen used to be decorative:
       // both doors ran this same code and routeByRole then sent you to whatever
@@ -12416,6 +12419,24 @@ window.enter = async function(kind, ev){
     return;
   }
 };
+
+/* Wrong-password brake on this device: after 5 misses in a row, a wait of 30 s that doubles
+   with each further miss (up to 15 min). The server has its own per-IP limits; this stops a
+   person or script hammering the form and tells them plainly what is happening. */
+function signinState(){ try{ return JSON.parse(localStorage.getItem("orb_signin") || "{}"); }catch(e){ return {}; } }
+function signinFailed(ok){
+  try{
+    if(ok){ localStorage.removeItem("orb_signin"); return; }
+    var st = signinState(), n = (st.n || 0) + 1;
+    st.n = n; if(n >= 5) st.until = Date.now() + Math.min(30000 * Math.pow(2, n - 5), 900000);
+    localStorage.setItem("orb_signin", JSON.stringify(st));
+  }catch(e){}
+}
+function signinWait(){
+  var left = (signinState().until || 0) - Date.now();
+  if(left <= 0) return "";
+  return left >= 60000 ? Math.ceil(left / 60000) + " minute" + (left >= 120000 ? "s" : "") : Math.ceil(left / 1000) + " seconds";
+}
 
 /* Which accounts each sign-in door accepts.
    The staff and owner portal deliberately opens through the partner door —
@@ -19463,15 +19484,15 @@ function askNewPassword(mode){
   var inv = mode === "invite";
   card.innerHTML = '<div class="abrand"><div class="row"><span class="orb"><b>O</b></span>'
     + '<span class="nm">Orbuni</span></div></div><h2>' + (inv ? "Welcome to the Orbuni team" : "Choose a new password") + '</h2>'
-    + '<p class="sub">' + (inv ? "Choose the password you will use to sign in. " : "") + 'Make it at least 8 characters. You will stay signed in afterwards.</p>'
-    + '<div class="fld"><label>New password</label><input type="password" id="rp1" placeholder="At least 8 characters"></div>'
+    + '<p class="sub">' + (inv ? "Choose the password you will use to sign in. " : "") + 'Make it at least 10 characters. You will stay signed in afterwards.</p>'
+    + '<div class="fld"><label>New password</label><input type="password" id="rp1" placeholder="At least 10 characters"></div>'
     + '<div class="fld"><label>Type it again</label><input type="password" id="rp2"></div>'
     + '<button class="btn btn-p btn-w" onclick="orbSetPassword(event)">Save and continue →</button>';
 }
 window.orbSetPassword = async function(ev){
   var btn = (ev && ev.target) || null;
   var a = $("rp1"), b = $("rp2");
-  if(!a || a.value.length < 8){ authErr("At least 8 characters, please."); return; }
+  if(!a || a.value.length < 10){ authErr("At least 10 characters, please."); return; }
   if(!b || b.value !== a.value){ authErr("The two passwords do not match."); return; }
   busy(btn, true, "Saving…");
   try{
