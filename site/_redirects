@@ -1,3 +1,5 @@
+# internal test page: never served publicly
+/_uitest.html  /404.html  404!
 # The Netlify default address serves the same site. Send it to the real domain
 # so Google treats myorbuni.com as the only copy.
 https://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301!
@@ -98,4 +100,4 @@ http://effortless-churros-4b9097.netlify.app/*  https://myorbuni.com/:splat  301
 /ad  /chat/?src=whop-ad&utm_source=whop&utm_medium=paid&utm_campaign=wa_funnel  302
 /ad2  /chat/?src=meta-ad&utm_source=meta&utm_medium=paid&utm_campaign=wa_funnel  302
 
-/*    /index.html   200
+/*    /404.html   404
