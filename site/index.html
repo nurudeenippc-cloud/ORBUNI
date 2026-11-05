@@ -14066,7 +14066,7 @@ async function sTrack(){
   }
   var c = null;
   if(PROF && PROF.counsellor_id){
-    var cr = await sb.from("profiles").select("first_name,last_name,email").eq("id", PROF.counsellor_id).maybeSingle();
+    var cr = await sb.from("staff_directory").select("first_name,last_name").eq("id", PROF.counsellor_id).maybeSingle();
     c = cr.data;
   }
   var pct = READY ? Math.round(100 * (
@@ -19767,9 +19767,14 @@ var PENDING_CHANNEL_OPEN = null;
 var CH_ICON = { team:"🏛", channel:"#", department:"🏢", enquiry:"🎓", partner:"🤝", direct:"💬", partner_student:"💬", lead:"🔥" };
 
 async function loadPeople(){
-  var r = await sb.from("profiles").select("id,first_name,last_name,email,role,job_title,is_owner,photo_path");
+  // the team comes from staff_directory (names and photos only, so students never see staff
+  // contact details); profiles then adds whatever this person may read in full
+  var res = await Promise.all([
+    sb.from("staff_directory").select("id,first_name,last_name,role,job_title,is_owner,photo_path"),
+    sb.from("profiles").select("id,first_name,last_name,email,role,job_title,is_owner,photo_path")
+  ]);
   CHPEOPLE = {};
-  (r.data || []).forEach(function(p){ CHPEOPLE[p.id] = p; });
+  (res[0].data || []).concat(res[1].data || []).forEach(function(p){ CHPEOPLE[p.id] = Object.assign(CHPEOPLE[p.id] || {}, p); });
   try{ if(typeof f7LoadBadges === "function") await f7LoadBadges(); }catch(e){}
 }
 /* the blue tick: every Orbuni team member, wherever their name shows, unless the owner took it off */

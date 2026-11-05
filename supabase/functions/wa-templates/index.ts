@@ -18,11 +18,11 @@ const AUTH = { Authorization: "Basic " + btoa(SID + ":" + TOKEN) };
 // Keep these short and factual: Meta rejects pushy or vague marketing wording,
 // and "utility" templates (about something the student already started) are cheaper.
 type Btn = { title: string; id?: string; url?: string };
-// Videos for the "_vid" templates live in the public repo and are served by jsDelivr, pinned to one commit.
-const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
-// Posters for the "_card" templates, same hosting, pinned to the commit that added them:
+// Videos and posters are served from our own site (myorbuni.com, Netlify), not from the code repository.
+const VID = "https://myorbuni.com/video/wa/";
+// Posters for the "_card" templates:
 // _1 square (1080×1080), _2 portrait cover (1080×1350), _3 wide card (1200×628).
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@7d1846cd43f9393a2a7919c60fa08dd92b8e9275/site/img/wa/";
+const IMG = "https://myorbuni.com/img/wa/";
 export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | "MARKETING"; body: string; lang?: string; vars?: Record<string, string>; quick?: Btn[]; link?: Btn; media?: string; footer?: string }[] = [
   { key: "orbuni_welcome", category: "UTILITY",
     body: "Hi {{1}}, this is Orbuni. Thanks for your interest in studying in Türkiye. Reply here with any question about universities, fees or scholarships and we will help you. Reply STOP to opt out." },
@@ -148,13 +148,13 @@ export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | 
     body: "مرحباً {{1}}، شكراً لحضورك ندوة Orbuni عن المنح الدراسية. خطوتك التالية هي التقييم المجاني في دقيقتين، دون الفيديو: {{2}} راسلنا هنا لأي سؤال. أرسل STOP لإيقاف الرسائل.",
     vars: { "1": "أحمد", "2": "https://myorbuni.com/quiz" } },
   // 15 Oct 2026: video versions (a short video on top, one button). Senders prefer "<key>_vid" once Meta approves it.
-  { key: "orbuni_quiz_followup_vid", category: "MARKETING", media: VID + "webinar_invite.mp4", footer: "Reply STOP to opt out",
+  { key: "orbuni_quiz_followup_vid", metaName: "orbuni_quiz_followup_vid2", category: "MARKETING", media: VID + "webinar_invite.mp4", footer: "Reply STOP to opt out",
     body: "Hi {{1}}, thanks for taking the Orbuni study assessment. This short video explains our free live scholarship webinar: how international students win 25% to 100% scholarships at universities in Türkiye.",
     link: { title: "Save my free seat", url: "https://myorbuni.com/webinar" } },
-  { key: "orbuni_checkin_vid", category: "MARKETING", media: VID + "assessment.mp4", footer: "Reply STOP to opt out",
+  { key: "orbuni_checkin_vid", metaName: "orbuni_checkin_vid2", category: "MARKETING", media: VID + "assessment.mp4", footer: "Reply STOP to opt out",
     body: "Hi {{1}}, it is Orbuni checking in. Are you still planning to study in Türkiye? This short video shows how to see where you stand in two minutes.",
     link: { title: "Start the assessment", url: "https://myorbuni.com/quiz" } },
-  { key: "orbuni_webinar_vip_vid", category: "MARKETING", media: VID + "vip_offer.mp4", footer: "Reply STOP to opt out",
+  { key: "orbuni_webinar_vip_vid", metaName: "orbuni_webinar_vip_vid2", category: "MARKETING", media: VID + "vip_offer.mp4", footer: "Reply STOP to opt out",
     body: "Hi {{1}}, your free seat for the Orbuni scholarship webinar is saved. Want a head start? This short video shows what the 10 dollar VIP seat adds. Your free seat stays either way.",
     vars: { "1": "Aisha", "2": "3f9a1c2e7b8d4e6f9a0b1c2d3e4f5a6b7c8d9e0f1a" },
     link: { title: "See the VIP seat", url: "https://myorbuni.com/s/{{2}}" } },
@@ -239,8 +239,9 @@ export const TEMPLATES: { key: string; metaName?: string; category: "UTILITY" | 
     // after the message's own variables, so senders can rotate the three designs ("<img>_1.jpg" .. "_3.jpg").
     // Submitted to Meta as "<key>3": the first poster versions (same keys, fixed older images) are retired.
     // 29 Oct 2026 (posters v4, new shapes): "<key>4", swapped in once Meta approves it (see step 0 below).
+    // 5 Nov 2026 (v5): the same posters, now served from myorbuni.com so the code repository can be private.
     const n = String(Math.max(...Object.keys(vars).map(Number)) + 1);
-    return { key, metaName: key + "4", category, body, vars: { ...vars, [n]: img + "_1.jpg" }, link, media: IMG + "{{" + n + "}}",
+    return { key, metaName: key + "5", category, body, vars: { ...vars, [n]: img + "_1.jpg" }, link, media: IMG + "{{" + n + "}}",
       footer: key === "orbuni_team_alert_card" ? "Orbuni team alerts" : "Reply STOP to unsubscribe" };
   }),
 ];

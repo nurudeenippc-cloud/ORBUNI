@@ -6,14 +6,14 @@
 // Still light (Gmail on Android and Outlook wreck dark emails), but branded: a navy
 // header with the gold mark, a full-width poster for the key emails, a pill label,
 // a bigger headline, a gold call-to-action and a footer that gives three ways back
-// to us. Images are ours, served by jsDelivr from the public repo, pinned to one commit,
+// to us. Images are ours, served from our own site (myorbuni.com/img/email/),
 // and every one has alt text so the email still reads with images off.
 const INK = "#111826", LINE = "#E4E8EF", WASH = "#EEF1F6";
 const GOLD = "#B8791A", GOLDBG = "#FFF3DC", NAVY = "#0E1626", BRIGHT = "#F2B544";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SITE = "https://myorbuni.com";
 const WA = "https://wa.me/14434481577";
-const IMG = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@7d1846cd43f9393a2a7919c60fa08dd92b8e9275/site/img/email/";
+const IMG = "https://myorbuni.com/img/email/";
 
 // which poster goes on top of which email; the rest go without one
 const HERO: Record<string, [string, string]> = {

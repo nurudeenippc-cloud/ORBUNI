@@ -27,8 +27,8 @@ const note = (title: string, text: string, tone: "gold" | "green" = "gold") => {
 <div style="font:400 14px/1.6 ${SANS};color:${BODY}">${text}</div></td></tr></table></td></tr>`;
 };
 // A short video: email can't play video, so it is the poster (with a play button drawn on it) linking to the
-// video itself. Only our own videos, served by jsDelivr from the public repo, pinned to one commit.
-const VID = "https://cdn.jsdelivr.net/gh/nurudeenippc-cloud/ORBUNI@c895a6d93c78816da1c653609651987f6c561ca6/site/video/wa/";
+// video itself. Only our own videos, served from our own site (myorbuni.com/video/wa/).
+const VID = "https://myorbuni.com/video/wa/";
 const video = (key: "webinar_invite" | "vip_offer" | "assessment", caption: string) => `<tr><td class="pad" style="padding:24px 32px 0" align="center">
 <a href="${VID}${key}.mp4" style="text-decoration:none"><img src="${VID}${key}-poster.jpg" width="300" height="300" alt="Play the video: ${caption}" style="display:block;width:300px;max-width:100%;height:auto;border:0;border-radius:16px"></a>
 <div style="font:400 13px/1.5 ${SANS};color:${MUTE};margin-top:8px">${caption}</div></td></tr>`;
