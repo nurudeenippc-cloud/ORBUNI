@@ -7768,7 +7768,16 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
 #portal #orbcard .tstep b{grid-column:2;font-size:14px}
 #portal #orbcard .tstep span{grid-column:3;font-size:11px;white-space:nowrap;text-align:right}
 </style>
-</head>
+<style id="ovid-css">
+.ovid-row{display:grid;grid-template-columns:minmax(200px,300px) 1fr;gap:30px;align-items:center}
+.ovid-row.two{grid-template-columns:repeat(2,minmax(200px,300px)) 1fr}
+.ovid-fig{margin:0}
+.ovid-fig video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:18px;background:#000;border:1px solid rgba(255,255,255,.14);display:block}
+.ovid-fig figcaption{font-size:13px;color:var(--dim,#9BABC3);margin-top:8px}
+.ovid-tx p{color:var(--dim,#9BABC3);margin:0 0 12px;max-width:60ch}.ovid-tx ul{margin:0 0 12px;padding-left:18px;color:var(--dim,#9BABC3)}
+.ovid-tx li{margin:0 0 6px}.ovid-tx b{color:var(--txt,#EEF3FA)}
+@media(max-width:760px){.ovid-row,.ovid-row.two{grid-template-columns:1fr;gap:18px}.ovid-fig{max-width:320px;width:100%;margin:0 auto}}
+</style></head>
 <body>
 <script id="orb-route-boot">/* open the page the address asks for straight away, so the home page never flashes first */try{var h=(location.hash||"").slice(1),b=/^uni-\d+$/.test(h)?"unis":/^job-\d+$/.test(h)?"careers":h;if(["start", "webinar", "unis", "progs", "schol", "fairs", "arts", "team", "careers", "about", "terms", "privacy", "agreement"].indexOf(b)>-1){document.documentElement.setAttribute("data-boot-page",b);if(b==="start"||b==="webinar")document.body.classList.add("on-start");}}catch(e){}</script>
 <style id="orb-route-boot-css">@media(max-width:600px){body>footer .fg{display:grid!important;grid-template-columns:1fr 1fr!important;gap:22px 18px!important}body>footer .fg>div:first-child{grid-column:1/-1}}html[data-boot-page] #pg-home.page{display:none!important}html[data-boot-page="start"] #pg-start.page{display:block!important;animation:none}html[data-boot-page="unis"] #pg-unis.page{display:block!important;animation:none}html[data-boot-page="progs"] #pg-progs.page{display:block!important;animation:none}html[data-boot-page="schol"] #pg-schol.page{display:block!important;animation:none}html[data-boot-page="fairs"] #pg-fairs.page{display:block!important;animation:none}html[data-boot-page="arts"] #pg-arts.page{display:block!important;animation:none}html[data-boot-page="team"] #pg-team.page{display:block!important;animation:none}html[data-boot-page="careers"] #pg-careers.page{display:block!important;animation:none}html[data-boot-page="about"] #pg-about.page{display:block!important;animation:none}html[data-boot-page="terms"] #pg-terms.page{display:block!important;animation:none}html[data-boot-page="privacy"] #pg-privacy.page{display:block!important;animation:none}html[data-boot-page="agreement"] #pg-agreement.page{display:block!important;animation:none}</style>
@@ -7994,6 +8003,21 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
           <h3>Search, browse every university, apply — done</h3>
           <p>Search by subject, see every partner university that teaches it with the discount already applied, and apply on the spot — the fee you'd actually pay, not the sticker price.</p>
         </div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- Orbuni story videos (Nov 2026): vertical clips, load only when played -->
+  <section class="nh-sec"><div class="wrap">
+    <div class="nh-head rv"><div><span class="eyebrow">Meet Orbuni</span>
+      <h2>Orbuni in a minute.<br><span class="grad">And a night off in Istanbul.</span></h2></div></div>
+    <div class="ovid-row two">
+      <figure class="ovid-fig"><video controls playsinline preload="none" poster="video/orbuni-what-is-poster.jpg" aria-label="Video: what Orbuni is"><source src="video/orbuni-what-is.mp4" type="video/mp4"></video><figcaption>What Orbuni is · 1 min</figcaption></figure>
+      <figure class="ovid-fig"><video controls playsinline preload="none" poster="video/orbuni-night-istanbul-poster.jpg" aria-label="Video: a night out in Istanbul"><source src="video/orbuni-night-istanbul.mp4" type="video/mp4"></video><figcaption>Student life: an evening by the water · 1 min</figcaption></figure>
+      <div class="ovid-tx">
+        <p><b>Your all-in-one study abroad engine.</b> Apply to universities in Türkiye, Northern Cyprus and our other partner countries, get your acceptance letter in your portal, and book airport pickup and housing in the same place.</p>
+        <p><b>Every dream needs a first step.</b> Back home, most students do not know where to start. Start here: it takes two minutes and applying is free.</p>
+        <p><button class="btn btn-p" onclick="go('start')">Check in 2 minutes →</button></p>
       </div>
     </div>
   </div></section>
@@ -8234,6 +8258,20 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
   </div></section>
 
   <section style="padding-top:0"><div class="wrap">
+    <span class="eyebrow">Meet the team</span>
+    <h2 style="margin:14px 0 12px">It is about the team</h2>
+    <div class="ovid-row">
+      <figure class="ovid-fig"><video controls playsinline preload="none" poster="video/orbuni-team-poster.jpg" aria-label="Video: the team behind Orbuni"><source src="video/orbuni-team.mp4" type="video/mp4"></video><figcaption>Our Managing Director on why Orbuni is built by a team · 1 min</figcaption></figure>
+      <div class="ovid-tx">
+        <p><b>Solo does not work.</b> Our Managing Director learned that from running a business alone before. Orbuni is built by a team, so the platform can keep growing.</p>
+        <p><b>Godfrey Emmanuel Wudaba</b>, co-founder and Chief Operating Officer, runs operations end to end: applications, admissions, offers, visas and arrivals, and the team behind them. His mission: no student left guessing.</p>
+        <p><b>Lenns Wordjy Coutilien</b> recently joined as our Creative Director.</p>
+        <p>And next, it could be you. <a href="#careers" onclick="go('careers');return false">See open roles →</a></p>
+      </div>
+    </div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap">
     <span class="eyebrow">How we got here</span>
     <h2 style="margin:14px 0 12px">Our story so far</h2>
     <div class="tl">
@@ -8344,6 +8382,11 @@ body:has(#portal.on) .page *,body:has(#portal.on) .page *::before,body:has(#port
         <p>Real residences with photos and prices, chosen before you fly, close to your campus.</p></div>
       <div class="card rv"><div class="ic">✈️</div><h3>Arrival and registration</h3>
         <p>Airport pickup, registration at your university and residence-permit support when you land.</p></div>
+    </div>
+
+    <div class="ovid-row" style="margin:34px 0">
+      <figure class="ovid-fig"><video controls playsinline preload="none" poster="video/orbuni-what-is-poster.jpg" aria-label="Video: what Orbuni is"><source src="video/orbuni-what-is.mp4" type="video/mp4"></video><figcaption>What Orbuni is, from our Managing Director · 1 min</figcaption></figure>
+      <div class="ovid-tx"><p><b>One place for everything.</b> Apply through Orbuni, get your acceptance letter in your portal, and at the same time book your airport pickup and your housing. One registration, everything done in one place.</p></div>
     </div>
 
     <div class="abgrid">
@@ -10399,7 +10442,7 @@ const TEAM=[
   ig:"coolguyn94",
   photos:["photos/inline/fcf25e4bbda8.jpg","photos/inline/823977a3cdeb.jpg","photos/inline/ae43a37687d7.jpg","photos/home/team-nurudeen-award.jpg","photos/home/team-nurudeen-speaking.jpg","photos/home/team-nurudeen-roundtable.jpg","photos/home/team-nurudeen-climate.jpg","photos/home/team-nurudeen-podium.jpg"]},
  {name:"Godfrey Emmanuel Wudaba",
-  role:"Chief Operating Officer",
+  role:"Co-founder & Chief Operating Officer",
   bio:"Godfrey runs everything between the first enquiry and the first day of class. Based in İstanbul, he handles the university relationships, the documentation standards and the timelines — the unglamorous machinery that decides whether a student gets on the plane.<br><br>He is the one on the phone to admissions offices when a decision is late, and the one who sends a file back for a fourth time because one line is still wrong. If your application is moving, it is because Godfrey is moving it.",
   lang:"“Nothing leaves this office unchecked.”",
   exp:"Runs everything from the first enquiry to the first day of class. Works every day with university admissions offices, from İstanbul.",
@@ -11701,6 +11744,33 @@ var SB_URL = "https://ytsebzdykfeiiuxbdtvr.supabase.co";
 var SB_KEY = "sb_publishable_mG66ec2eJvB1MCkfVTI8vA_6b-cZYmG";
 
 var sb = null, ME = null, PROF = null, READY = null;
+/* Visitor-error reporter: sends uncaught errors to client_errors (max 5 per page load). */
+(function(){
+  try{
+    var sent = 0, seen = {};
+    function sid(){ try{ var s = sessionStorage.getItem("orb-err-sid"); if(!s){ s = "e" + Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem("orb-err-sid", s); } return s; }catch(e){ return null; } }
+    function cut(v, n){ v = v == null ? "" : String(v); return v.length > n ? v.slice(0, n) : v; }
+    function report(msg, src, line){
+      try{
+        msg = cut(msg, 500).trim(); src = cut(src, 300);
+        if(!msg || sent >= 5 || !sb) return;
+        if(/^Script error\.?$/i.test(msg) || /ResizeObserver/i.test(msg)) return;
+        if(/^(chrome|moz|safari|safari-web)-extension:/i.test(src) || /(chrome|moz|safari-web)-extension:\/\//i.test(msg)) return;
+        var k = msg + "|" + src + "|" + line; if(seen[k]) return; seen[k] = 1; sent++;
+        sb.from("client_errors").insert({ page: cut(location.pathname + location.hash, 300), message: msg, source: src || null,
+          line: (line > 0 ? Math.floor(line) : null), ua: cut(navigator.userAgent, 300), session_id: sid() }).then(function(){}, function(){});
+      }catch(e){}
+    }
+    window.addEventListener("error", function(ev){
+      try{ if(!ev || (ev.target && ev.target !== window)) return;
+        report(ev.message || (ev.error && ev.error.message), ev.filename || "", ev.lineno || 0); }catch(e){}
+    });
+    window.addEventListener("unhandledrejection", function(ev){
+      try{ var r = ev && ev.reason; var m = r && (r.message || (typeof r === "string" ? r : "")) || "Unhandled promise rejection";
+        var st = (r && r.stack) || ""; report("Unhandled: " + m, /extension:\/\//.test(st) ? "chrome-extension://" : "", 0); }catch(e){}
+    });
+  }catch(e){}
+})();
 /* read-only view of the signed-in profile for code outside this layer (the phone tab bar) */
 try{ Object.defineProperty(window, "orbProf", { get: function(){ return PROF; }, configurable: true }); }catch(e){}
 
