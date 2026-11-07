@@ -122,8 +122,8 @@ Deno.serve(async (req: Request) => {
     else await db.from("wa_contacts").update({ unread: 0 }).eq("id", contact.id);
     const pay = String(params.ButtonPayload || "");
     const typed = body.toLowerCase().replace(/[^a-z]/g, "");
-    const decision = pay === "ai_approve" || (!pay && ["approve", "approved", "yes", "ok", "okay"].includes(typed) && !media) ? "approve"
-      : pay === "ai_reject" || (!pay && ["reject", "no", "cancel"].includes(typed) && !media) ? "reject" : null;
+    const decision = pay === "ai_approve" || (!pay && ["approve", "approved", "approveit"].includes(typed) && !media) ? "approve"
+      : pay === "ai_reject" || (!pay && ["reject", "rejected", "rejectit"].includes(typed) && !media) ? "reject" : null;
     // @ts-ignore EdgeRuntime is provided by Supabase
     if (sid) EdgeRuntime.waitUntil(twilioTyping(sid));
     // @ts-ignore EdgeRuntime is provided by Supabase
