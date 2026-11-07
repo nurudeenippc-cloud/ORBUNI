@@ -186,14 +186,23 @@ function waVars(v2: boolean, kind: string, title: string, body: string | null){
 const WA_POSTER: Record<string, string> = { payment_received: "team_payment", lead_assigned: "team_leads", enquiry_received: "team_leads",
   student_signup: "team_leads", lead_overdue: "team_leads", documents_missing: "team_docs", document_uploaded: "team_docs",
   whatsapp_handoff: "team_chat" };
+// team members with their own photo posters (<kind>_<slug>_1..3.jpg, made by tools/team_posters.mjs with
+// people.json). Someone new joins: add them to people.json, run the tool, deploy the site, add them here.
+const PERSONAL: Record<string, string> = {
+  "43a76bac-5852-4c4b-9825-5971d1e95507": "nurudeen",
+  "5ecf7729-2784-4091-b420-3c0782e514f0": "godfrey",
+};
 let TEAM_POSTERS = false;
 const waPoster = (img: string, seed: string) => `${img}_${variant(img, seed)}.jpg`;
 
-async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: string, title: string, body: string | null, card = false){
+async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: string, title: string, body: string | null, card = false, who = ""){
   const d = String(to).replace(/[^0-9]/g, "");
   if(d.length < 8) return { ok:false, why:"no usable number" };
   const vars = waVars(v2, kind, title, body) as Record<string, string>;
-  if(card) vars["5"] = waPoster((TEAM_POSTERS && WA_POSTER[kind]) || "team_alert", d + title);
+  if(card){
+    const base = TEAM_POSTERS ? (WA_POSTER[kind] || "team_general") : "team_alert";
+    vars["5"] = waPoster(TEAM_POSTERS && PERSONAL[who] ? base + "_" + PERSONAL[who] : base, d + title);
+  }
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
     ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
@@ -344,7 +353,7 @@ Deno.serve(async (req: Request) => {
     if(!row.whatsapp_sent_at && !patch.whatsapp_sent_at){
       if(!staff || !WA_SID || !WA_KINDS.has(n.kind) || !(p?.whatsapp || p?.phone)){ patch.whatsapp_sent_at = now(); }
       else {
-        const r = await sendWhatsApp(WA_SID, WA_V2, p.whatsapp || p.phone, n.kind, n.title, n.body, WA_CARD);
+        const r = await sendWhatsApp(WA_SID, WA_V2, p.whatsapp || p.phone, n.kind, n.title, n.body, WA_CARD, row.profile_id);
         if(r.ok){ patch.whatsapp_sent_at = now(); whatsapped++; }
         else { patch.whatsapp_sent_at = now(); problems.push(r.why || "whatsapp failed"); }   // never retry-loop a WhatsApp
       }
