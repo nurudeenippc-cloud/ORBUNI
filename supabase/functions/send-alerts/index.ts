@@ -179,18 +179,21 @@ function waVars(v2: boolean, kind: string, title: string, body: string | null){
   return { "1": flat(p.headline, 180), "2": flat(line, 600) };
 }
 
-// The poster templates ("_card") take the poster's file name as their last variable: the team
-// alert gets the picture for what happened (payment, lead, documents...), one of three designs.
-const WA_POSTER: Record<string, string> = { payment_received: "payment_received", lead_assigned: "welcome", enquiry_received: "welcome",
-  student_signup: "welcome", lead_overdue: "welcome", documents_missing: "documents_needed", document_uploaded: "documents_needed",
-  application_submitted: "offer_ready", status_change: "offer_ready", partner_application: "partner_update" };
+// The poster templates ("_card") take the poster's file name as their last variable. The team never gets a
+// student poster: 7 Nov 2026, team-only posters per kind (tools/team_posters.mjs), three looks each.
+// They live on myorbuni.com, so they are used once the v5 card (images from myorbuni.com) is the live one;
+// until then every team alert uses the team_alert poster.
+const WA_POSTER: Record<string, string> = { payment_received: "team_payment", lead_assigned: "team_leads", enquiry_received: "team_leads",
+  student_signup: "team_leads", lead_overdue: "team_leads", documents_missing: "team_docs", document_uploaded: "team_docs",
+  whatsapp_handoff: "team_chat" };
+let TEAM_POSTERS = false;
 const waPoster = (img: string, seed: string) => `${img}_${variant(img, seed)}.jpg`;
 
 async function sendWhatsApp(contentSid: string, v2: boolean, to: string, kind: string, title: string, body: string | null, card = false){
   const d = String(to).replace(/[^0-9]/g, "");
   if(d.length < 8) return { ok:false, why:"no usable number" };
   const vars = waVars(v2, kind, title, body) as Record<string, string>;
-  if(card) vars["5"] = waPoster(WA_POSTER[kind] || "team_alert", d + title);
+  if(card) vars["5"] = waPoster((TEAM_POSTERS && WA_POSTER[kind]) || "team_alert", d + title);
   const form = new URLSearchParams({ From: TW_FROM, To: "whatsapp:+" + d, ContentSid: contentSid,
     ContentVariables: JSON.stringify(vars) });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_SID}/Messages.json`, { signal: AbortSignal.timeout(20000),
@@ -273,7 +276,7 @@ Deno.serve(async (req: Request) => {
 
   // The staff WhatsApp template: the poster version, then the new layout, once Meta has approved
   // them, else the older one. The poster versions take the same variables as the ones before them.
-  const { data: tpls } = await sb.from("wa_templates").select("key, content_sid, approval")
+  const { data: tpls } = await sb.from("wa_templates").select("key, content_sid, approval, meta_name")
     .in("key", ["orbuni_team_alert_card", "orbuni_team_alert_v2", "orbuni_staff_alert",
                 "orbuni_application_update_card", "orbuni_application_update", "orbuni_partner_update_card", "orbuni_partner_update"]);
   const ok = (k: string) => (tpls ?? []).find(t => t.key === k && t.approval === "approved" && t.content_sid);
@@ -286,6 +289,7 @@ Deno.serve(async (req: Request) => {
   const STU_SID = TW_SID && TW_TOKEN ? String(stu?.content_sid || "") : "";
   const PAR_SID = TW_SID && TW_TOKEN ? String(par?.content_sid || "") : "";
   const WA_CARD = pick?.key === "orbuni_team_alert_card";
+  TEAM_POSTERS = WA_CARD && /5$/.test(String(pick?.meta_name || ""));
 
   const { data: queue, error } = await sb
     .from("notification_recipients")
