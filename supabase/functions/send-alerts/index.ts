@@ -32,7 +32,8 @@ const RESEND_FROM = env("RESEND_FROM") || "Orbuni <alerts@myorbuni.com>";
 const TW_SID   = env("TWILIO_ACCOUNT_SID").trim();
 const TW_TOKEN = env("TWILIO_AUTH_TOKEN").trim();
 const TW_FROM  = env("TWILIO_WHATSAPP_FROM").trim() || "whatsapp:+14434481577";
-const WA_KINDS = new Set(["whatsapp_handoff", "team_alert", "lead_assigned", "payment_received"]);   // urgent only
+// urgent ones, plus the two daily updates (leads waiting, documents missing): about 1-2 a day
+const WA_KINDS = new Set(["whatsapp_handoff", "team_alert", "lead_assigned", "payment_received", "lead_overdue", "documents_missing"]);
 
 const PORTAL = "https://myorbuni.com";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
