@@ -1,0 +1,163 @@
+<title>Orbuni Follow-up Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column report — status strip first, then what was fixed, what needs you, then the detail tables. */
+:root{
+  --bg:#F6F5F1; --panel:#FFFFFF; --ink:#141A26; --dim:#5B6577; --line:#E3E1DA;
+  --gold:#B07812; --gold-soft:#FBF1DC;
+  --ok:#1C7A50; --ok-soft:#E5F4EC; --warn:#A35F00; --warn-soft:#FDF0DC; --bad:#B42318; --bad-soft:#FDE8E6;
+  --disp:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0B1019; --panel:#121A27; --ink:#EDF1F7; --dim:#97A3B6; --line:#243042;
+  --gold:#F2B544; --gold-soft:#2A2214; --ok:#4FD39A; --ok-soft:#10261D; --warn:#F2A93B; --warn-soft:#2A1F0E; --bad:#FF7B6E; --bad-soft:#2D1513; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0B1019; --panel:#121A27; --ink:#EDF1F7; --dim:#97A3B6; --line:#243042;
+  --gold:#F2B544; --gold-soft:#2A2214; --ok:#4FD39A; --ok-soft:#10261D; --warn:#F2A93B; --warn-soft:#2A1F0E; --bad:#FF7B6E; --bad-soft:#2D1513; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:28px 60px;display:grid;gap:34px}
+h1,h2,h3{font-family:var(--disp);letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,42px);font-weight:800;line-height:1.05}
+h2{font-size:22px;font-weight:800;margin-bottom:12px}
+h3{font-size:16px;font-weight:600}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.lead{color:var(--dim);max-width:68ch;margin:10px 0 0}
+header{display:grid;gap:8px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
+.tile b{font:800 28px/1.1 var(--disp);font-variant-numeric:tabular-nums}
+.tile span{color:var(--dim);font-size:13px}
+.tile.ok b{color:var(--ok)} .tile.warn b{color:var(--warn)} .tile.bad b{color:var(--bad)}
+.list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
+.item>div{min-width:0}
+.item p{margin:4px 0 0;color:var(--dim)}
+.pill{font:600 11.5px/1 var(--sans);padding:6px 9px;border-radius:99px;white-space:nowrap;grid-row:span 2}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.info{background:var(--gold-soft);color:var(--gold)}
+.do{margin-top:6px;font-weight:600;color:var(--ink)}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+tr:last-child td{border-bottom:0}
+td .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.box ul{margin:8px 0 0;padding-left:18px;color:var(--dim)} .box li{margin:4px 0}
+.box li b{color:var(--ink);font-weight:600}
+.foot{color:var(--dim);font-size:13px}
+code{font-family:var(--mono);font-size:12.5px}
+@media (max-width:700px){.cols{grid-template-columns:1fr}}
+@media print{body{background:#fff}.wrap{padding-block:0}.item,.tile,.box,.tw{break-inside:avoid}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Orbuni · audit of 3 October 2026</div>
+  <h1>Follow-up system audit</h1>
+  <p class="lead">I checked every automatic follow-up (email, WhatsApp, staff alerts), the Feed, the scheduled jobs and the error logs. I fixed what I found along the way. This page lists what was wrong, what I fixed, and the few things that need you.</p>
+</header>
+
+<section class="strip" aria-label="Summary">
+  <div class="tile bad"><b>6</b><span>faults found and fixed today</span></div>
+  <div class="tile warn"><b>4</b><span>things that need you</span></div>
+  <div class="tile ok"><b>22 / 22</b><span>emails sent in 7 days (none stuck)</span></div>
+  <div class="tile ok"><b>11</b><span>scheduled jobs, all running on time</span></div>
+  <div class="tile ok"><b>$19.98</b><span>Twilio balance (alert at $5)</span></div>
+</section>
+
+<section>
+  <h2>What I fixed</h2>
+  <ul class="list">
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>Feed view counts did not move while people were reading</h3>
+      <p>The counts in the database were correct (your three posts have 4, 3 and 3 views, matching the real records). But the Feed was never switched on for live updates, so a number only changed when someone reloaded the page. Your own view also didn't show until a reload. Now views, likes and comments update on every open screen as they happen. A new or deleted post refreshes the list unless someone is typing.</p></div></li>
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>"Lead overdue" alerts were never sent</h3>
+      <p>The portal had a "lead overdue" alert, but nothing ever raised it, so leads went quiet without anyone hearing about it. Now an hourly check (09:00–20:00 Istanbul) alerts you and the lead's owner, once a day per lead, or with one summary when more than 5 are waiting. The first run sent 4 alerts.</p></div></li>
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>Finance dashboard was not live</h3>
+      <p>"Money at a glance" is built to refresh when a payment lands, but its table was also never switched on for live updates. It now refreshes by itself. People still only receive rows they are allowed to see.</p></div></li>
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>WhatsApp follow-ups ran on an older version</h3>
+      <p>The automatic WhatsApp follow-up job still sent team warnings, such as low Twilio balance, by email only. It now uses the portal alerts (bell, phone push and email). Test run: OK, balance $19.98.</p></div></li>
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>Your test chat was stuck on "needs a person"</h3>
+      <p>Because of the earlier refund question, the AI stayed paused on your own number. I pressed "Done" for you, so the AI answers you again.</p></div></li>
+    <li class="item"><span class="pill ok">Fixed</span><div><h3>AI replies used formatting WhatsApp can't show</h3>
+      <p>In testing, the AI wrote <code>**bold**</code>, which WhatsApp shows as stars. It now uses WhatsApp's own *bold* and plain links.</p></div></li>
+  </ul>
+</section>
+
+<section>
+  <h2>What needs you</h2>
+  <ul class="list">
+    <li class="item"><span class="pill bad">Waiting</span><div><h3>Meta hasn't approved the 7 WhatsApp templates yet</h3>
+      <p>Until they are approved, the automatic WhatsApp follow-ups (quiz, unpaid checkout, missing documents, offer letter, 14-day check-in) can't start. WhatsApp only allows approved templates outside the 24-hour reply window. Replies to students who write first work normally. The system checks Meta every 30 minutes and starts by itself once they are approved.</p>
+      <div class="do">You: nothing to do unless Meta rejects one. I'll see it in the inbox settings.</div></div></li>
+    <li class="item"><span class="pill warn">Today</span><div><h3>4 leads are waiting for a follow-up</h3>
+      <p>The strongest is band B (score 56), which has waited 8 days. The others were due 3, 9 and 20 days ago. Each got its 3-email series, but nobody has called or messaged them.</p>
+      <div class="do">You or Godfrey: open Leads in the portal and work the list from the top.</div></div></li>
+    <li class="item"><span class="pill warn">Habit</span><div><h3>Alerts reach you, but are not opened in the portal</h3>
+      <p>In the last 7 days you and Godfrey each got 5 alerts, all sent by push and email. None was opened in the portal (you may have read them by email). An unopened alert stays unread and the bell keeps counting.</p>
+      <div class="do">You: tap an alert when you've dealt with it, or "Mark all read".</div></div></li>
+    <li class="item"><span class="pill warn">2 minutes</span><div><h3>Turn on leaked-password protection</h3>
+      <p>Supabase can block passwords that are known to have leaked online. It's off. It's a switch, not code.</p>
+      <div class="do">You: in Supabase, open Authentication, find the password security setting, and turn on leaked-password protection (it checks against HaveIBeenPwned).</div></div></li>
+  </ul>
+</section>
+
+<section>
+  <h2>The follow-up system, piece by piece</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Follow-up</th><th>Channel</th><th>When</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Quiz takers: 3-step plan series</td><td>Email</td><td>after the quiz, then days 2 and 7</td><td><span class="dot ok"></span>Working: 3 of 3 new leads got it</td></tr>
+      <tr><td>Unfinished checkout: 3 reminders</td><td>Email</td><td>every 15 min check</td><td><span class="dot ok"></span>Working: 11 sent this week</td></tr>
+      <tr><td>Payment failed: 2 emails</td><td>Email</td><td>after a failed payment</td><td><span class="dot ok"></span>Working, none needed this week</td></tr>
+      <tr><td>Missing documents chase</td><td>Email + alert</td><td>daily 08:00 UTC</td><td><span class="dot ok"></span>Working: 2 sent</td></tr>
+      <tr><td>Call booked / reminder / missed</td><td>Email</td><td>around each call</td><td><span class="dot ok"></span>Ready, none this week</td></tr>
+      <tr><td>Stalled emails retried</td><td>Email</td><td>every 30 min</td><td><span class="dot ok"></span>Working: 0 stuck</td></tr>
+      <tr><td>Quiz / payment / documents / offer / check-in</td><td>WhatsApp</td><td>hourly, 07–19 UTC</td><td><span class="dot warn"></span>Ready, waiting for Meta to approve templates</td></tr>
+      <tr><td>AI replies to students</td><td>WhatsApp</td><td>within ~10 seconds</td><td><span class="dot ok"></span>Working, now trained on the sales path</td></tr>
+      <tr><td>Hand-over to a person</td><td>Alert</td><td>when the AI can't help</td><td><span class="dot ok"></span>Working: bell + push + email</td></tr>
+      <tr><td>Lead overdue</td><td>Alert</td><td>hourly, 09–20 Istanbul</td><td><span class="dot ok"></span>New today: 4 sent</td></tr>
+      <tr><td>Low Twilio balance</td><td>Alert</td><td>hourly check, once a day</td><td><span class="dot ok"></span>Working ($19.98 now)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="cols">
+  <div class="box"><h3>What the WhatsApp AI now does</h3>
+    <ul>
+      <li>For "how do I apply" or "how do I get 100% scholarship", it sends <b>myorbuni.com/#start</b> and says to watch the short video, then take the 2-minute assessment.</li>
+      <li>It explains scholarships the way the website does: a discount of 25–75%, and a 100% place is a limited seat with one payment. It sends <b>#schol</b> for prices and never quotes them itself.</li>
+      <li>It tells students they can <b>apply by themselves for free</b> (up to 3 programmes), and that our fee comes only after the offer letter.</li>
+      <li>It follows the same paths as the assessment: $10 Masterclass, free application, or a counsellor. It answers visa questions honestly and points to Türkiye Bursları for fully funded places.</li>
+      <li>Tested on 5 real questions before going live. "ok thanks" no longer triggers a hand-over.</li>
+    </ul></div>
+  <div class="box"><h3>Errors in the last 24 hours</h3>
+    <ul>
+      <li><b>11 short clock errors</b> ("JWT issued at future") on the alert and email senders, out of about 1,400 runs. This is a Supabase-side timing glitch. The next run 2 minutes later sent everything, and nothing was lost.</li>
+      <li><b>2 errors from AskUni's server</b> (502) overnight. That's their side; the next calls worked.</li>
+      <li><b>0 failed WhatsApp messages</b>, <b>0 stuck emails</b>, <b>0 failed scheduled jobs</b>.</li>
+      <li>Security check: nothing urgent. The notes are the password switch above, plus design choices that are already safe, such as public university and housing lists.</li>
+    </ul></div>
+</section>
+
+<section>
+  <h2>Also shipped in this round</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Change</th><th>Where</th><th>Live?</th></tr></thead>
+    <tbody>
+      <tr><td>Green "Chat on WhatsApp" button. The message is pre-filled with the page they were on, e.g. "…your page about Sabanci University".</td><td>Home, universities, subjects, scholarships, housing, guides: 115 pages. Hidden inside the portal.</td><td><span class="dot warn"></span>After you upload r28</td></tr>
+      <tr><td>WhatsApp inbox redesign: photos and PDFs, saved replies, labels, team alerts, and chats that stay when you leave the page</td><td>Portal → WhatsApp</td><td><span class="dot warn"></span>After you upload r28</td></tr>
+      <tr><td>Spaces on desktop: list and conversation side by side</td><td>Portal → Spaces</td><td><span class="dot warn"></span>After you upload r28</td></tr>
+      <tr><td>Live Feed counts</td><td>Portal → Feed</td><td><span class="dot warn"></span>After you upload r28 (the database part is already on)</td></tr>
+      <tr><td>AI sales path, lead-overdue alerts, live finance</td><td>Server</td><td><span class="dot ok"></span>Live now</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<p class="foot">Next suggestion: the second quiz email says universities give "25% to 100% off". The website is more careful about 100% places, so I'd reword that line to match. Say the word and I'll do it.</p>
+</div>

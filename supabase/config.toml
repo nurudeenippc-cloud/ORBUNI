@@ -1,0 +1,120 @@
+# Supabase CLI settings for the Orbuni project (ytsebzdykfeiiuxbdtvr).
+# verify_jwt below mirrors what is LIVE (checked 23 Oct 2026). The CLI defaults
+# verify_jwt to true, so deploying a webhook/cron function without this file would
+# make Supabase reject Twilio, Paystack, Whop and pg_cron calls before our own checks run.
+# Functions with verify_jwt = false do their own auth (signature, x-orb-secret or getUser()).
+project_id = "ytsebzdykfeiiuxbdtvr"
+
+[functions.askuni-debug-shot]
+verify_jwt = true
+
+[functions.askuni-proxy]
+verify_jwt = true
+
+[functions.book-call]
+verify_jwt = false
+
+[functions.calendar-book]
+verify_jwt = true
+
+[functions.connector-oauth]
+verify_jwt = false
+
+[functions.email-optout]
+verify_jwt = false
+
+[functions.env-check]
+verify_jwt = true
+
+[functions.finance-set-rule]
+verify_jwt = true
+
+[functions.finance-write]
+verify_jwt = true
+
+[functions.google-form-project-response]
+verify_jwt = false
+
+[functions.invite-partner-login]
+verify_jwt = true
+
+[functions.invite-student-login]
+verify_jwt = true
+
+[functions.invite-team-login]
+verify_jwt = true
+
+[functions.lead-instant]
+verify_jwt = false
+
+[functions.media-import]
+verify_jwt = true
+
+[functions.ops-refresh]
+verify_jwt = true
+
+[functions.orbuni-assistant]
+verify_jwt = false
+
+[functions.orbuni-tts]
+verify_jwt = false
+
+[functions.payment-receipts]
+verify_jwt = false
+
+[functions.paystack]
+verify_jwt = false
+
+[functions.paystack-to-whop]
+verify_jwt = false
+
+[functions.send-alerts]
+verify_jwt = false
+
+[functions.send-manual-email]
+verify_jwt = true
+
+[functions.send-student-emails]
+verify_jwt = false
+
+[functions.set-team-photo]
+verify_jwt = true
+
+[functions.staff-request-write]
+verify_jwt = true
+
+[functions.wa-agent-test]
+verify_jwt = false
+
+[functions.wa-followups]
+verify_jwt = false
+
+[functions.wa-health]
+verify_jwt = false
+
+[functions.wa-logo]
+verify_jwt = false
+
+[functions.wa-send]
+verify_jwt = true
+
+[functions.wa-templates]
+verify_jwt = false
+
+[functions.wa-webhook]
+verify_jwt = false
+
+[functions.webinar-followups]
+verify_jwt = false
+
+[functions.whop-admin]
+verify_jwt = false
+
+[functions.whop-checkout]
+verify_jwt = false
+
+[functions.whop-courses]
+verify_jwt = false
+
+[functions.whop-sync]
+verify_jwt = false
