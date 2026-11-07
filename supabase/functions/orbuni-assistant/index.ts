@@ -78,7 +78,7 @@ const count = (rows: any[], k: string) => rows.reduce((m: any, r: any) => { cons
 // ------------------------------------------------------------ shared lookups
 type Perms = { finance: boolean; ops: boolean; apps: boolean; owner: boolean; marketing: boolean; content: boolean; team: boolean };
 type Ctx = { sb: any; uid: string; section: string; perms: Perms; cache: Record<string, any>; canSection?: (s: string) => Promise<boolean>;
-  attachment?: { path: string; mime: string; name?: string } | null; voice?: boolean; readOnly?: boolean;
+  attachment?: { path: string; mime: string; name?: string } | null; voice?: boolean; readOnly?: boolean; channel?: string;
   partner?: { id: string; agency: string; tier: string; rate: number | null } };
 
 async function staffList(c: Ctx){
@@ -880,6 +880,7 @@ async function converse(c: Ctx, staffName: string, message: string, history: any
     c.voice
       ? "VOICE: this is a spoken conversation, like a phone call. Start with the answer in your very first sentence — no preamble like 'Let me check' or 'Great question'. Keep sentences short and natural. Your answer will be read aloud by a phone or laptop. Speak like a calm chief of staff giving a quick update: plain sentences only — no bullets, no asterisks, no symbols, no links, no IDs. Keep it under about 120 words unless they ask for detail. Say numbers naturally (\"three students\", \"twelve hundred dollars\"). Cover what they asked in order, then stop."
       : "Answer style: lead with the answer in one or two sentences, then the detail. Use short paragraphs and simple '- ' bullet lines when listing; **bold** for the few things that matter most. No tables, no headings. Plain English, friendly, specific (names, counts, dates). End with the one next step you'd suggest when that's useful.",
+    c.channel === "whatsapp" ? "WHATSAPP: you are talking to this teammate on WhatsApp (the Orbuni team number), not in the portal. Keep replies short, under about 150 words. Formatting: *single asterisks* for bold, '- ' bullets, no tables, no headings, no markdown links (write plain URLs if needed). Every draft you make appears under your message with Approve and Reject buttons they can tap, so say in one line what is waiting. When they say 'my tasks' or 'what should I do', use today_briefing and team_workload and list their items, most urgent first." : "",
     c.readOnly ? "This conversation comes from a voice shortcut: you can only look things up and answer. If they ask you to do something, say they can do it from the Orbuni assistant in the portal." : "",
     c.attachment ? `A file is attached to this message: \"${String(c.attachment.name || "file").replace(/[^\w .()-]/g, "").slice(0, 80)}\" (${c.attachment.mime}). If they want it filed for a student, call propose_document — it files this exact file.` : "",
     "Applying for a student: find the student, find programmes with search_programmes, then propose_application with up to 3 programme_ids (the portal allows 3 active applications). Sending to AskUni: propose_askuni_send only opens the usual check card — a person presses Send. Never say an application was sent.",
@@ -901,7 +902,7 @@ async function converse(c: Ctx, staffName: string, message: string, history: any
   const proposals: any[] = [];
   let reply = "", model = "";
   for(let round = 0; round < (c.voice ? 4 : MAX_ROUNDS); round++){
-    const lastRound = round === (c.voice ? 3 : MAX_ROUNDS - 1) || Date.now() - started > (c.voice ? 20_000 : TIME_BUDGET_MS);
+    const lastRound = round === (c.voice ? 3 : MAX_ROUNDS - 1) || Date.now() - started > (c.voice ? 20_000 : c.channel === "whatsapp" ? 70_000 : TIME_BUDGET_MS);
     // the wrap-up round runs without thinking, so earlier thinking blocks are left out of it
     const msgs = lastRound ? messages.map((m: any) => Array.isArray(m.content) && m.role === "assistant" ? { ...m, content: m.content.filter((b: any) => b.type !== "thinking" && b.type !== "redacted_thinking") } : m) : messages;
     const res = await callClaude({ max_tokens: c.voice ? 700 : 8000, system, messages: msgs, tools, tool_choice: lastRound ? { type: "none" } : { type: "auto" } }, !lastRound && !c.voice,
@@ -990,6 +991,25 @@ Deno.serve(async (req: Request) => {
     const t0 = Date.now();
     const out: any = await converse(c, nm(owner) || "the owner", String(body.message || "What needs attention today?"), [], String(body.message || "What needs attention today?"), false);
     return json(200, { ...out, think_mode: THINK_MODE, ms: Date.now() - t0 });
+  }
+
+  // 7 Nov 2026: the team on WhatsApp. wa-webhook calls this with the cron secret and the team member's
+  // profile id (found from their own WhatsApp number). Same permissions as in the portal; drafts are
+  // logged in ai_actions and come back so the webhook can show Approve / Reject buttons.
+  if(body.section === "__wa"){
+    if(!CRON_SECRET || req.headers.get("x-orb-secret") !== CRON_SECRET) return json(403, { error: "forbidden" });
+    if(!ANTHROPIC_KEY) return json(500, { error: "no model key" });
+    const { data: who } = await sb.rpc("staff_identity", { p_uid: String(body.as_profile || "") });
+    if(!who || who.staff !== true) return json(403, { error: "not a team member" });
+    const q = String(body.message || "").trim().slice(0, 4000) || "What needs my attention right now?";
+    const hist = Array.isArray(body.history) ? body.history : [];
+    const { data: me } = await sb.from("profiles").select("first_name,last_name").eq("id", who.uid).maybeSingle();
+    const c: Ctx = { sb, uid: who.uid, section: "general", channel: "whatsapp", cache: {},
+      perms: { finance: who.finance === true || who.owner === true, ops: who.ops === true || who.owner === true, apps: who.apps === true || who.owner === true,
+               owner: who.owner === true, marketing: who.marketing === true || who.owner === true, content: who.content === true || who.owner === true, team: who.team === true } };
+    const out: any = await converse(c, nm(me) || "a teammate", q, hist, q, true);
+    if(out.error) return json(502, { error: "model error " + out.error.status });
+    return json(200, { reply: String(out.reply || "").replace(/\*\*(.+?)\*\*/g, "*$1*"), proposals: out.proposals, model: out.model });
   }
 
   // "Hey Siri, Orbuni": a personal voice key instead of a sign-in. Questions only.

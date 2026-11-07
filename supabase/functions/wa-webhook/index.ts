@@ -8,6 +8,7 @@
 // STOP / START work as the student expects.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { sb, e164, twilioValid, sendAndLog, sendRich, alertStaff, runAgent, HANDOFF_WORDS, storeIncomingMedia, twilioTyping, LINKS } from "./wa.ts";
+import { teamAnswer, teamDecide } from "./team.ts";
 
 const TWIML_EMPTY = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>';
 const twiml = () => new Response(TWIML_EMPTY, { headers: { "Content-Type": "text/xml" } });
@@ -112,6 +113,22 @@ Deno.serve(async (req: Request) => {
     // @ts-ignore EdgeRuntime is provided by Supabase
     EdgeRuntime.waitUntil(storeIncomingMedia(db, contact.id, sid, media as any).then((m) =>
       db.from("wa_messages").update({ media: m }).eq("id", saved.id)));
+  }
+
+  // A team member writing from their own number: the team assistant, never the student AI (team.ts).
+  const { data: staffId } = await db.rpc("staff_by_phone", { p_phone: phone });
+  if (staffId) {
+    if (!labels.includes("team")) await db.from("wa_contacts").update({ labels: [...labels, "team"], unread: 0 }).eq("id", contact.id);
+    else await db.from("wa_contacts").update({ unread: 0 }).eq("id", contact.id);
+    const pay = String(params.ButtonPayload || "");
+    const typed = body.toLowerCase().replace(/[^a-z]/g, "");
+    const decision = pay === "ai_approve" || (!pay && ["approve", "approved", "yes", "ok", "okay"].includes(typed) && !media) ? "approve"
+      : pay === "ai_reject" || (!pay && ["reject", "no", "cancel"].includes(typed) && !media) ? "reject" : null;
+    // @ts-ignore EdgeRuntime is provided by Supabase
+    if (sid) EdgeRuntime.waitUntil(twilioTyping(sid));
+    // @ts-ignore EdgeRuntime is provided by Supabase
+    EdgeRuntime.waitUntil(decision ? teamDecide(contact, staffId, decision, params.OriginalRepliedMessageSid || null) : teamAnswer(contact.id, staffId));
+    return twiml();
   }
 
   // Handed over to a person: the AI stays out of it, but the student is never left
